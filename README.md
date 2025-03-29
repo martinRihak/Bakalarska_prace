@@ -23,3 +23,8 @@ Tento projekt je webová aplikace určená pro sběr, zpracování a vizualizaci
 - Hardware: Raspberry Pi, senzory s podporou RS-485
 
 - Další:
+
+
+# Nastaveni
+- start databaze : influx - use sensore_data - select * from sensor_data
+
