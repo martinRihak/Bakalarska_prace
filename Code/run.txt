@@ -1,0 +1,15 @@
+[Unit]
+Description=RS485 Sensor Data Collector
+After=network.target influxdb.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi
+# Změňte cestu k virtuálnímu prostředí podle skutečného umístění
+ExecStart=/bin/bash -c 'source /home/pi/venv/bin/activate && python /home/pi/rs485_data_collector.py'
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
