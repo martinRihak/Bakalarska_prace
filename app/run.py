@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
-from app.routes import init_routes
+from routes import init_routes
 
 app = Flask(__name__)
 CORS(app)
@@ -18,7 +18,7 @@ def hello():
 
 @app.route('/')
 def index():
-    return "Hello, Flask!"
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

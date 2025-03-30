@@ -16,10 +16,9 @@ def get_sensor_data(sensor_id):
         # Převedení výsledku na požadovaný formát
         for point in result.get_points():
             formatted_data.append({
-                'time': point['time'],
-                'sensor_id': point['sensor_id'],
-                'sensor_type': point['sensor_type'],
-                'value': point['value']
+                'Time': point['time'],
+                'Value': point['value']
+                
             })
         
         return jsonify(formatted_data)
