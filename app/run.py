@@ -1,26 +1,38 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, redirect, url_for, session
 from flask_cors import CORS
 from routes import init_routes
 from models.models import init_db
+from views.auth_views import auth_views
+from routes.authRoute import login_required
+import os
+import secrets
+
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
+
+# Konfigurace secret_key pro session
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
 
 #Init databaze
 init_db(app)
 
 # Registrace blueprintu
 init_routes(app)
+app.register_blueprint(auth_views)
 
 
-@app.route('/api/data',methods=['GET'])
+@app.route('/api/data', methods=['GET'])
+@login_required
 def get_data():
     return jsonify({'message': 'Hello, Flask!'})
 
 @app.route('/hello')
+@login_required
 def hello():
     return 'Hello, World'
 
 @app.route('/')
+@login_required
 def index():
     return render_template('index.html')
 

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Přihlášení</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="password"],
+        input[type="email"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.8rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .toggle-form {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .toggle-form a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .error-message {
+            color: #f44336;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .success-message {
+            color: #4CAF50;
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="login-form">
+            <h1>Přihlášení</h1>
+            <div class="form-group">
+                <label for="username">Uživatelské jméno</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Heslo</label>
+                <input type="password" id="password" required>
+            </div>
+            <button id="login-button">Přihlásit se</button>
+            <div class="toggle-form">
+                <a href="#" id="show-register">Nemáte účet? Zaregistrujte se</a>
+            </div>
+            <div id="login-message" class="error-message"></div>
+        </div>
+
+        <div id="register-form" style="display: none;">
+            <h1>Registrace</h1>
+            <div class="form-group">
+                <label for="reg-username">Uživatelské jméno</label>
+                <input type="text" id="reg-username" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-email">E-mail</label>
+                <input type="email" id="reg-email" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-password">Heslo</label>
+                <input type="password" id="reg-password" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-confirm-password">Potvrzení hesla</label>
+                <input type="password" id="reg-confirm-password" required>
+            </div>
+            <button id="register-button">Zaregistrovat se</button>
+            <div class="toggle-form">
+                <a href="#" id="show-login">Máte již účet? Přihlaste se</a>
+            </div>
+            <div id="register-message" class="error-message"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Přepínání mezi formuláři
+            document.getElementById('show-register').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('register-form').style.display = 'block';
+            });
+
+            document.getElementById('show-login').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('register-form').style.display = 'none';
+                document.getElementById('login-form').style.display = 'block';
+            });
+
+            // Přihlášení
+            document.getElementById('login-button').addEventListener('click', function() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const loginMessage = document.getElementById('login-message');
+
+                if (!username || !password) {
+                    loginMessage.textContent = 'Vyplňte prosím všechna pole';
+                    return;
+                }
+
+                fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        loginMessage.textContent = data.message;
+                        loginMessage.className = 'success-message';
+                        // Přesměrování na hlavní stránku po úspěšném přihlášení
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    } else {
+                        loginMessage.textContent = data.message;
+                        loginMessage.className = 'error-message';
+                    }
+                })
+                .catch(error => {
+                    loginMessage.textContent = 'Chyba při komunikaci se serverem';
+                    loginMessage.className = 'error-message';
+                    console.error('Error:', error);
+                });
+            });
+
+            // Registrace
+            document.getElementById('register-button').addEventListener('click', function() {
+                const username = document.getElementById('reg-username').value;
+                const email = document.getElementById('reg-email').value;
+                const password = document.getElementById('reg-password').value;
+                const confirmPassword = document.getElementById('reg-confirm-password').value;
+                const registerMessage = document.getElementById('register-message');
+
+                if (!username || !email || !password || !confirmPassword) {
+                    registerMessage.textContent = 'Vyplňte prosím všechna pole';
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    registerMessage.textContent = 'Hesla se neshodují';
+                    return;
+                }
+
+                fetch('/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, email, password }),
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        registerMessage.textContent = data.message;
+                        registerMessage.className = 'success-message';
+                        // Přepnutí na přihlašovací formulář po úspěšné registraci
+                        setTimeout(() => {
+                            document.getElementById('register-form').style.display = 'none';
+                            document.getElementById('login-form').style.display = 'block';
+                            document.getElementById('login-message').textContent = 'Registrace proběhla úspěšně, nyní se můžete přihlásit';
+                            document.getElementById('login-message').className = 'success-message';
+                        }, 1000);
+                    } else {
+                        registerMessage.textContent = data.message;
+                        registerMessage.className = 'error-message';
+                    }
+                })
+                .catch(error => {
+                    registerMessage.textContent = 'Chyba při komunikaci se serverem';
+                    registerMessage.className = 'error-message';
+                    console.error('Error:', error);
+                });
+            });
+
+            // Kontrola stavu přihlášení při načtení stránky
+            fetch('/auth/status', {
+                method: 'GET',
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'authenticated') {
+                    // Uživatel je již přihlášen, přesměrování na hlavní stránku
+                    window.location.href = '/';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html> 

@@ -1,9 +1,11 @@
-from flask import Blueprint,jsonify
+from flask import Blueprint,jsonify, session
 from config import get_influxdb_client
+from routes.authRoute import login_required
 import io,csv
 api_sensor = Blueprint('api_sensor',__name__,url_prefix='/api')
 
 @api_sensor.route('/sensor/dataInflux/<int:sensor_id>',methods=['GET'])
+@login_required
 def get_sensor_data_influx(sensor_id):
     try:
         # Vytvoření připojení
@@ -28,6 +30,7 @@ def get_sensor_data_influx(sensor_id):
 
 
 @api_sensor.route('/sensor/data/<int:sensor_id>',methods=['GET'])
+@login_required
 def TEST_get_sensor_data(sensor_id):
     try:
         # Vytvoření připojení
