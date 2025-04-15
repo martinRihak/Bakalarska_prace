@@ -1,5 +1,6 @@
 // apiService.js
 const API_BASE_URL = 'http://localhost:5000';
+
 const apiRequest = async (endpoint, method = 'GET', data = null) => {
     const token = localStorage.getItem('authToken');
     console.log(token);
@@ -16,6 +17,7 @@ const apiRequest = async (endpoint, method = 'GET', data = null) => {
       method,
       headers,
       credentials: 'include', // Pro předávání cookies
+      mode: 'cors' // Explicitně nastavíme CORS mode
     };
     
     if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
@@ -68,6 +70,10 @@ const apiRequest = async (endpoint, method = 'GET', data = null) => {
     
     checkAuthStatus: () => {
       return apiRequest('/auth/status');
+    },
+
+    getSensoreId: (sensore_id) =>{
+      return apiRequest(`/sensors/getSensorHistory/${sensore_id}`);
     }
   };
   

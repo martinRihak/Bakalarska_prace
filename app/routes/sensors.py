@@ -1,19 +1,41 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models.models import db, Sensor
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from models.models import db, Sensor, SensorData
 from routes.authRoute import login_required
 
 # Vytvoření blueprintu pro senzory
-sensors = Blueprint('sensors', __name__, url_prefix='/sensors')
+sensors_api = Blueprint('sensors_api', __name__)
 
-@sensors.route('/', methods=['GET'])
-@login_required
-def list_sensors():
-    """Zobrazení seznamu všech senzorů."""  
-    
-    sensors = Sensor.query.all()
-    return render_template('sensors/sensors.html', sensors=sensors)
 
-@sensors.route('/add', methods=['POST'])
+@sensors_api.route('/getSensorHistory/<int:sensor_id>', methods=['GET'])
+def get_sensor_data(sensor_id):
+    try:
+        # Získání dat ze senzoru
+        sensor = Sensor.query.get_or_404(sensor_id)
+        print(sensor)
+        sensor_data = SensorData.query.filter_by(sensor_id=sensor_id)\
+            .order_by(SensorData.timestamp)\
+            .all()
+        
+        # Formátování dat pro frontend
+        data = [{
+            'timestamp': data.timestamp.isoformat(),
+            'value': data.value
+        } for data in sensor_data]
+        
+        return jsonify({
+            'sensor': {
+                'id': sensor.sensor_id,
+                'name': sensor.name,
+                'unit': sensor.unit,
+                'type': sensor.sensor_type
+            },
+            'data': data
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@sensors_api.route('/add', methods=['POST'])
 @login_required
 def add_sensor():
     """Přidání nového senzoru."""
@@ -88,7 +110,7 @@ def add_sensor():
     
     return redirect(url_for('sensors.list_sensors'))
 
-@sensors.route('/delete/<int:sensor_id>', methods=['POST'])
+@sensors_api.route('/delete/<int:sensor_id>', methods=['POST'])
 @login_required
 def delete_sensor(sensor_id):
     """Smazání senzoru."""
@@ -101,4 +123,4 @@ def delete_sensor(sensor_id):
         db.session.rollback()
         flash(f'Chyba při mazání senzoru: {str(e)}', 'danger')
     
-    return redirect(url_for('sensors.list_sensors')) 
+    return redirect(url_for('sensors.list_sensors'))
