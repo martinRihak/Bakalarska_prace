@@ -185,7 +185,7 @@
                 const confirmPassword = document.getElementById('reg-confirm-password').value;
                 const registerMessage = document.getElementById('register-message');
 
-                if (!username || !email || !password || !confirmPassword) {
+                /*if (!username || !email || !password || !confirmPassword) {
                     registerMessage.textContent = 'Vyplňte prosím všechna pole';
                     return;
                 }
@@ -193,7 +193,7 @@
                 if (password !== confirmPassword) {
                     registerMessage.textContent = 'Hesla se neshodují';
                     return;
-                }
+                }*/
 
                 fetch('/auth/register', {
                     method: 'POST',

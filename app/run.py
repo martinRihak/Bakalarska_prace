@@ -8,8 +8,12 @@ import os
 import secrets
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
-
+CORS(app, resources={r"/auth/*": {
+    "origins": ["http://localhost:5173"],
+    "methods": ["GET", "POST", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization", "Accept"],
+    "supports_credentials": True
+}})
 # Konfigurace secret_key pro session
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
 
@@ -18,7 +22,6 @@ init_db(app)
 
 # Registrace blueprintu
 init_routes(app)
-app.register_blueprint(auth_views)
 
 
 @app.route('/api/data', methods=['GET'])

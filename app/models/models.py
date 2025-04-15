@@ -27,7 +27,6 @@ class User(db.Model):
     
     # Relationships
     dashboards = db.relationship('Dashboard', backref='user', lazy=True, cascade="all, delete-orphan")
-    sensor_permissions = db.relationship('SensorPermission', backref='user', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f'<User {self.username}>'
@@ -99,7 +98,6 @@ class Sensor(db.Model):
                                      lazy=True)
     sensor_data = db.relationship('SensorData', backref='sensor', lazy=True, cascade="all, delete-orphan")
     widget_sensors = db.relationship('WidgetSensor', backref='sensor', lazy=True, cascade="all, delete-orphan")
-    sensor_permissions = db.relationship('SensorPermission', backref='sensor', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f'<Sensor {self.name} ({self.sensor_type})>'

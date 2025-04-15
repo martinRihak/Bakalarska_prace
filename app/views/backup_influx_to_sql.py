@@ -1,4 +1,4 @@
-from influxdb_client import InfluxDBClient
+from influxdb import InfluxDBClient
 from models.models import Sensor,SensorData
 import sqlite3
 from datetime import datetime
