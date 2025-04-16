@@ -3,6 +3,9 @@ import api from '../apiService';
 import { useParams } from 'react-router-dom';
 import ReactApexChart from 'react-apexcharts';
 
+import { LineChart,Line } from 'recharts';
+
+
 const SensorGraph = () => {
   const { sensorId } = useParams();
   const [sensorData, setSensorData] = useState(null);
@@ -18,7 +21,7 @@ const SensorGraph = () => {
         setSensorData(response);
       } catch (err) {
         setError(err.message);
-      }
+      }c
     };
 
     fetchData();
@@ -75,7 +78,7 @@ const SensorGraph = () => {
       }
     },
     markers: {
-      size: 3
+      size: 0
     }
   };
 
@@ -95,6 +98,8 @@ const SensorGraph = () => {
         type="line"
         height={400}
       />
+      <div>
+      </div>
     </div>
   );
 };

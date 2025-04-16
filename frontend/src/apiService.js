@@ -2,8 +2,7 @@
 const API_BASE_URL = 'http://localhost:5000';
 
 const apiRequest = async (endpoint, method = 'GET', data = null) => {
-    const token = localStorage.getItem('authToken');
-    console.log(token);
+    const token = localStorage.getItem('token'); // Changed from authToken to token
     const headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
@@ -28,7 +27,7 @@ const apiRequest = async (endpoint, method = 'GET', data = null) => {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
         
         if (response.status === 401) {
-          localStorage.removeItem('authToken');
+          localStorage.removeItem('token'); // Changed from authToken to token
           if (!window.location.pathname.includes('/login')) {
             window.location.href = '/login';
           }
@@ -55,8 +54,12 @@ const apiRequest = async (endpoint, method = 'GET', data = null) => {
     delete: (endpoint) => apiRequest(endpoint, 'DELETE'),
     
     // Auth specifické metody
-    login: (username, password) => {
-      return apiRequest('/auth/login', 'POST', { username, password });
+    login: async (username, password) => {
+      const response = await apiRequest('/auth/login', 'POST', { username, password });
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+      }
+      return response;
     },
     
     register: (username, email, password) => {
@@ -64,8 +67,8 @@ const apiRequest = async (endpoint, method = 'GET', data = null) => {
     },
     
     logout: () => {
-      localStorage.removeItem('authToken');
-      return Promise.resolve({ status: 'success', message: 'Odhlášení proběhlo úspěšně' });
+      localStorage.removeItem('token'); 
+      return apiRequest('/auth/logout','POST');
     },
     
     checkAuthStatus: () => {

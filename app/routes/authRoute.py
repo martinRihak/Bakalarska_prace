@@ -112,6 +112,7 @@ def login():
 @auth_api.route('/logout', methods=['POST'])
 def logout():
     session.clear()
+    print("joooooo")
     return jsonify({'status': 'success', 'message': 'Odhlášení proběhlo úspěšně'}), 200
 
 @auth_api.route('/status', methods=['GET'])

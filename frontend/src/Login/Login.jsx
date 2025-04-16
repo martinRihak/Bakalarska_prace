@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../apiService';
 import './Login.css';
 
 function Login() {
+  const navigate = useNavigate();
   const [isLoginForm, setIsLoginForm] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -19,14 +21,14 @@ function Login() {
     api.checkAuthStatus()
       .then((data) => {
         if (data?.status === 'authenticated') {
-          window.location.href = '/';
+          navigate('/');
         }
       })
       .catch((error) => {
         console.error('Auth check error:', error);
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
       });
-  }, []);
+  }, [navigate]);
 
   // Přihlášení
   const handleLogin = async (e) => {
@@ -43,8 +45,9 @@ function Login() {
 
       if (data.status === 'success') {
         setLoginMessage(data.message);
+        // Give a small delay to show the success message
         setTimeout(() => {
-          window.location.href = '/';
+          navigate('/');
         }, 1000);
       } else {
         setLoginMessage(data.message);
@@ -76,6 +79,7 @@ function Login() {
 
       if (data.status === 'success') {
         setRegisterMessage(data.message);
+        console.log(data.status);
         setTimeout(() => {
           setIsLoginForm(true);
           setRegisterMessage('');
@@ -142,7 +146,7 @@ function Login() {
           {loginMessage && (
             <div
               id="login-message"
-              className={loginMessage.includes('úspěšně') ? 'success-message' : 'error-message'}
+              className={loginMessage.includes('úspěšné') ? 'success-message' : 'error-message'}
             >
               {loginMessage}
             </div>
