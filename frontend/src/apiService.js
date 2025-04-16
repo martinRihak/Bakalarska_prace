@@ -72,8 +72,8 @@ const apiRequest = async (endpoint, method = 'GET', data = null) => {
       return apiRequest('/auth/status');
     },
 
-    getSensoreId: (sensore_id) =>{
-      return apiRequest(`/sensors/getSensorHistory/${sensore_id}`);
+    getSensorHistory: (sensorId) => {
+      return apiRequest(`/sensors/getSensorHistory/${sensorId}`);
     }
   };
   

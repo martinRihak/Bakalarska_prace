@@ -5,9 +5,8 @@ from routes.authRoute import login_required
 # Vytvoření blueprintu pro senzory
 sensors_api = Blueprint('sensors_api', __name__)
 
-
 @sensors_api.route('/getSensorHistory/<int:sensor_id>', methods=['GET'])
-def get_sensor_data(sensor_id):
+def get_sensor_history(sensor_id):
     try:
         # Získání dat ze senzoru
         sensor = Sensor.query.get_or_404(sensor_id)

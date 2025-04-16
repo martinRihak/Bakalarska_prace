@@ -11,7 +11,7 @@ const SensorGraph = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.getSensoreId(sensorId);
+        const response = await api.getSensorHistory(sensorId);
         if (!response) {
           throw new Error('Nepodařilo se načíst data ze senzoru');
         }
@@ -66,8 +66,8 @@ const SensorGraph = () => {
       title: {
         text: sensorData.sensor.unit
       },
-      min: -5,
-      max: 35
+      min: -10,
+      max: 50
     },
     tooltip: {
       x: {
