@@ -4,6 +4,7 @@ import Login from "./Login/Login";
 import SensorGraph from "./components/SensorGraph";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NavBar from "./components/NavBar";
+import Home from "./pages/Home";
 import './App.css'
 
 // @mui material components
@@ -39,7 +40,7 @@ function App() {
           element={
             <ProtectedRoute>
               <ProtectedLayout>
-                <div><h1>Domovska stranka</h1></div>
+                <Home/>
               </ProtectedLayout>
             </ProtectedRoute>
           }
