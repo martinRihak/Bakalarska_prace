@@ -5,6 +5,7 @@ import SensorGraph from "./components/SensorGraph";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
+import SensorDashboard from './components/testDashboard'
 import './App.css'
 
 // @mui material components
@@ -12,48 +13,43 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Counter from "./components/Couonter";
 
-// Layout wrapper for protected routes
-const ProtectedLayout = ({ children }) => (
-  <div>
-    <NavBar />
-    {children}
-  </div>
-);
-
 function App() {
-  return(
+  return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<Login/>}/>
-        <Route 
-          path="/sensor/:sensorId" 
-          element={
-            <ProtectedRoute>
-              <ProtectedLayout>
-                <SensorGraph/>
-              </ProtectedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route 
-          path="/" 
-          element={
-            <ProtectedRoute>
-              <ProtectedLayout>
-                <Home/>
-              </ProtectedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/counter"
-          element={
-            <Counter/>
-          }
-        />
-      </Routes>
+      <div className="app-container">
+        <NavBar />
+        <div className="main-content">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sensors"
+              element={
+                <ProtectedRoute>
+                  <SensorDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <div>Profile Page</div>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </div>
+      </div>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

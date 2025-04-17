@@ -1,36 +1,59 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, NavLink } from 'react-router-dom';
 import api from '../apiService';
+import './NavBar.css';
 
 function NavBar() {
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = async () => {
     await api.logout();
     navigate('/login');
   };
 
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
-    <nav style={{ 
-      padding: '1rem', 
-      backgroundColor: '#f8f9fa', 
-      display: 'flex', 
-      justifyContent: 'flex-end' 
-    }}>
-      <button 
-        onClick={handleLogout}
-        style={{
-          padding: '0.5rem 1rem',
-          backgroundColor: '#dc3545',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
-      >
-        Odhlásit se
+    <>
+      <button className="menu-toggle" onClick={toggleMenu}>
+        ☰
       </button>
-    </nav>
+      <nav className={`side-nav ${isOpen ? 'open' : ''}`}>
+        <div className="nav-links">
+          <NavLink 
+            to="/" 
+            end
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          >
+            Domů
+          </NavLink>
+          <NavLink 
+            to="/sensors"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          >
+            Senzory
+          </NavLink>
+          <NavLink 
+            to="/profile"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          >
+            Profil
+          </NavLink>
+        </div>
+        <button 
+          onClick={handleLogout}
+          className="logout-button"
+        >
+          Odhlásit se
+        </button>
+      </nav>
+    </>
   );
 }
 
