@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { RefreshCw, Maximize2, X, ImageOff } from 'lucide-react';
-import api from '../../apiService';
+import api from '@services/apiService';
 
 const Widget = ({ title, sensorName }) => {
     const [sensorData, setSensorData] = useState([]);

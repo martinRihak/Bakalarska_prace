@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import api from '../apiService';
+import api from '@services/apiService';
 import { useParams } from 'react-router-dom';
 import ReactApexChart from 'react-apexcharts';
-
-import { LineChart,Line } from 'recharts';
-
+import { LineChart, Line } from 'recharts';
 
 const SensorGraph = () => {
   const { sensorId } = useParams();

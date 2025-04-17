@@ -1,11 +1,11 @@
 import React from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
-import Widget from "./widgets/Widget";
+import Widget from "@widgets/Widget";
 
 // CSS
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import "../assets/css/dashBoard.css";
+import "@css/dashBoard.css";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 

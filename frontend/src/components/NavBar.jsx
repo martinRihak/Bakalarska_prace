@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import api from '../apiService';
-import '../assets/css/NavBar.css';
+import api from '@services/apiService';
+import '@css/NavBar.css';
 
 function NavBar() {
   const navigate = useNavigate();

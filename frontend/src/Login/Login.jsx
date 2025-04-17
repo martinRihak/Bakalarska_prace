@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../apiService';
+import api from '@services/apiService';
 import './Login.css';
 
 function Login() {

@@ -1,6 +1,6 @@
 import React from 'react';
-import SensorDashboard from '../components/testDashboard';
-import '../assets/css/Home.css'
+import SensorDashboard from '@components/testDashboard';
+import '@css/Home.css'
 
 function Home() {
     return (

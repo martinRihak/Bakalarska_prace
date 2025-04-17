@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '../../apiService';
+import api from '@services/apiService';
 
 const UserForm = () => {
   // Počáteční stav formuláře
