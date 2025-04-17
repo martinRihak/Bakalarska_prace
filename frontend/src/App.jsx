@@ -8,6 +8,8 @@ import Home from "./pages/Home";
 import SensorDashboard from './components/testDashboard'
 import './App.css'
 
+//Forms
+import UseForm from './components/Forms/UserForm'
 // @mui material components
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -30,10 +32,10 @@ function App() {
               }
             />
             <Route
-              path="/sensors"
+              path="/sensors/:sensorId"
               element={
                 <ProtectedRoute>
-                  <SensorDashboard />
+                  <SensorGraph/>
                 </ProtectedRoute>
               }
             />
@@ -45,9 +47,15 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/insertUser"
+              element={
+                <UseForm/>
+              }
+            />
           </Routes>
+          </div>
         </div>
-      </div>
     </Router>
   );
 }

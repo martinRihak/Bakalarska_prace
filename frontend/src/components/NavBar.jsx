@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import api from '../apiService';
-import './NavBar.css';
+import '../assets/css/NavBar.css';
 
 function NavBar() {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ function NavBar() {
             Domů
           </NavLink>
           <NavLink 
-            to="/sensors"
+            to="/sensors/"
             onClick={() => setIsOpen(false)}
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >

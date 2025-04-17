@@ -7,7 +7,6 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@material-dashboard': path.resolve(__dirname, '.src/assets/dashboard'),
       '@com': path.resolve(__dirname, 'src/components'),
     },
   },

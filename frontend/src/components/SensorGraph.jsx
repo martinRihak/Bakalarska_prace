@@ -21,7 +21,7 @@ const SensorGraph = () => {
         setSensorData(response);
       } catch (err) {
         setError(err.message);
-      }c
+      }
     };
 
     fetchData();

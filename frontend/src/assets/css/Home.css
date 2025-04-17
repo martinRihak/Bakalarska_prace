@@ -1,6 +1,7 @@
 .main {
     width: 100%;
-    min-height: calc(100vh - 60px); /* Odečítáme výšku NavBaru */
+    height: 100%;
+    overflow: hidden;
 }
 
 .sideMenu {
@@ -31,8 +32,15 @@
 
 .dashBoard {
     width: 100%;
-    padding: 20px;
-    overflow-x: hidden;
+    height: 100%;
+    padding: 1rem;
+    overflow: auto;
+}
+
+.dashboard-container {
+    width: 100%;
+    height: calc(100vh - 2rem);
+    overflow: auto;
 }
 
 /* Responzivní design pro menší obrazovky */
@@ -47,6 +55,6 @@
     }
     
     .dashBoard {
-        max-width: 100%;
+        padding: 0.5rem;
     }
 }
