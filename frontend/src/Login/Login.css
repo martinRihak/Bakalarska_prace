@@ -8,6 +8,13 @@ body {
     align-items: center;
     height: 100vh;
   }
+  
+  .my .main-content{
+    flex: 1;
+    min-height: 100vh;
+    padding: 1rem;
+    transition: margin-left 0.3s ease;
+  }
   .container {
     background-color: #ffffff;
     padding: 2rem;

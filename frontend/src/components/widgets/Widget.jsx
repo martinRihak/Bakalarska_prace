@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,json } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { RefreshCw, Maximize2, X, ImageOff } from 'lucide-react';
 import api from '@services/apiService';
 
-const Widget = ({ title, sensorName }) => {
+const Widget = ({ title, sensorName,id }) => {
     const [sensorData, setSensorData] = useState([]);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -12,7 +12,8 @@ const Widget = ({ title, sensorName }) => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const response = await api.getSensorHistory(1);
+            const response = await api.getSensorHistory(id);
+            console.log(json);
             if (!response) {
                 throw new Error('Nepodařilo se načíst data ze senzoru');
             }
@@ -40,12 +41,6 @@ const Widget = ({ title, sensorName }) => {
             <div className="widget-header">
                 <h3>{title}</h3>
                 <div className="widget-controls">
-                    <RefreshCw 
-                        className={`widget-icon ${isLoading ? 'rotating' : ''}`} 
-                        onClick={handleRefresh} 
-                    />
-                    <Maximize2 className="widget-icon" />
-                    <X className="widget-icon" />
                 </div>
             </div>
             <div className="widget-content">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '@services/apiService';
+import '@css/forms.css';
 
 const UserForm = () => {
   // Počáteční stav formuláře
@@ -52,24 +53,24 @@ const UserForm = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Přidat nového uživatele</h2>
+    <div className="form-container">
+      <h2 className="form-heading">Přidat nového uživatele</h2>
       
       {status.success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div className="form-success">
           Uživatel byl úspěšně vytvořen!
         </div>
       )}
       
       {status.error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="form-error">
           Chyba: {status.error}
         </div>
       )}
       
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="username">
+        <div className="form-group">
+          <label className="form-label" htmlFor="username">
             Uživatelské jméno *
           </label>
           <input
@@ -79,12 +80,12 @@ const UserForm = () => {
             value={formData.username}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="form-input"
           />
         </div>
         
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="password">
+        <div className="form-group">
+          <label className="form-label" htmlFor="password">
             Heslo *
           </label>
           <input
@@ -94,12 +95,12 @@ const UserForm = () => {
             value={formData.password}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="form-input"
           />
         </div>
         
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="email">
+        <div className="form-group">
+          <label className="form-label" htmlFor="email">
             Email *
           </label>
           <input
@@ -109,12 +110,12 @@ const UserForm = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="form-input"
           />
         </div>
         
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="role">
+        <div className="form-group">
+          <label className="form-label" htmlFor="role">
             Role
           </label>
           <select
@@ -122,20 +123,18 @@ const UserForm = () => {
             name="role"
             value={formData.role}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="form-select"
           >
             <option value="user">Uživatel</option>
             <option value="admin">Administrátor</option>
           </select>
         </div>
         
-        <div className="flex justify-end">
+        <div className="form-footer">
           <button
             type="submit"
             disabled={status.isLoading}
-            className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              status.isLoading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className="form-submit"
           >
             {status.isLoading ? 'Ukládám...' : 'Vytvořit uživatele'}
           </button>

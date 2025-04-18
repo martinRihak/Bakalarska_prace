@@ -39,38 +39,53 @@ class Dashboard(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    layout_config = db.Column(db.Text)  # JSON representation of dashboard layout
-    is_default = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
-    
-    # Relationships
-    widgets = db.relationship('DashboardWidget', backref='dashboard', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f'<Dashboard {self.name}>'
 
-# Dashboard Widget Model
+# Dashboard-Widget Junction Model
 class DashboardWidget(db.Model):
     __tablename__ = 'dashboard_widgets'
     
-    widget_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    dashboard_id = db.Column(db.Integer, db.ForeignKey('dashboards.dashboard_id', ondelete='CASCADE'), nullable=False)
-    widget_type = db.Column(db.String(50), nullable=False)  # 'chart', 'gauge', 'value', etc.
+    dashboard_id = db.Column(db.Integer, db.ForeignKey('dashboards.dashboard_id', ondelete='CASCADE'), primary_key=True)
+    widget_id = db.Column(db.Integer, db.ForeignKey('widgets.widget_id', ondelete='CASCADE'), primary_key=True)
     position_x = db.Column(db.Integer, nullable=False)
     position_y = db.Column(db.Integer, nullable=False)
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=func.now())
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
+    
+    # Quick access methods
+    @classmethod
+    def get_widgets_for_user_dashboard(cls, dashboard_id, user_id):
+        return cls.query\
+            .join(Dashboard)\
+            .filter(
+                Dashboard.dashboard_id == dashboard_id,
+                Dashboard.user_id == user_id
+            )\
+            .all()
+
+# Widget Model
+class Widget(db.Model):
+    __tablename__ = 'widgets'
+    
+    widget_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    widget_type = db.Column(db.String(50), nullable=False)  # 'chart', 'gauge', 'value', etc.
     title = db.Column(db.String(100))
-    config = db.Column(db.Text)  # JSON configuration for the widget
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
-    sensors = db.relationship('WidgetSensor', backref='widget', lazy=True, cascade="all, delete-orphan")
-    
+    dashboards = db.relationship('Dashboard', secondary='dashboard_widgets', 
+                               backref=db.backref('widgets', lazy=True),
+                               lazy=True)
+                               
     def __repr__(self):
-        return f'<Widget {self.widget_id} ({self.widget_type})>'
+        return f'<Widget {self.widget_id}: {self.title}>'
 
 # Sensor Model
 class Sensor(db.Model):
@@ -83,12 +98,10 @@ class Sensor(db.Model):
     sensor_type = db.Column(db.String(50), nullable=False)
     address = db.Column(db.Integer)  # RS-485 address
     register = db.Column(db.Integer)  # Register number
-    parameters = db.Column(db.Text)  # JSON parameters for the sensor
     unit = db.Column(db.String(20))  # Measurement unit
     min_value = db.Column(db.Float)
     max_value = db.Column(db.Float)
     sampling_rate = db.Column(db.Integer)  # Seconds between readings
-    is_virtual = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
     
@@ -97,7 +110,9 @@ class Sensor(db.Model):
                                      backref=db.backref('parent_sensor', remote_side=[sensor_id]),
                                      lazy=True)
     sensor_data = db.relationship('SensorData', backref='sensor', lazy=True, cascade="all, delete-orphan")
-    widget_sensors = db.relationship('WidgetSensor', backref='sensor', lazy=True, cascade="all, delete-orphan")
+    widgets = db.relationship('Widget', secondary='widget_sensors',
+                            backref=db.backref('sensors', lazy=True),
+                            lazy=True)
     
     def __repr__(self):
         return f'<Sensor {self.name} ({self.sensor_type})>'
@@ -106,10 +121,8 @@ class Sensor(db.Model):
 class WidgetSensor(db.Model):
     __tablename__ = 'widget_sensors'
     
-    widget_sensor_id = db.Column(db.Integer, autoincrement=True)
-    widget_id = db.Column(db.Integer, db.ForeignKey('dashboard_widgets.widget_id', ondelete='CASCADE'), primary_key=True)
+    widget_id = db.Column(db.Integer, db.ForeignKey('widgets.widget_id', ondelete='CASCADE'), primary_key=True)
     sensor_id = db.Column(db.Integer, db.ForeignKey('sensors.sensor_id', ondelete='CASCADE'), primary_key=True)
-    display_options = db.Column(db.Text)  # JSON configuration for display options
     
     def __repr__(self):
         return f'<WidgetSensor {self.widget_id}:{self.sensor_id}>'

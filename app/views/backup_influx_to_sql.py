@@ -13,3 +13,5 @@ def backup_influx_to_sql():
 
 
 backup_influx_to_sql()
+
+#influx -database ‘sensore_data’ -execute "SELECT * FROM senzore_data" -format csv > test.csv

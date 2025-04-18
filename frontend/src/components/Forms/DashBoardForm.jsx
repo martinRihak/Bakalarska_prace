@@ -1,0 +1,91 @@
+import React, { useState } from 'react';
+import api from '../../apiService';
+import { useNavigate } from 'react-router-dom';
+import '@css/forms.css';
+
+const DashBoardForm = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    description: ''
+  });
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      const response = await api.createDashboard(formData);
+      console.log('Dashboard vytvořen:', response);
+      // Po úspěšném vytvoření přesměrujeme na dashboard
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Došlo k chybě při vytváření dashboardu');
+    }
+  };
+
+  return (
+    <div className="form-container">
+      <h2 className="form-heading">Vytvořit nový dashboard</h2>
+      
+      {error && (
+        <div className="form-error" role="alert">
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="name" className="form-label">
+            Název dashboardu
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            className="form-input"
+            placeholder="Zadejte název dashboardu"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="description" className="form-label">
+            Popis
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            rows="3"
+            className="form-textarea"
+            placeholder="Zadejte popis dashboardu (volitelné)"
+          />
+        </div>
+
+        <div className="form-footer">
+          <button
+            type="submit"
+            className="form-submit"
+          >
+            Vytvořit dashboard
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default DashBoardForm;

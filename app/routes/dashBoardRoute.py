@@ -1,0 +1,287 @@
+from flask import Blueprint, request, jsonify, session
+from models.models import Dashboard, User, db, DashboardWidget, Widget, Sensor
+from datetime import datetime
+dashboard_api = Blueprint('dash_api', __name__)
+
+@dashboard_api.route('/userDashBoards', methods=['GET'])
+def getDashBoards():
+    # Získání user_id z session
+    user_id = session.get('user_id', 1)  # Fallback na ID 1 pro testování
+    
+    # Načtení všech dashboardů uživatele
+    dashboards = Dashboard.query.filter_by(user_id=user_id).all()
+    
+    if not dashboards:
+        return jsonify([])
+    
+    dashboards_data = [{
+        'dashboard_id': dashboard.dashboard_id,
+        'name': dashboard.name,
+        'description': dashboard.description,
+        'created_at': dashboard.created_at,
+        'updated_at': dashboard.updated_at
+    } for dashboard in dashboards]
+    
+    return jsonify(dashboards_data)
+
+
+@dashboard_api.route('/widgets', methods=['GET'])
+def get_dashboard_widgets():
+    # Získání user_id z session
+    user_id = session.get('user_id', 1)  # Fallback na ID 1 pro testování
+    dashboard_id = request.args.get('dashboard_id', 1)  # Získání dashboard_id z query parametru
+    
+    # Ověření, že dashboard patří uživateli
+    dashboard = Dashboard.query.filter_by(
+        dashboard_id=dashboard_id,
+        user_id=user_id
+    ).first()
+    
+    if not dashboard:
+        return jsonify({'error': 'Dashboard not found or access denied'}), 404
+
+    # Načtení widgetů pro daný dashboard
+    dashboard_widgets = DashboardWidget.query.join(Widget).filter(
+        DashboardWidget.dashboard_id == dashboard_id
+    ).all()
+
+    if not dashboard_widgets:
+        return jsonify([])
+
+    widgets_data = []
+    for dashboard_widget in dashboard_widgets:
+        widget = Widget.query.get(dashboard_widget.widget_id)
+        
+        widget_data = {
+            'widget_id': dashboard_widget.widget_id,
+            'widget_type': widget.widget_type,
+            'title': widget.title,
+            'position_x': dashboard_widget.position_x,
+            'position_y': dashboard_widget.position_y,
+            'width': dashboard_widget.width,
+            'height': dashboard_widget.height,
+            'created_at': widget.created_at,
+            'updated_at': widget.updated_at,
+            'sensors': []
+        }
+        
+        # Přidání informací o senzorech
+        for sensor in widget.sensors:
+            sensor_data = {
+                'sensor_id': sensor.sensor_id,
+                'name': sensor.name,
+                'sensor_type': sensor.sensor_type,
+                'description': sensor.description,
+                'unit': sensor.unit,
+                'address': sensor.address,
+                'register': sensor.register,
+                'min_value': sensor.min_value,
+                'max_value': sensor.max_value,
+                'sampling_rate': sensor.sampling_rate
+            }
+            widget_data['sensors'].append(sensor_data)
+            
+        widgets_data.append(widget_data)
+
+    return jsonify(widgets_data)
+
+@dashboard_api.route('/create', methods=['POST'])
+def create_dashboard():
+    print("Suuuuu")
+    user_id = session.get('user_id')  # Fallback na ID 1 pro testování
+    data = request.get_json()
+    
+    if not data or 'name' not in data:
+        return jsonify({'error': 'Missing required fields'}), 400
+        
+    new_dashboard = Dashboard(
+        user_id=user_id,
+        name=data['name'],
+        description=data.get('description', '')
+    )
+    
+    db.session.add(new_dashboard)
+    db.session.commit()
+    
+    return jsonify({
+        'dashboard_id': new_dashboard.dashboard_id,
+        'name': new_dashboard.name,
+        'description': new_dashboard.description,
+        'created_at': new_dashboard.created_at,
+        'updated_at': new_dashboard.updated_at
+    }), 201
+
+@dashboard_api.route('/dashboard/<int:dashboard_id>', methods=['PUT'])
+def update_dashboard(dashboard_id):
+    user_id = session.get('user_id', 1)
+    data = request.get_json()
+    
+    dashboard = Dashboard.query.filter_by(
+        dashboard_id=dashboard_id,
+        user_id=user_id
+    ).first()
+    
+    if not dashboard:
+        return jsonify({'error': 'Dashboard not found or access denied'}), 404
+        
+    if 'name' in data:
+        dashboard.name = data['name']
+    if 'description' in data:
+        dashboard.description = data['description']
+    
+    db.session.commit()
+    
+    return jsonify({
+        'dashboard_id': dashboard.dashboard_id,
+        'name': dashboard.name,
+        'description': dashboard.description,
+        'created_at': dashboard.created_at,
+        'updated_at': dashboard.updated_at
+    })
+
+@dashboard_api.route('/dashboard/<int:dashboard_id>', methods=['DELETE'])
+def delete_dashboard(dashboard_id):
+    user_id = session.get('user_id', 1)
+    
+    dashboard = Dashboard.query.filter_by(
+        dashboard_id=dashboard_id,
+        user_id=user_id
+    ).first()
+    
+    if not dashboard:
+        return jsonify({'error': 'Dashboard not found or access denied'}), 404
+        
+    db.session.delete(dashboard)  # Kaskádové mazání se postará o související widgety
+    db.session.commit()
+    
+    return jsonify({'message': 'Dashboard successfully deleted'})
+
+@dashboard_api.route('/widget', methods=['POST'])
+def add_widget():
+    user_id = session.get('user_id', 1)
+    data = request.get_json()
+    
+    if not data or not all(k in data for k in ['dashboard_id', 'widget_type', 'title', 'position']):
+        return jsonify({'error': 'Missing required fields'}), 400
+        
+    # Ověření, že dashboard patří uživateli
+    dashboard = Dashboard.query.filter_by(
+        dashboard_id=data['dashboard_id'],
+        user_id=user_id
+    ).first()
+    
+    if not dashboard:
+        return jsonify({'error': 'Dashboard not found or access denied'}), 404
+
+    # Vytvoření nového widgetu
+    new_widget = Widget(
+        widget_type=data['widget_type'],
+        title=data['title']
+    )
+    db.session.add(new_widget)
+    db.session.flush()  # Získáme ID widgetu před commitem
+    
+    # Vytvoření vazby mezi dashboardem a widgetem
+    dashboard_widget = DashboardWidget(
+        dashboard_id=data['dashboard_id'],
+        widget_id=new_widget.widget_id,
+        position_x=data['position'].get('x', 0),
+        position_y=data['position'].get('y', 0),
+        width=data['position'].get('width', 2),
+        height=data['position'].get('height', 2)
+    )
+    
+    # Přidání senzorů k widgetu
+    if 'sensors' in data:
+        for sensor_id in data['sensors']:
+            sensor = Sensor.query.get(sensor_id)
+            if sensor:
+                new_widget.sensors.append(sensor)
+    
+    db.session.add(dashboard_widget)
+    db.session.commit()
+    
+    return jsonify({
+        'widget_id': new_widget.widget_id,
+        'dashboard_id': dashboard.dashboard_id,
+        'widget_type': new_widget.widget_type,
+        'title': new_widget.title,
+        'position': {
+            'x': dashboard_widget.position_x,
+            'y': dashboard_widget.position_y,
+            'width': dashboard_widget.width,
+            'height': dashboard_widget.height
+        }
+    }), 201
+
+@dashboard_api.route('/widget/<int:widget_id>', methods=['PUT'])
+def update_widget(widget_id):
+    user_id = session.get('user_id', 1)
+    data = request.get_json()
+    
+    # Najít widget a ověřit přístup
+    dashboard_widget = DashboardWidget.query.join(Dashboard).filter(
+        DashboardWidget.widget_id == widget_id,
+        Dashboard.user_id == user_id
+    ).first()
+    
+    if not dashboard_widget:
+        return jsonify({'error': 'Widget not found or access denied'}), 404
+        
+    widget = Widget.query.get(widget_id)
+    
+    # Aktualizace pozice a velikosti
+    if 'position' in data:
+        dashboard_widget.position_x = data['position'].get('x', dashboard_widget.position_x)
+        dashboard_widget.position_y = data['position'].get('y', dashboard_widget.position_y)
+        dashboard_widget.width = data['position'].get('width', dashboard_widget.width)
+        dashboard_widget.height = data['position'].get('height', dashboard_widget.height)
+    
+    # Aktualizace základních vlastností widgetu
+    if 'title' in data:
+        widget.title = data['title']
+    if 'widget_type' in data:
+        widget.widget_type = data['widget_type']
+        
+    # Aktualizace senzorů
+    if 'sensors' in data:
+        widget.sensors = []  # Odstranění stávajících vazeb
+        for sensor_id in data['sensors']:
+            sensor = Sensor.query.get(sensor_id)
+            if sensor:
+                widget.sensors.append(sensor)
+    
+    db.session.commit()
+    
+    return jsonify({
+        'widget_id': widget.widget_id,
+        'widget_type': widget.widget_type,
+        'title': widget.title,
+        'position': {
+            'x': dashboard_widget.position_x,
+            'y': dashboard_widget.position_y,
+            'width': dashboard_widget.width,
+            'height': dashboard_widget.height
+        }
+    })
+
+@dashboard_api.route('/widget/<int:widget_id>', methods=['DELETE'])
+def delete_widget(widget_id):
+    user_id = session.get('user_id', 1)
+    
+    # Najít widget a ověřit přístup
+    dashboard_widget = DashboardWidget.query.join(Dashboard).filter(
+        DashboardWidget.widget_id == widget_id,
+        Dashboard.user_id == user_id
+    ).first()
+    
+    if not dashboard_widget:
+        return jsonify({'error': 'Widget not found or access denied'}), 404
+        
+    # Odstranění widgetu a všech jeho vazeb
+    widget = Widget.query.get(widget_id)
+    if widget:
+        db.session.delete(widget)  # Kaskádové mazání se postará o vazby
+        db.session.commit()
+        
+    return jsonify({'message': 'Widget successfully deleted'})

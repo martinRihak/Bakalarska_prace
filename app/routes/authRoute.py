@@ -3,7 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from models.models import User, db
 from datetime import datetime,timedelta,timezone
 from functools import wraps
-import jwt
+import jwt, redis
 
 auth_api = Blueprint('auth_api', __name__)
 JWT_SECRET_KEY = 'tajny_klic_pro_podpis_jwt'  # V produkci použijte něco jako os.environ.get('JWT_SECRET_KEY')
@@ -145,6 +145,24 @@ def auth_status():
         })
     
     return jsonify({'status': 'unauthenticated'})
+
+@auth_api.route('/healthcheck', methods=['GET'])
+def healthcheck():
+    """Endpoint pro kontrolu stavu serveru"""
+    try:
+        # Zkusíme připojení k databázi
+        db.session.execute('SELECT 1')
+        return jsonify({
+            'status': 'online',
+            'database': 'connected',
+            'timestamp': datetime.now().isoformat()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
 
 @auth_api.route('/register', methods=['POST'])
 def register():

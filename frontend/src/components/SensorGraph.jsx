@@ -31,7 +31,6 @@ const SensorGraph = () => {
   const chartOptions = {
     chart: {
       type: 'line',
-      height: 400,
       zoom: {
         enabled: true
       },
@@ -89,14 +88,15 @@ const SensorGraph = () => {
   }];
 
   return (
-    <div className="sensor-graph">
-      <ReactApexChart 
-        options={chartOptions}
-        series={series}
-        type="line"
-        height={400}
-      />
-      <div>
+    <div className='main-content'>
+      <div className="sensor-graph">
+        <ReactApexChart 
+          options={chartOptions}
+          series={series}
+          type="line"
+          height={400}
+          width={800}
+        />
       </div>
     </div>
   );

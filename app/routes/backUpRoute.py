@@ -8,7 +8,7 @@ backUpRoute = Blueprint('backUpRoute',__name__)
 @backUpRoute.route('/backUp',methods=['GET'])
 def insert_from_csv():
     data = []
-    with open('/mnt/9044FFDF44FFC64E/Ubuntu/6.sem/Bakalarska_prace/data/export.csv', 'r') as file:
+    with open('/mnt/9044FFDF44FFC64E/Ubuntu/6.sem/Bakalarska_prace/data/test.csv', 'r') as file:
         reader = csv.DictReader(file)
 
         for row in reader:
@@ -28,24 +28,33 @@ def insert_from_csv():
                 data.append(row)
                 
 
-        sensor_data_objects = []
+        temp_data = []
+        humidity_data = []
         for item in data:
             # Převod časového razítka z nanosekund na sekundy a pak na datetime
             from datetime import datetime
             timestamp = datetime.fromtimestamp(item['time'] / 1e9)
             
-            new_data = SensorData(
+            new_data_temp = SensorData(
                 sensor_id=int(item['sensor_id']),
                 timestamp=timestamp,
                 value=item['temperature']  
             )
-            sensor_data_objects.append(new_data)
-        
-        print(sensor_data_objects)
+            temp_data.append(new_data_temp)
+            
+            new_data_temp = SensorData(
+                sensor_id=int(item['sensor_id']) + 1,
+                timestamp=timestamp,
+                value=item['humidity']  
+            )
+            humidity_data.append(new_data_temp)
+            
+        print(temp_data)
         try:
-            db.session.bulk_save_objects(sensor_data_objects)
+            db.session.bulk_save_objects(temp_data)
+            db.session.bulk_save_objects(humidity_data)
             db.session.commit()
-            return jsonify({"status": "success", "message": f"Úspěšně uloženo {len(sensor_data_objects)} záznamů"})
+            return jsonify({"status": "success", "message": f"Úspěšně uloženo {len(temp_data)} a {len(humidity_data)} záznamů"})
         except Exception as e:
             db.session.rollback()
             return jsonify({"status": "error", "message": f"Chyba při ukládání dat: {str(e)}"}), 500

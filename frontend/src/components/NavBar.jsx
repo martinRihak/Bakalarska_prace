@@ -39,6 +39,13 @@ function NavBar() {
             Senzory
           </NavLink>
           <NavLink 
+            to="/create-dashboard"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          >
+            Vytvořit Dashboard
+          </NavLink>
+          <NavLink 
             to="/profile"
             onClick={() => setIsOpen(false)}
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}

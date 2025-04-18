@@ -1,0 +1,26 @@
+Jednoduche vertikalniiho vycentrovani:
+// ...existing code...
+
+.sensor-graph {
+  width: 80%;
+  display: flex;
+  margin: 0 auto; /* Přidáno pro horizontální vycentrování */
+  justify-content: center; /* Vycentruje obsah uvnitř flex kontejneru */
+}
+
+// ...existing code...
+
+I horizontálního
+
+// ...existing code...
+
+.sensor-graph {
+  width: 80%;
+  display: flex;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center; /* Vertikální centrování */
+  min-height: 100%; /* Zajistí, že flex container zabere dostupnou výšku */
+}
+
+// ...existing code...
