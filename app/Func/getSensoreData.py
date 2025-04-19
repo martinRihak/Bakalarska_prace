@@ -4,6 +4,8 @@ import json
 import time
 from datetime import datetime
 
+
+
 PORT = "/dev/ttyUSB0" 
 DEVICE_ADDRESS = 1 
 

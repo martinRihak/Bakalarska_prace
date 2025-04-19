@@ -23,15 +23,15 @@ const SensorDashboard = () => {
         setIsLoading(true);
         // Předpokládáme, že máme ID dashboardu 1 (později můžeme přidat výběr dashboardu)
         const dashboardWidgets = await api.getDashboardWidgets();
-        console.log(dashboardWidgets);
+
         // Vytvoření layoutu z načtených widgetů
         const newLayouts = {
           lg: dashboardWidgets.map(widget => ({
             i: widget.widget_id.toString(),
             x: widget.position_x || 0,
             y: widget.position_y || 0,
-            w: widget.width || 6,
-            h: widget.height || 4
+            w: widget.width || 0,
+            h: widget.height || 0
           }))
         };
         
@@ -80,8 +80,8 @@ const SensorDashboard = () => {
           <div key={widget.widget_id.toString()} className="widget-wrapper">
             <Widget 
               title={widget.title}
-              sensorName={`Sensor ${widget.widget_id}`} // Později můžeme přidat skutečné názvy senzorů
-              id = {widget.sensors.sensore_id}
+              sensorName={`Sensor ${widget.sensors[0].name}`} // Později můžeme přidat skutečné názvy senzorů
+              id = {widget.sensors[0].sensor_id}
             />
           </div>
         ))}

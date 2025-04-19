@@ -1,9 +1,9 @@
-import React, { useState, useEffect,json } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw, Maximize2, X, ImageOff } from 'lucide-react';
+import ReactApexChart from 'react-apexcharts';
 import api from '@services/apiService';
 
-const Widget = ({ title, sensorName,id }) => {
+const Widget = ({ title, sensorName, id }) => {
     const [sensorData, setSensorData] = useState([]);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -13,11 +13,10 @@ const Widget = ({ title, sensorName,id }) => {
         setIsLoading(true);
         try {
             const response = await api.getSensorHistory(id);
-            console.log(json);
             if (!response) {
                 throw new Error('Nepodařilo se načíst data ze senzoru');
             }
-            setSensorData(response);
+            setSensorData(response.data);
             setError(null);
             setLastUpdate(new Date());
         } catch (err) {
@@ -36,6 +35,63 @@ const Widget = ({ title, sensorName,id }) => {
         fetchData();
     };
 
+    const chartOptions = {
+        chart: {
+            type: 'line',
+            zoom: {
+                enabled: true
+            },
+            toolbar: {
+                show: false
+            }
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        title: {
+            text: title,
+            align: 'center'
+        },
+        xaxis: {
+            type: 'datetime',
+            title: {
+                text: 'Čas'
+            },
+            labels: {
+                datetimeFormatter: {
+                    year: 'yyyy',
+                    month: 'MMM \'yy',
+                    day: 'dd MMM',
+                    hour: 'HH:mm'
+                },
+                rotateAlways: true,
+                rotate: -45
+            }
+        },
+        yaxis: {
+            title: {
+                text: sensorName || 'Hodnota'
+            }
+        },
+        tooltip: {
+            x: {
+                format: 'dd.MM.yyyy HH:mm'
+            }
+        },
+        markers: {
+            size: 0
+        }
+    };
+
+    const series = [{
+        name: sensorName || 'Hodnota',
+        data: sensorData.map(d => ({
+            x: new Date(d.timestamp).getTime(),
+            y: d.value
+        }))
+    }];
+
     return (
         <div className="widget">
             <div className="widget-header">
@@ -50,21 +106,13 @@ const Widget = ({ title, sensorName,id }) => {
                         <p>{error}</p>
                     </div>
                 ) : (
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={sensorData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="timestamp" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Line 
-                                type="monotone" 
-                                dataKey="value" 
-                                stroke="#8884d8" 
-                                name={sensorName || 'Hodnota'} 
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    <ReactApexChart 
+                        options={chartOptions}
+                        series={series}
+                        type="line"
+                        height="100%"
+                        width="100%"
+                    />
                 )}
             </div>
         </div>

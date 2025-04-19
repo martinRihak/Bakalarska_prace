@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models.models import db, Sensor, SensorData
 from routes.authRoute import login_required
-
+from utils.modbusUtils import read_register
 # Vytvoření blueprintu pro senzory
 sensors_api = Blueprint('sensors_api', __name__)
 
@@ -123,3 +123,28 @@ def delete_sensor(sensor_id):
         flash(f'Chyba při mazání senzoru: {str(e)}', 'danger')
     
     return redirect(url_for('sensors.list_sensors'))
+
+def actual_data(sensor_id):
+    try:
+        # Získání senzoru z databáze
+        sensor = Sensor.query.get_or_404(sensor_id)
+        
+        # Čtení aktuální hodnoty z registru
+        value = read_register(sensor.address, decimals=1,functioncode=sensor.register)
+        
+        if value is None:
+            return jsonify({'error': 'Nepodařilo se načíst data ze senzoru'}), 500
+        
+        # Formátování odpovědi
+        response = {
+            'sensor_id': sensor.sensor_id,
+            'register': sensor.register,
+            'address': sensor.address,
+            'value': value,
+            'unit': sensor.unit
+        }
+        
+        return jsonify(response)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

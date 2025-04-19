@@ -1,5 +1,5 @@
 import React from "react"
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation,RouterProvider,createBrowserRouter } from 'react-router-dom';
 
 // Komponenty
 import NavBar from "@components/NavBar";
@@ -25,6 +25,8 @@ function App() {
     </Router>
   );
 }
+
+
 
 // Vytvoření nové komponenty pro obsah, abychom mohli použít useLocation
 function AppContent() {
