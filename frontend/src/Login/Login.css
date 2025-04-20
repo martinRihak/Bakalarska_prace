@@ -46,19 +46,6 @@ body {
     border-radius: 4px;
     box-sizing: border-box;
   }
-  button {
-    background-color: #A81916;
-    color: white;
-    border: none;
-    padding: 0.8rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 1rem;
-  }
-  button:hover {
-    background-color: #ca261a;
-  }
   .toggle-form {
     text-align: center;
     margin-top: 1rem;

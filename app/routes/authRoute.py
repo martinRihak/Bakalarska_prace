@@ -29,19 +29,6 @@ def verify_token(token):
     except jwt.InvalidTokenError:
         return None  # Neplatný token
     
-"""
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            # Pokud jde o API požadavek, vrátíme JSON odpověď
-            if request.path.startswith('/api/') or request.headers.get('Accept') == 'application/json':
-                return jsonify({'status': 'error', 'message': 'Pristup odepren. Je vyzadovano prihlaseni.'}), 401
-            # Jinak přesměrujeme na přihlašovací stránku
-            return redirect(url_for('auth_views.login_page'))
-        return f(*args, **kwargs)
-    return decorated_function
-"""
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):

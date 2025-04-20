@@ -79,7 +79,6 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: white;
-  background-color: #4f46e5;
   border: 1px solid transparent;
   border-radius: 0.375rem;
   cursor: pointer;
@@ -87,9 +86,6 @@
   transition: background-color 0.2s;
 }
 
-.form-submit:hover {
-  background-color: #4338ca;
-}
 
 .form-submit:focus {
   outline: none;
@@ -115,4 +111,56 @@
     margin: 1rem;
     padding: 1rem;
   }
+}
+
+/* Styl pro tlačítko Zrušit */
+.form-button.cancel {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  background-color: #e5e7eb;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.form-button.cancel:hover {
+  background-color: #d1d5db;
+}
+
+/*Widget----------------------------*/
+
+.chart-type-selector {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.chart-type-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #0E58D7;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chart-type-button:hover {
+  background-color: #1017EA;
+}
+
+.chart-type-button.selected {
+  background-color: #1017EA;
+  border: 3px solid #A81916;
+}
+
+.chart-type-button span {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
 }

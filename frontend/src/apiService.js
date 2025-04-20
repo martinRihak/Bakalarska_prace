@@ -90,6 +90,20 @@ const api = {
   createDashboard: async (dashboardData) => {
     return apiRequest("/dashboard/create", "POST", dashboardData);
   },
+  getUserSensors: async () => {
+    return apiRequest("/sensors/getSensors","GET");
+  },
+
+  //Wigets
+  createWidget: async () => {
+    return apiRequest();
+  }
+  createWidgetSensor: async () => {
+    return apiRequest();
+  }
+  createDashboardWidget: async () => {
+    return apiRequest();
+  }
 };
 
 export default api;

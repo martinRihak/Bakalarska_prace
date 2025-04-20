@@ -1,12 +1,14 @@
 from flask import Blueprint, request, jsonify, session
 from models.models import Dashboard, User, db, DashboardWidget, Widget, Sensor
 from datetime import datetime
+from routes.authRoute import login_required
 dashboard_api = Blueprint('dash_api', __name__)
 
 @dashboard_api.route('/userDashBoards', methods=['GET'])
+@login_required
 def getDashBoards():
     # Získání user_id z session
-    user_id = session.get('user_id', 1)  # Fallback na ID 1 pro testování
+    user_id = session.get('user_id')
     
     # Načtení všech dashboardů uživatele
     dashboards = Dashboard.query.filter_by(user_id=user_id).all()
@@ -26,6 +28,7 @@ def getDashBoards():
 
 
 @dashboard_api.route('/widgets', methods=['GET'])
+@login_required
 def get_dashboard_widgets():
     # Získání user_id z session
     user_id = session.get('user_id', 1)  # Fallback na ID 1 pro testování
@@ -85,6 +88,7 @@ def get_dashboard_widgets():
 
     return jsonify(widgets_data)
 
+@login_required
 @dashboard_api.route('/create', methods=['POST'])
 def create_dashboard():
     print("Suuuuu")

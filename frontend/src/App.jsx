@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation,RouterProvider,crea
 import NavBar from "@components/NavBar";
 import ProtectedRoute from "@components/ProtectedRoute";
 import SensorGraph from "@components/SensorGraph";
-import SensorDashboard from '@components/testDashboard';
+import SensorDashboard from '@components/Dashboard';
 
 
 // Stránky

@@ -28,12 +28,13 @@
 }
 
 .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: #1017EA;
+    color: #ffffff;
 }
 
 .nav-link.active {
-    color: #646cff;
-    background-color: rgba(100, 108, 255, 0.08);
+    color: #ffffff;
+    background-color: #1017EA;
 }
 
 .logout-button {

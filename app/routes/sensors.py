@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify,session
 from models.models import db, Sensor, SensorData
 from routes.authRoute import login_required
 #from utils.modbusUtils import read_register
@@ -123,6 +123,24 @@ def delete_sensor(sensor_id):
         flash(f'Chyba při mazání senzoru: {str(e)}', 'danger')
     
     return redirect(url_for('sensors.list_sensors'))
+
+
+@sensors_api.route('/getSensors',methods=['GET'])
+def get_sensors():
+    user_id = session.get('user_id')
+    sensors = Sensor.query.all()
+
+    sensore_data = [{
+        'sensor_id': sensor.sensor_id,
+        'name' : sensor.name,
+        'sensor_type' : sensor.sensor_type,
+        'address' : sensor.address,
+        'register' : sensor.register,
+        'unit' : sensor.unit
+    }for sensor in sensors]
+        
+    return sensore_data
+    
 """
 def actual_data(sensor_id):
     try:

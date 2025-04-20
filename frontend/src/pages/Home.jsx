@@ -1,5 +1,5 @@
 import React from 'react';
-import SensorDashboard from '@components/testDashboard';
+import SensorDashboard from '@components/Dashboard';
 import '@css/Home.css'
 
 function Home() {

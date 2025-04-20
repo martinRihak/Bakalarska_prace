@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import api from '../../apiService';
-import { useNavigate } from 'react-router-dom';
 import '@css/forms.css';
 
-const DashBoardForm = () => {
+const DashBoardForm = ({ onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: ''
   });
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,8 +24,7 @@ const DashBoardForm = () => {
     try {
       const response = await api.createDashboard(formData);
       console.log('Dashboard vytvořen:', response);
-      // Po úspěšném vytvoření přesměrujeme na dashboard
-      navigate('/');
+      onClose(); // Zavře formulář po úspěšném odeslání
     } catch (err) {
       setError(err.message || 'Došlo k chybě při vytváření dashboardu');
     }
@@ -35,7 +32,9 @@ const DashBoardForm = () => {
 
   return (
     <div className="form-container">
-      <h2 className="form-heading">Vytvořit nový dashboard</h2>
+      <div className="modal-header">
+        <h2 className="form-heading">Vytvořit nový dashboard</h2>
+      </div>
       
       {error && (
         <div className="form-error" role="alert">
@@ -77,10 +76,17 @@ const DashBoardForm = () => {
 
         <div className="form-footer">
           <button
+            type="button"
+            onClick={onClose}
+            className="form-button cancel"
+          >
+            Zrušit
+          </button>
+          <button
             type="submit"
             className="form-submit"
           >
-            Vytvořit dashboard
+            Vytvořit
           </button>
         </div>
       </form>
