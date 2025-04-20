@@ -1,4 +1,4 @@
-import minimalmodbus
+import minimalmodbus 
 import serial
 import json
 import time
@@ -8,17 +8,21 @@ from datetime import datetime
 
 PORT = "/dev/ttyUSB0" 
 DEVICE_ADDRESS = 1 
+def setup_modbus(bitrate):
+    """Nastavení Modbus komunikace"""
+    try:
+        instrument = minimalmodbus.Instrument(PORT,DEVICE_ADDRESS)
+        instrument.serial.baudrate = bitrate
+        instrument.serial.bytesize = 8
+        instrument.serial.parity = serial.PARITY_NONE
+        instrument.serial.stopbits = 1
+        instrument.serial.timeout = 1
+        return instrument
+    except Exception as e:
+        print.error(f"Chyba při nastavení Modbus pro zařízení {DEVICE_ADDRESS} s bitrate {bitrate}: {e}")
+        return None
 
-# Inicializace přístroje
-instrument = minimalmodbus.Instrument(PORT, DEVICE_ADDRESS)
-# Konfigurace séAffinity
-instrument.serial.baudrate = 9600
-instrument.serial.bytesize = 8
-instrument.serial.parity   = serial.PARITY_NONE
-instrument.serial.stopbits = 1
-instrument.serial.timeout  = 1
-
-def read_register(register_address, decimals=1, functioncode=4):
+def read_register(instrument,register_address, decimals, functioncode):
     """
     Čte data z input registru na zadané adrese přes Modbus RTU.
     
@@ -38,29 +42,80 @@ def read_register(register_address, decimals=1, functioncode=4):
         print(f"Chyba při čtení registru {register_address}: {e}")
         return None
 
-def read_temperature():
-    """Čte teplotu z registru 0x0001."""
-    return read_register(1, decimals=1)
+"""
+def scan_registers(DEVI):
+    instr = minimalmodbus.Instrument(PORT, DEVICE_ADDRESS)
+    instr.serial.baudrate = 4800
+    instr.serial.bytesize = 8
+    instr.serial.parity = serial.PARITY_NONE
+    instr.serial.stopbits = 1
+    instr.serial.timeout = 1
+    
+    print(f"📡 Čtení z adresy zařízení {DEVICE_ADDRESS}...")
 
-def read_humidity():
-    """Čte vlhkost z registru 0x0002."""
-    return read_register(2, decimals=1)
+    for fc in [3, 4]:
+        print(f"\n🧩 Funkční kód: {fc} ({'holding' if fc == 3 else 'input'})")
+        for reg in range(0, 100):
+            try:
+                val = instr.read_register(reg, 1, functioncode=fc)
+                print(f"  ✅ Registr {reg:02d}: {val}")
+            except Exception as e:
+                print(f"  ❌ Registr {reg:02d}: {e}")
+
+# Zkusíme adresy 1–5, nebo jen 1, pokud víš přesně
+for addr in range(1, 6):
+    scan_registers(addr)
 
 if __name__ == "__main__":
     print("Zahájení měření...")
 
+    ins9600 = setup_modbus(9600)
+    ins4800 = setup_modbus(4800)
     # Čtení teploty a vlhkosti
-    temp = read_temperature()
-    hum = read_humidity()
+    
+    temp = read_register(ins9600,1,1,4)
+    hum = read_register(ins9600,2,1,4)
+    light = read_register(ins4800,64,0,3)
     
     # Uložení dat do slovníku
     data = {
         'temp': temp,
         'hum': hum, 
+        'light': light,
     }
     
     print(data)
+"""
+
+PORT = "/dev/ttyUSB0"
+BAUDRATE = 9600
+
+def scan_registers(device_address):
+    instr = minimalmodbus.Instrument(PORT, device_address)
+    instr.serial.baudrate = BAUDRATE
+    instr.serial.bytesize = 8
+    instr.serial.parity = serial.PARITY_NONE
+    instr.serial.stopbits = 1
+    instr.serial.timeout = 1
     
-    # Příklad čtení z jiné adresy (např. teplota znovu, pro ukázku)
-    custom_value = read_register(1, decimals=1)
-    print(f"Hodnota z registru 0x0001: {custom_value}")
+    instr2 = minimalmodbus.Instrument(PORT, device_address)
+    instr2.serial.baudrate = BAUDRATE
+    instr2.serial.bytesize = 8
+    instr2.serial.parity = serial.PARITY_NONE
+    instr2.serial.stopbits = 1
+    instr.serial.timeout = 1
+    
+    print(f"📡 Čtení z adresy zařízení {device_address}...")
+
+    for fc in [3, 4]:
+        print(f"\n🧩 Funkční kód: {fc} ({'holding' if fc == 3 else 'input'})")
+        for reg in range(1, 11):
+            try:
+                val = instr.read_register(reg, 0, functioncode=fc)
+                print(f"  ✅ Registr {reg:02d}: {val}")
+            except Exception as e:
+                print(f"  ❌ Registr {reg:02d}: {e}")
+
+# Zkusíme adresy 1–5, nebo jen 1, pokud víš přesně
+for addr in range(1, 6):
+    scan_registers(addr)
