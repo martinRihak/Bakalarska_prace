@@ -98,12 +98,12 @@ const api = {
   createWidget: async () => {
     return apiRequest();
   }
-  createWidgetSensor: async () => {
+  /*createWidgetSensor: async () => {
     return apiRequest();
   }
   createDashboardWidget: async () => {
     return apiRequest();
-  }
+  }/*/
 };
 
 export default api;

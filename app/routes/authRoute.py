@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session, redirect, url_for
+from flask import Blueprint, request, jsonify, session, redirect, url_for, current_app
 from werkzeug.security import check_password_hash, generate_password_hash
 from models.models import User, db
 from datetime import datetime,timedelta,timezone
@@ -6,9 +6,8 @@ from functools import wraps
 import jwt, redis
 
 auth_api = Blueprint('auth_api', __name__)
-JWT_SECRET_KEY = 'tajny_klic_pro_podpis_jwt'  # V produkci použijte něco jako os.environ.get('JWT_SECRET_KEY')
-JWT_EXPIRATION = 24 * 60 * 60  # 24 hodin v sekundách
-
+JWT_SECRET_KEY = 'tajny_klic_pro_podpis_jwt'
+JWT_EXPIRATION = 24 * 60 * 60
 def create_token(user_id, username, role):
     """Vytvoří JWT token"""
     payload = {
@@ -84,6 +83,10 @@ def login():
     user.last_login = db.func.now()
     db.session.commit()
     
+    # Použít current_app místo app
+    modbus_manager = current_app.config['MODBUS_MANAGER']
+    modbus_manager.load_use_sensors(user.user_id)
+    
     return jsonify({
         'status': 'success',
         'message': 'Přihlášení bylo úspěšné',
@@ -98,8 +101,11 @@ def login():
 
 @auth_api.route('/logout', methods=['POST'])
 def logout():
+    if 'user_id' in session:
+        # Get ModbusManager from app config
+        modbus_manager = current_app.config['MODBUS_MANAGER']
+        modbus_manager.cleanup_user_sensors(session['user_id'])
     session.clear()
-    print("joooooo")
     return jsonify({'status': 'success', 'message': 'Odhlášení proběhlo úspěšně'}), 200
 
 @auth_api.route('/status', methods=['GET'])

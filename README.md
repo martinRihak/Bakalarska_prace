@@ -28,3 +28,10 @@ Tento projekt je webová aplikace určená pro sběr, zpracování a vizualizaci
 # Nastaveni
 - start databaze : influx - use sensore_data - select * from sensor_data
 - 
+
+
+- pip install flask
+- pip install flask_cors
+- pip install flask_sqlalchemy
+- pip install jwt
+- - pip install redisw

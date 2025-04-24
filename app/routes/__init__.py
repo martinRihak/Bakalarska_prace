@@ -1,6 +1,6 @@
 
 from .authRoute import auth_api
-from .sensors import sensors_api
+from .sensorsRoute import sensors_api
 from .dashBoardRoute import dashboard_api
 from .backUpRoute import backUpRoute
 

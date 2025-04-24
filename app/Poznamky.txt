@@ -1,0 +1,10 @@
+Obejkt modbus by mel nacist vsechny sensory pro uzivatele do systemu ve formatu
+Popremyslet, co bude rychlejsi, že každý uzivate bude mít parament sensors s typem String a bude
+v něm uložený jako JSON a nebo fitrovat vsechny sen z M:N databaze
+{
+    "user_id" : user_id
+    sensors : [ 1,3,4,5,67]  
+}
+
+- propojeni pocitace s githube
+- 

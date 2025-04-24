@@ -13,6 +13,17 @@ def init_db(app: Flask):
     with app.app_context():
         db.create_all()
 
+# User-Sensor Junction Model
+class UserSensor(db.Model):
+    __tablename__ = 'user_sensors'
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True)
+    sensor_id = db.Column(db.Integer, db.ForeignKey('sensors.sensor_id', ondelete='CASCADE'), primary_key=True)
+    created_at = db.Column(db.DateTime, default=func.now())
+    
+    def __repr__(self):
+        return f'<UserSensor {self.user_id}:{self.sensor_id}>'
+
 # User Model
 class User(db.Model):
     __tablename__ = 'users'
@@ -27,6 +38,9 @@ class User(db.Model):
     
     # Relationships
     dashboards = db.relationship('Dashboard', backref='user', lazy=True, cascade="all, delete-orphan")
+    sensors = db.relationship('Sensor', secondary='user_sensors',
+                            backref=db.backref('users', lazy=True),
+                            lazy=True)
     
     def __repr__(self):
         return f'<User {self.username}>'
@@ -97,7 +111,9 @@ class Sensor(db.Model):
     description = db.Column(db.Text)
     sensor_type = db.Column(db.String(50), nullable=False)
     address = db.Column(db.Integer)  # RS-485 address
-    register = db.Column(db.Integer)  # Register number
+    functioncode = db.Column(db.Integer)  # Register number
+    bit = db.Column(db.Integer)  # Bit number
+    scaling = db.Column(db.Integer)
     unit = db.Column(db.String(20))  # Measurement unit
     min_value = db.Column(db.Float)
     max_value = db.Column(db.Float)
@@ -113,6 +129,9 @@ class Sensor(db.Model):
     widgets = db.relationship('Widget', secondary='widget_sensors',
                             backref=db.backref('sensors', lazy=True),
                             lazy=True)
+    users = db.relationship('User', secondary='user_sensors',
+                          backref=db.backref('sensor_users', lazy=True),
+                          lazy=True)
     
     def __repr__(self):
         return f'<Sensor {self.name} ({self.sensor_type})>'
