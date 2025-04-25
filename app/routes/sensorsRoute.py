@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify,session
-from models.models import db, Sensor, SensorData
+from models.models import db, Sensor, SensorData, UserSensor
 from routes.authRoute import login_required
+from datetime import datetime
 #from utils.modbusUtils import read_register
-# Vytvoření blueprintu pro senzory
+
 sensors_api = Blueprint('sensors_api', __name__)
 
 @sensors_api.route('/getSensorHistory/<int:sensor_id>', methods=['GET'])
@@ -126,44 +127,53 @@ def delete_sensor(sensor_id):
 
 
 @sensors_api.route('/getSensors',methods=['GET'])
+@login_required
 def get_sensors():
-    user_id = session.get('user_id')
-    sensors = Sensor.query.all()
-
-    sensore_data = [{
-        'sensor_id': sensor.sensor_id,
-        'name' : sensor.name,
-        'sensor_type' : sensor.sensor_type,
-        'address' : sensor.address,
-        'register' : sensor.register,
-        'unit' : sensor.unit
-    }for sensor in sensors]
-        
-    return sensore_data
-    
-"""
-def actual_data(sensor_id):
     try:
-        # Získání senzoru z databáze
-        sensor = Sensor.query.get_or_404(sensor_id)
-        
-        # Čtení aktuální hodnoty z registru
-        value = read_register(sensor.address, decimals=1,functioncode=sensor.register)
-        
-        if value is None:
-            return jsonify({'error': 'Nepodařilo se načíst data ze senzoru'}), 500
-        
-        # Formátování odpovědi
-        response = {
+        user_id = session.get('user_id')
+        # Query sensors through UserSensor relationship
+        user_sensors = Sensor.query.join(UserSensor).filter(UserSensor.user_id == user_id).all()
+
+        sensore_data = [{
             'sensor_id': sensor.sensor_id,
-            'register': sensor.register,
+            'name': sensor.name,
+            'sensor_type': sensor.sensor_type,
             'address': sensor.address,
-            'value': value,
+            'functioncode': sensor.functioncode,
             'unit': sensor.unit
-        }
-        
-        return jsonify(response)
-    
+        } for sensor in user_sensors]
+            
+        return jsonify(sensore_data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-"""
+    
+@sensors_api.route('/getLatestSensorData/<int:sensor_id>', methods=['GET'])
+@login_required
+def get_latest_sensor_data(sensor_id):
+    try:
+        # Get the latest data point for this sensor
+        latest_data = SensorData.query.filter_by(sensor_id=sensor_id)\
+            .order_by(SensorData.timestamp.desc())\
+            .first()
+            
+        if not latest_data:
+            return jsonify({'error': 'No data available for this sensor'}), 404
+            
+        # Get sensor info
+        sensor = Sensor.query.get_or_404(sensor_id)
+        
+        return jsonify({
+            'sensor': {
+                'id': sensor.sensor_id,
+                'name': sensor.name,
+                'unit': sensor.unit,
+                'type': sensor.sensor_type
+            },
+            'data': {
+                'timestamp': latest_data.timestamp.isoformat(),
+                'value': latest_data.value
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

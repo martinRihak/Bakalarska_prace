@@ -82,7 +82,9 @@ const api = {
   getSensorHistory: (sensorId) => {
     return apiRequest(`/sensors/getSensorHistory/${sensorId}`);
   },
-
+  getDashboards: async () => {
+    return apiRequest("/dashboard/userDashBoards", "GET");
+  },
   getDashboardWidgets: async () => {
     return apiRequest("/dashboard/widgets", "GET");
   },
@@ -95,15 +97,9 @@ const api = {
   },
 
   //Wigets
-  createWidget: async () => {
-    return apiRequest();
-  }
-  /*createWidgetSensor: async () => {
-    return apiRequest();
-  }
-  createDashboardWidget: async () => {
-    return apiRequest();
-  }/*/
+  createWidget: async (widgetData) => {
+    return apiRequest("/dashboard/widget", "POST", widgetData);
+  },
 };
 
 export default api;

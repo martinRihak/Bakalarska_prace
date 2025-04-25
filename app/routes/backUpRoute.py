@@ -8,7 +8,7 @@ backUpRoute = Blueprint('backUpRoute',__name__)
 @backUpRoute.route('/backUp',methods=['GET'])
 def insert_from_csv():
     data = []
-    with open('/mnt/9044FFDF44FFC64E/Ubuntu/6.sem/Bakalarska_prace/data/test.csv', 'r') as file:
+    with open('/media/rih0075/HDDv02/Ubuntu/6.sem/Bakalarska_prace/data/test.csv', 'r') as file:
         reader = csv.DictReader(file)
 
         for row in reader:

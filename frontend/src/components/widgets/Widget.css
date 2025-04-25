@@ -15,6 +15,7 @@
 .widget-controls {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
 }
 
 .widget-icon {
@@ -28,7 +29,30 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.rotating {
+.refresh-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.refresh-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.refresh-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.refresh-button .spinning {
     animation: rotate 1s linear infinite;
 }
 
@@ -49,5 +73,26 @@
     height: 300px;
     color: #dc3545;
     gap: 1rem;
+}
+
+.time-range-select {
+    background: transparent;
+    border: 1px solid #666;
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.time-range-select:focus {
+    outline: none;
+    border-color: #0E58D7;
+}
+
+.widget-footer {
+    margin-top: 0.5rem;
+    text-align: right;
+    font-size: 0.75rem;
+    color: #666;
 }
 

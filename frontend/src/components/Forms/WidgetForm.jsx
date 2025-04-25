@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import api from "@services/apiService";
-import { Activity, BarChart, Box, Loader } from "lucide-react";
+import { Activity, TrendingUp, Gauge, Loader } from "lucide-react";
 import "@css/forms.css";
 
 // Define available chart types with icons
 const chartTypes = [
   { type: "line", icon: Activity, label: "Line Chart" },
-  { type: "bar", icon: BarChart, label: "Bar Chart" },
-  { type: "boxPlot", icon: Box, label: "Box Plot" },
+  { type: "area", icon: TrendingUp, label: "Area Chart" },
+  { type: "enhancedRadialBar", icon: Gauge, label: "Enhanced Gauge" },
   { type: "radialBar", icon: Loader, label: "Radial Bar" },
 ];
 
@@ -40,31 +40,21 @@ const WidgetForm = ({ onClose, onWidgetAdded }) => {
         setError("Prosím vyberte senzor a typ grafu");
         return;
       }
-  
+
       try {
-        // Create new widget
-        const widgetResponse = await api.createWidget({
+        await api.createWidget({
+          dashboard_id: 1, // assuming dashboard_id=1 for now
           widget_type: selectedChartType,
           title: `${selectedSensor.name} - ${selectedChartType}`,
+          position: {
+            x: 0,
+            y: 0,
+            width: 4,
+            height: 4
+          },
+          sensors: [selectedSensor.sensor_id]
         });
-        const widgetId = widgetResponse.widget_id;
-  
-        // Associate sensor with widget
-        await api.createWidgetSensor({
-          widget_id: widgetId,
-          sensor_id: selectedSensor.sensor_id,
-        });
-  
-        // Add widget to dashboard (assuming dashboard_id=1 for now)
-        await api.createDashboardWidget({
-          dashboard_id: dashboard_id,
-          widget_id: widgetId,
-          position_x: 0,
-          position_y: 0,
-          width: 4,
-          height: 4,
-        });
-  
+
         // Success: refresh widgets and close modal
         onWidgetAdded();
         onClose();
@@ -73,7 +63,7 @@ const WidgetForm = ({ onClose, onWidgetAdded }) => {
         console.error("Error adding widget:", err);
       }
     };
-  
+
     return (
       <div className="form-container">
         <div className="modal-header">

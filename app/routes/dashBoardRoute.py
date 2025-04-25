@@ -1,8 +1,67 @@
 from flask import Blueprint, request, jsonify, session
-from models.models import Dashboard, User, db, DashboardWidget, Widget, Sensor
-from datetime import datetime
+from models.models import Dashboard, User, db, DashboardWidget, Widget, Sensor, SensorData
+from datetime import datetime, timedelta
+from sqlalchemy import func
 from routes.authRoute import login_required
+
 dashboard_api = Blueprint('dash_api', __name__)
+
+def aggregate_sensor_data(sensor_id, widget_type, start_time=None):
+    query = SensorData.query.filter(SensorData.sensor_id == sensor_id)
+    
+    if start_time:
+        query = query.filter(SensorData.timestamp >= start_time)
+    
+    if widget_type == "area":
+        # For area charts, get all data points for smooth visualization
+        return query.order_by(SensorData.timestamp.asc()).all()
+    elif widget_type in ["radialBar", "enhancedRadialBar"]:
+        # For radial bar charts, only get the latest value
+        return query.order_by(SensorData.timestamp.desc()).limit(1).all()
+    else:
+        # For line charts (default), get all data points
+        return query.order_by(SensorData.timestamp.asc()).all()
+
+@dashboard_api.route('/widget/<int:widget_id>/data', methods=['GET'])
+@login_required
+def get_widget_data(widget_id):
+    try:
+        widget = Widget.query.get_or_404(widget_id)
+        time_range = request.args.get('timeRange', '24h')  # Default to last 24 hours
+        
+        # Calculate start time based on time range
+        now = datetime.utcnow()
+        if time_range == '24h':
+            start_time = now - timedelta(hours=24)
+        elif time_range == '7d':
+            start_time = now - timedelta(days=7)
+        elif time_range == '30d':
+            start_time = now - timedelta(days=30)
+        else:
+            start_time = now - timedelta(hours=24)  # Default
+            
+        response_data = []
+        for sensor in widget.sensors:
+            aggregated_data = aggregate_sensor_data(sensor.sensor_id, widget.widget_type, start_time)
+            
+            # For all chart types, we're now using a consistent data format
+            data = [{
+                'timestamp': row.timestamp.isoformat(),
+                'value': float(row.value)
+            } for row in aggregated_data]
+                
+            sensor_data = {
+                'sensor_id': sensor.sensor_id,
+                'name': sensor.name,
+                'unit': sensor.unit,
+                'data': data
+            }
+            response_data.append(sensor_data)
+            
+        return jsonify(response_data)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @dashboard_api.route('/userDashBoards', methods=['GET'])
 @login_required
@@ -30,9 +89,12 @@ def getDashBoards():
 @dashboard_api.route('/widgets', methods=['GET'])
 @login_required
 def get_dashboard_widgets():
+    print("Getting dashboard widgets...")
     # Získání user_id z session
     user_id = session.get('user_id', 1)  # Fallback na ID 1 pro testování
     dashboard_id = request.args.get('dashboard_id', 1)  # Získání dashboard_id z query parametru
+    
+    print(f"Looking for dashboard_id: {dashboard_id} and user_id: {user_id}")
     
     # Ověření, že dashboard patří uživateli
     dashboard = Dashboard.query.filter_by(
@@ -65,24 +127,36 @@ def get_dashboard_widgets():
             'height': dashboard_widget.height,
             'created_at': widget.created_at,
             'updated_at': widget.updated_at,
-            'sensors': []
+            'sensors': [],
+            'has_data': False  # Přidáno pro indikaci dostupnosti dat
         }
         
         # Přidání informací o senzorech
         for sensor in widget.sensors:
+            # Zkontrolovat, zda má senzor nějaká data
+            has_sensor_data = SensorData.query.filter_by(sensor_id=sensor.sensor_id).first() is not None
+            
             sensor_data = {
                 'sensor_id': sensor.sensor_id,
                 'name': sensor.name,
                 'sensor_type': sensor.sensor_type,
-                'description': sensor.description,
-                'unit': sensor.unit,
                 'address': sensor.address,
-                'register': sensor.register,
+                'functioncode': sensor.functioncode,
+                'bit' : sensor.bit,
+                'scaling': sensor.scaling,
+                'unit': sensor.unit,    
                 'min_value': sensor.min_value,
                 'max_value': sensor.max_value,
-                'sampling_rate': sensor.sampling_rate
+                'sampling_rate': sensor.sampling_rate,
+                'has_data': has_sensor_data
             }
             widget_data['sensors'].append(sensor_data)
+            if has_sensor_data:
+                widget_data['has_data'] = True
+            
+        # Pokud widget nemá žádná data, přidáme informační zprávu
+        if not widget_data['has_data']:
+            widget_data['error_message'] = "Pro tento widget nejsou k dispozici žádná data ze senzorů."
             
         widgets_data.append(widget_data)
 
@@ -91,7 +165,6 @@ def get_dashboard_widgets():
 @login_required
 @dashboard_api.route('/create', methods=['POST'])
 def create_dashboard():
-    print("Suuuuu")
     user_id = session.get('user_id')  # Fallback na ID 1 pro testování
     data = request.get_json()
     

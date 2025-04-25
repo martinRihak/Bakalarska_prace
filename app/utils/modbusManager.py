@@ -8,12 +8,92 @@ from models.models import Sensor, SensorData, UserSensor,db
 
 class ModbusManager:
     def __init__(self):
-        self.instument = None
+        current_app.logger.info("Initializing ModbusManager...")
+        self.instrument = None
         self.devise_address = 1
-        self.user_sensors = {}
-        self.users = {}
-        self.port = '/dev/ttyUSB0'
+        self.user_sensors = {}  # Dictionary pro uložení senzorů podle user_id
+        self.sensor_map = {}    # Dictionary pro rychlý přístup k senzorům podle sensor_id
+        self.last_read = {}
+        self.port = "/dev/ttyUSB0"
+        current_app.logger.debug(f"ModbusManager initialized with port: {self.port}")
         self.init_mondus()
+
+    def load_use_sensors(self, user_id):
+        """Load all sensors for a specific user and create mappings."""
+        try:
+            # Načtení senzorů pro daného uživatele
+            sensors = Sensor.query.filter(Sensor.users.any(user_id=user_id)).all()
+            print(sensors)
+            if not sensors:
+                current_app.logger.warning(f"No sensors found for user: {user_id}")
+                return False
+
+            # Uložení senzorů pro uživatele
+            self.user_sensors[user_id] = sensors
+            
+            # Vytvoření mapování sensor_id -> Sensor pro rychlý přístup
+            for sensor in sensors:
+                self.sensor_map[sensor.sensor_id] = sensor
+                self.last_read[sensor.sensor_id] = None
+
+            current_app.logger.info(f"Loaded {len(sensors)} sensors for user_id {user_id}")
+            return True
+        except Exception as e:
+            current_app.logger.error(f"Error loading sensors for user_id {user_id}: {e}")
+            return False
+
+    def get_sensor_by_id(self, sensor_id):
+        """Get sensor object by its ID."""
+        return self.sensor_map.get(sensor_id)
+
+    def read_sensor(self, sensor_id):
+        """Read value from a specific sensor using its ID."""
+        try:
+            # Získání objektu senzoru
+            sensor = self.get_sensor_by_id(sensor_id)
+            if not sensor:
+                raise ValueError(f"Sensor with ID {sensor_id} not found")
+
+            if not self.instrument:
+                self.init_mondus()
+
+            self.change_bitrate(sensor.bit)
+            
+            # Čtení hodnoty
+            value = self.instrument.read_register(
+                sensor.address,  # Register address
+                sensor.scaling,      # Number of decimals
+                sensor.functioncode       # Standard Modbus read holding register
+            )
+            
+            # Aktualizace času posledního čtení
+            self.last_read[sensor_id] = datetime.utcnow()
+            
+            # Uložení do databáze
+            self.save_to_db(sensor_id, value)
+            
+            return value
+        except Exception as e:
+            current_app.logger.error(f"Error reading sensor {sensor_id}: {e}")
+            return None
+
+    def get_sensor_info(self, sensor_id):
+        """Get sensor information including last read value and timestamp."""
+        sensor = self.get_sensor_by_id(sensor_id)
+        if not sensor:
+            return None
+            
+        return {
+            'sensor_id': sensor.sensor_id,
+            'name': sensor.name,
+            'description': sensor.description,
+            'type': sensor.sensor_type,
+            'unit': sensor.unit,
+            'last_read_time': self.last_read.get(sensor_id),
+            'address': sensor.address,
+            'functioncode': sensor.functioncode,
+            'scaling': sensor.scaling
+        }
 
     def init_mondus(self):
         """Initialize Modbus instrument for a specific device address."""
@@ -41,49 +121,6 @@ class ModbusManager:
         except Exception as e:
             current_app.logger.error(f"Error changing bitrate to {bitrate}: {e}")
             return False
-
-
-    def load_use_sensors(self,user_id):
-        try:
-            sensors = Sensor.query.filter(Sensor.users.any(user_id=user_id)).all()
-            if not sensors:
-                current_app.logger.warning(f"No sensors found for user: {user_id}")
-            self.user_sensors[user_id] = sensors
-            for sensor in sensors:
-                self.last_read[sensor.sensor_id] = None
-                # Initialize Modbus for the sensor's address if not already done
-                if not self.instrument or self.instrument.address != sensor.address:
-                    self.init_modbus(sensor.address)
-            current_app.logger.info(f"Loaded {len(sensors)} sensors for user_id {user_id}")
-            return True
-        except Exception as e:
-            current_app.logger.error(f"Error loading sensors for user_id {user_id}: {e}")
-            return False
-        
-    def change_bitrate(self, bitrate):
-        try:
-            if not self.instrument:
-                raise ValueError("Modbus instrument not initialized")
-            self.instrument.serial.baudreate = bitrate
-            time.sleep(0.2)
-            current_app.logger.debug(f"Bitrate changed to {bitrate}")
-            return True
-        except Exception as e:
-            current_app.logger.error(f"Erron changing bitrate {bitrate} : {e}")
-            return False
-        
-    def read_sensor(self,sensor):
-        try:
-            if not self.instrument:
-                self.init_mondus()
-
-            self.change_bitrate(sensor.bit)
-            value = self.instrument.read_register(sensor.address,sensor.scaling,sensor.functioncode)            
-            return value
-        except Exception as e:
-            current_app.logger.error(f"Error read a sensor {sensor.sensor_id} : {e}")
-            return None
-
 
     def save_to_db(self, sensor_id, value):
         """Save sensor data to SQLite database."""

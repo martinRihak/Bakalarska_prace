@@ -58,7 +58,22 @@
   color: #dc3545;
   gap: 1rem;
 }
-
+.no-widgets-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 1.1rem;
+}
+.no-dashboards-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 1.1rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  margin: 2rem auto;
+  max-width: 600px;
+}
 @keyframes rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -195,4 +210,18 @@
 /* Styl pro main-content */
 .main-content {
   padding: 1rem;
+}
+
+.no-data-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 200px;
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border: 1px dashed #ccc;
 }

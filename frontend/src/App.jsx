@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route, useLocation,RouterProvider,crea
 // Komponenty
 import NavBar from "@components/NavBar";
 import ProtectedRoute from "@components/ProtectedRoute";
-import SensorGraph from "@components/SensorGraph";
 import SensorDashboard from '@components/Dashboard';
 
 
@@ -45,14 +44,6 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/sensors/:sensorId"
-            element={
-              <ProtectedRoute>
-                <SensorGraph/>
               </ProtectedRoute>
             }
           />

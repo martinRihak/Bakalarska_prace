@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import api from '../../apiService';
 import '@css/forms.css';
 
-const DashBoardForm = ({ onClose }) => {
+const DashBoardForm = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: ''
@@ -24,8 +24,13 @@ const DashBoardForm = ({ onClose }) => {
     try {
       const response = await api.createDashboard(formData);
       console.log('Dashboard vytvořen:', response);
-      onClose(); // Zavře formulář po úspěšném odeslání
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        onClose();
+      }
     } catch (err) {
+      console.error('Error creating dashboard:', err);
       setError(err.message || 'Došlo k chybě při vytváření dashboardu');
     }
   };

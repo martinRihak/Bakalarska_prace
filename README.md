@@ -33,5 +33,5 @@ Tento projekt je webová aplikace určená pro sběr, zpracování a vizualizaci
 - pip install flask
 - pip install flask_cors
 - pip install flask_sqlalchemy
-- pip install jwt
+- pip install PyJWT
 - - pip install redisw

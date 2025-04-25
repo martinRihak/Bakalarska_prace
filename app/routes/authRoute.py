@@ -104,7 +104,7 @@ def logout():
     if 'user_id' in session:
         # Get ModbusManager from app config
         modbus_manager = current_app.config['MODBUS_MANAGER']
-        modbus_manager.cleanup_user_sensors(session['user_id'])
+        modbus_manager.release_resources(session['user_id'])
     session.clear()
     return jsonify({'status': 'success', 'message': 'Odhlášení proběhlo úspěšně'}), 200
 

@@ -108,16 +108,15 @@ class Sensor(db.Model):
     sensor_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     parent_sensor_id = db.Column(db.Integer, db.ForeignKey('sensors.sensor_id', ondelete='SET NULL'), nullable=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    sensor_type = db.Column(db.String(50), nullable=False)
-    address = db.Column(db.Integer)  # RS-485 address
-    functioncode = db.Column(db.Integer)  # Register number
-    bit = db.Column(db.Integer)  # Bit number
-    scaling = db.Column(db.Integer)
-    unit = db.Column(db.String(20))  # Measurement unit
+    sensor_type = db.Column(db.String(50))
+    address = db.Column(db.Integer, nullable=False)  # RS-485 address
+    functioncode = db.Column(db.Integer, nullable=False)  # Register number
+    bit = db.Column(db.Integer, nullable=False)  # Bit number
+    scaling = db.Column(db.Integer, nullable=False)
+    unit = db.Column(db.String(20), nullable=False)  # Measurement unit
     min_value = db.Column(db.Float)
     max_value = db.Column(db.Float)
-    sampling_rate = db.Column(db.Integer)  # Seconds between readings
+    sampling_rate = db.Column(db.Integer, nullable=False)  # Seconds between readings
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
     
@@ -129,10 +128,6 @@ class Sensor(db.Model):
     widgets = db.relationship('Widget', secondary='widget_sensors',
                             backref=db.backref('sensors', lazy=True),
                             lazy=True)
-    users = db.relationship('User', secondary='user_sensors',
-                          backref=db.backref('sensor_users', lazy=True),
-                          lazy=True)
-    
     def __repr__(self):
         return f'<Sensor {self.name} ({self.sensor_type})>'
 
