@@ -79,8 +79,8 @@ const api = {
     return apiRequest("/auth/status");
   },
 
-  getSensorHistory: (sensorId) => {
-    return apiRequest(`/sensors/getSensorHistory/${sensorId}`);
+  getSensorHistory: (sensorId, timeRange) => {
+    return apiRequest(`/sensors/getSensorHistory/${sensorId}?timeRange=${timeRange}`);
   },
   getDashboards: async () => {
     return apiRequest("/dashboard/userDashBoards", "GET");

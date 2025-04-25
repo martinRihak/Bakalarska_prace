@@ -1,22 +1,39 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify,session
 from models.models import db, Sensor, SensorData, UserSensor
 from routes.authRoute import login_required
-from datetime import datetime
-#from utils.modbusUtils import read_register
+from datetime import datetime, timedelta
 
 sensors_api = Blueprint('sensors_api', __name__)
 
 @sensors_api.route('/getSensorHistory/<int:sensor_id>', methods=['GET'])
+@login_required
 def get_sensor_history(sensor_id):
     try:
-        # Získání dat ze senzoru
+        time_range = request.args.get('timeRange', '24h')  # default to '24h' if not specified
+
         sensor = Sensor.query.get_or_404(sensor_id)
+        # Calculate time range based on parameter
         print(sensor)
+        now = datetime.utcnow()
+        print(f"Current UTC time: {now}")
+        if time_range == '24h':
+            delta = timedelta(days=1)
+        elif time_range == '7d':
+            delta = timedelta(weeks=1)
+        elif time_range == '30d':  # Changed from 'month' to '30d' to match Widget.jsx
+            delta = timedelta(days=30)
+        else:
+            delta = timedelta(days=1)  # default to 1 day
+        print(delta)
+        start_time = now - delta
+        print(f"Start time for sensor {sensor_id}: {start_time}")
+        # Query data within the time range
         sensor_data = SensorData.query.filter_by(sensor_id=sensor_id)\
+            .filter(SensorData.timestamp >= start_time)\
             .order_by(SensorData.timestamp)\
             .all()
-        
-        # Formátování dat pro frontend
+    
+        # Format data for frontend
         data = [{
             'timestamp': data.timestamp.isoformat(),
             'value': data.value
@@ -29,7 +46,8 @@ def get_sensor_history(sensor_id):
                 'unit': sensor.unit,
                 'type': sensor.sensor_type
             },
-            'data': data
+            'data': data,
+            'timeRange': time_range
         })
         
     except Exception as e:

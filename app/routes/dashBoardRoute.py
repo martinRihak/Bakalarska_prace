@@ -125,8 +125,6 @@ def get_dashboard_widgets():
             'position_y': dashboard_widget.position_y,
             'width': dashboard_widget.width,
             'height': dashboard_widget.height,
-            'created_at': widget.created_at,
-            'updated_at': widget.updated_at,
             'sensors': [],
             'has_data': False  # Přidáno pro indikaci dostupnosti dat
         }
@@ -140,10 +138,6 @@ def get_dashboard_widgets():
                 'sensor_id': sensor.sensor_id,
                 'name': sensor.name,
                 'sensor_type': sensor.sensor_type,
-                'address': sensor.address,
-                'functioncode': sensor.functioncode,
-                'bit' : sensor.bit,
-                'scaling': sensor.scaling,
                 'unit': sensor.unit,    
                 'min_value': sensor.min_value,
                 'max_value': sensor.max_value,

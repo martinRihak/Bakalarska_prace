@@ -86,7 +86,6 @@ class ModbusManager:
         return {
             'sensor_id': sensor.sensor_id,
             'name': sensor.name,
-            'description': sensor.description,
             'type': sensor.sensor_type,
             'unit': sensor.unit,
             'last_read_time': self.last_read.get(sensor_id),

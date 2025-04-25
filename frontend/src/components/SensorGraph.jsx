@@ -2,31 +2,28 @@ import React, { useEffect, useState } from 'react';
 import api from '@services/apiService';
 import { useParams } from 'react-router-dom';
 import ReactApexChart from 'react-apexcharts';
-import { LineChart, Line } from 'recharts';
 
 const SensorGraph = () => {
   const { sensorId } = useParams();
   const [sensorData, setSensorData] = useState(null);
-  const [error, setError] = useState(null);
+  const [sensorInfo, setSensorInfo] = useState(null);
+  const [timeRange, setTimeRange] = useState('day');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.getSensorHistory(sensorId);
-        if (!response) {
-          throw new Error('Nepodařilo se načíst data ze senzoru');
-        }
-        setSensorData(response);
-      } catch (err) {
-        setError(err.message);
+        const result = await api.getSensorHistory(sensorId, timeRange);
+        setSensorData(result.data);
+        setSensorInfo(result.sensor);
+      } catch (error) {
+        console.error('Error fetching sensor data:', error);
       }
     };
 
     fetchData();
-  }, [sensorId]);
+  }, [sensorId, timeRange]);
 
-  if (error) return <div className="error">{error}</div>;
-  if (!sensorData) return <div>Načítání...</div>;
+  if (!sensorData || !sensorInfo) return <div>Načítání...</div>;
 
   const chartOptions = {
     chart: {
@@ -43,7 +40,7 @@ const SensorGraph = () => {
       width: 2
     },
     title: {
-      text: `Data ze senzoru ${sensorData.sensor.name}`,
+      text: `Data ze senzoru ${sensorInfo.name}`,
       align: 'center'
     },
     xaxis: {
@@ -64,7 +61,7 @@ const SensorGraph = () => {
     },
     yaxis: {
       title: {
-        text: sensorData.sensor.unit
+        text: sensorInfo.unit
       },
       min: -10,
       max: 50
@@ -80,24 +77,34 @@ const SensorGraph = () => {
   };
 
   const series = [{
-    name: `${sensorData.sensor.name} (${sensorData.sensor.unit})`,
-    data: sensorData.data.map(d => ({
+    name: `${sensorInfo.name} (${sensorInfo.unit})`,
+    data: sensorData.map(d => ({
       x: new Date(d.timestamp).getTime(),
       y: d.value
     }))
   }];
 
   return (
-    <div className='main-content'>
-      <div className="sensor-graph">
-        <ReactApexChart 
-          options={chartOptions}
-          series={series}
-          type="line"
-          height={400}
-          width={800}
-        />
+    <div className="sensor-graph">
+      <div className="graph-controls">
+        <select 
+          value={timeRange} 
+          onChange={(e) => setTimeRange(e.target.value)}
+          className="time-range-select"
+        >
+          <option value="hour">Last Hour</option>
+          <option value="day">Last Day</option>
+          <option value="week">Last Week</option>
+          <option value="month">Last Month</option>
+        </select>
       </div>
+      <ReactApexChart 
+        options={chartOptions}
+        series={series}
+        type="line"
+        height={400}
+        width={800}
+      />
     </div>
   );
 };
