@@ -47,8 +47,9 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
           setError("Žádná data k zobrazení");
           return;
         }
+        console.log("response", response); 
         // Převést jediný datový bod na pole pro kompatibilitu
-        setSensorData([response.data]);
+        setSensorData(response);
       } else {
         // Pro ostatní typy widgetů volat historická data jako dříve
         response = await api.getSensorHistory(id, timeRange);

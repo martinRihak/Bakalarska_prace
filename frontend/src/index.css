@@ -1,13 +1,17 @@
 :root {
   /* Barvy */
-  --primary-color: #1017EA;
-  --secondary-color: #A81916;
-  --background-color: #242424;
-  --surface-color: #1a1a1a;
-  --text-primary: rgba(255, 255, 255, 0.87);
-  --text-secondary: #666;
-  --error-color: #dc3545;
-  --success-color: #4CAF50;
+  /* Barvy */
+  --primary-color: #1017EA;        /* Tmavě modrá */
+  --secondary-color: #A81916;      /* Tmavě červená */
+  --background-color: #EBEBEB;     /* Světle šedá jako pozadí hlavních sekcí */
+  --background-color-alt: #000000; /* Bílá pro alternativní pozadí */
+  --surface-color: #FAFAFA;        /* Velmi světlá šedá pro widgety a karty */
+  --text-primary: #000000;         /* Černá pro základní text */
+  --text-secondary: #FAFAFA;       /* Ponecháno pro sekundární text */
+  --accent-color: #0E58D7;         /* Světle modrá pro sekundární akcenty */
+  --highlight-color: #E12E20;      /* Jasně červená pro důležité akce */
+  --error-color: #A81916;          /* Tmavě červená pro chybové stavy */
+  --success-color: #4CAF50;        /* Ponecháno pro úspěšné stavy */
   
   /* Typografie */
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -65,7 +69,7 @@ a:hover {
 /* Společné styly pro tlačítka */
 button {
   background-color: var(--primary-color);
-  color: white;
+  color:  var(--text-secondary);
   border: none;
   padding: 0.8rem 1rem;
   border-radius: 4px;

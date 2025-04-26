@@ -1,7 +1,7 @@
 .side-nav {
     width: 250px;
     height: 100vh;
-    background-color: var(--surface-color);
+    background-color: var(--background-color-alt);
     padding: 2rem 1rem;
     display: flex;
     flex-direction: column;
@@ -19,7 +19,7 @@
 }
 
 .nav-link {
-    color: var(--text-primary);
+    color: var(--text-secondary);
     padding: 0.75rem 1rem;
     border-radius: 4px;
     transition: all 0.3s ease;
@@ -27,10 +27,12 @@
 }
 
 .nav-link:hover {
+    color: var(--text-secondary);
     background-color: var(--primary-color);
 }
 
 .nav-link.active {
+    color: var(--text-secondary);
     background-color: var(--primary-color);
 }
 

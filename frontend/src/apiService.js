@@ -2,7 +2,7 @@
 const API_BASE_URL = "http://localhost:5000";
 
 const apiRequest = async (endpoint, method = "GET", data = null) => {
-  const token = localStorage.getItem("token"); // Changed from authToken to token
+  const token = localStorage.getItem("token");
   const headers = {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -15,8 +15,8 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
   const options = {
     method,
     headers,
-    credentials: "include", // Pro předávání cookies
-    mode: "cors", // Explicitně nastavíme CORS mode
+    credentials: "include",
+    mode: "cors",
   };
 
   if (data && (method === "POST" || method === "PUT" || method === "PATCH")) {
@@ -27,11 +27,18 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
 
     if (response.status === 401) {
-      localStorage.removeItem("token"); // Changed from authToken to token
+      localStorage.removeItem("token");
       if (!window.location.pathname.includes("/login")) {
         window.location.href = "/login";
       }
       throw new Error("Neautorizovaný přístup");
+    }
+
+    if (endpoint === '/sensors/export_data') {
+      const contentType = response.headers.get('Content-Type');
+      if (contentType.includes('application/json') || contentType.includes('text/csv')) {
+        return await response.text();
+      }
     }
 
     const data = await response.json();
@@ -41,8 +48,7 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
 
     return data;
   } catch (error) {
-    
-    console.error('Api request error',error);
+    console.error('Api request error', error);
     throw error;
   }
 };
@@ -54,7 +60,6 @@ const api = {
   patch: (endpoint, data) => apiRequest(endpoint, "PATCH", data),
   delete: (endpoint) => apiRequest(endpoint, "DELETE"),
 
-  // Auth specifické metody
   login: async (username, password) => {
     const response = await apiRequest("/auth/login", "POST", {
       username,
@@ -84,7 +89,7 @@ const api = {
   },
   
   getLatestSensorData: (sensorId) => {
-    return apiRequest(`/sensors/getLatestSensorData/${sensorId}`,"GET");
+    return apiRequest(`/sensors/getLatestSensorData/${sensorId}`, "GET");
   },
   
   getDashboards: async () => {
@@ -98,12 +103,15 @@ const api = {
     return apiRequest("/dashboard/create", "POST", dashboardData);
   },
   getUserSensors: async () => {
-    return apiRequest("/sensors/getSensors","GET");
+    return apiRequest("/sensors/getSensors", "GET");
   },
 
-  //Wigets
   createWidget: async (widgetData) => {
     return apiRequest("/dashboard/widget", "POST", widgetData);
+  },
+
+  exportSensorData: async (exportData) => {
+    return apiRequest("/sensors/export_data", "POST", exportData);
   },
 };
 

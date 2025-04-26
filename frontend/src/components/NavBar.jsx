@@ -45,6 +45,12 @@ function NavBar() {
         >
           Profil
         </NavLink>
+        <NavLink
+        to='/data-export'
+        onClick={() => setIsOpen(false)}
+        className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+        >Data Export </NavLink>
+        
       </div>
       <button 
         onClick={handleLogout}

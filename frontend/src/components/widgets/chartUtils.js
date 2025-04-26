@@ -309,13 +309,13 @@ export const getAreaChartSeries = (data, sensorName) => [{
 }];
 
 export const getEnhancedRadialBarSeries = (data, sensorName) => {
-  const latestData = data[data.length - 1];
-  const allValues = data.map(d => d.value);
-  const minValue = Math.min(...allValues);
-  const maxValue = Math.max(...allValues);
+
+  const minValue = data.sensor.min_value;
+  const maxValue = data.sensor.max_value;
   const range = maxValue - minValue;
-  const value = latestData ? parseFloat(latestData.value.toFixed(1)) : 0;
+  const value = data.data.value;
   const percentage = range === 0 ? 0 : ((value - minValue) / range * 100);
+  
   
   return [{
     name: sensorName || "Hodnota",

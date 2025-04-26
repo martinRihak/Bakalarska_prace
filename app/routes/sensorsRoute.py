@@ -1,7 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify,session
+from flask import Blueprint, send_file, request, redirect, url_for, flash, jsonify,session
 from models.models import db, Sensor, SensorData, UserSensor
 from routes.authRoute import login_required
 from datetime import datetime, timedelta
+import json
+import csv
+import io
 
 sensors_api = Blueprint('sensors_api', __name__)
 
@@ -173,21 +176,20 @@ def get_latest_sensor_data(sensor_id):
         latest_data = SensorData.query.filter_by(sensor_id=sensor_id)\
             .order_by(SensorData.timestamp.desc())\
             .first()
-            
         if not latest_data:
             return jsonify({'error': 'No data available for this sensor'}), 404
             
         # Get sensor info
         sensor = Sensor.query.get_or_404(sensor_id)
-        print(sensor)
-        print(latest_data)
 
         return jsonify({
             'sensor': {
                 'id': sensor.sensor_id,
                 'name': sensor.name,
                 'unit': sensor.unit,
-                'type': sensor.sensor_type
+                'min_value' : sensor.min_value,
+                'max_value' : sensor.max_value, 
+  
             },
             'data': {
                 'timestamp': latest_data.timestamp.isoformat(),
@@ -195,5 +197,63 @@ def get_latest_sensor_data(sensor_id):
             }
         })
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+@sensors_api.route('/export_data', methods=['POST'])
+@login_required
+def export_sensor_data():
+    try:
+        data = request.get_json()
+        start_date = datetime.fromisoformat(data['startDate'].replace('Z', '+00:00'))
+        end_date = datetime.fromisoformat(data['endDate'].replace('Z', '+00:00'))
+        sensor_ids = data['sensorIds']
+        format = data['format']
+        file_name = data['fileName']
+        
+        user_id = session.get('user_id')
+        allowed_sensors = Sensor.query.join(UserSensor)\
+            .filter(UserSensor.user_id == user_id)\
+            .filter(Sensor.sensor_id.in_(sensor_ids))\
+            .all()
+        
+        if len(allowed_sensors) != len(sensor_ids):
+            return jsonify({'error': 'Unauthorized access to some sensors'}), 403
+
+        sensor_data = SensorData.query\
+            .filter(SensorData.sensor_id.in_(sensor_ids))\
+            .filter(SensorData.timestamp.between(start_date, end_date))\
+            .order_by(SensorData.timestamp)\
+            .all()
+
+        if not sensor_data:
+            return jsonify({'error': 'No data found for the specified criteria'}), 404
+
+        output = io.StringIO()
+        
+        if format == 'json':
+            data_to_export = [{
+                'sensor_id': d.sensor_id,
+                'timestamp': d.timestamp.isoformat(),
+                'value': d.value
+            } for d in sensor_data]
+            print(data_to_export)
+            output.write(json.dumps(data_to_export))
+            content_type = 'application/json'
+        else:  # csv
+            writer = csv.writer(output)
+            writer.writerow(['sensor_id', 'timestamp', 'value'])
+            for d in sensor_data:
+                writer.writerow([d.sensor_id, d.timestamp.isoformat(), d.value])
+            content_type = 'text/csv'
+
+        output.seek(0)
+        return send_file(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            mimetype=content_type,
+            as_attachment=True,
+            download_name=f"{file_name}.{format}"
+        )
     except Exception as e:
         return jsonify({'error': str(e)}), 500
