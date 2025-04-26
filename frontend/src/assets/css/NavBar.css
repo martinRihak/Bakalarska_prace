@@ -1,7 +1,7 @@
 .side-nav {
     width: 250px;
     height: 100vh;
-    background-color: #1a1a1a;
+    background-color: var(--surface-color);
     padding: 2rem 1rem;
     display: flex;
     flex-direction: column;
@@ -19,8 +19,7 @@
 }
 
 .nav-link {
-    color: white;
-    text-decoration: none;
+    color: var(--text-primary);
     padding: 0.75rem 1rem;
     border-radius: 4px;
     transition: all 0.3s ease;
@@ -28,28 +27,17 @@
 }
 
 .nav-link:hover {
-    background-color: #1017EA;
-    color: #ffffff;
+    background-color: var(--primary-color);
 }
 
 .nav-link.active {
-    color: #ffffff;
-    background-color: #1017EA;
+    background-color: var(--primary-color);
 }
 
 .logout-button {
     padding: 0.75rem 1rem;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    background-color: var(--error-color);
     margin-top: auto;
-}
-
-.logout-button:hover {
-    background-color: #bb2d3b;
 }
 
 .menu-toggle {
@@ -58,12 +46,8 @@
     top: 1rem;
     left: 1rem;
     z-index: 1000;
-    background: #1a1a1a;
-    border: none;
+    background: var(--surface-color);
     padding: 0.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    color: white;
 }
 
 @media (max-width: 768px) {

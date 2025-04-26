@@ -1,64 +1,133 @@
 :root {
+  /* Barvy */
+  --primary-color: #1017EA;
+  --secondary-color: #A81916;
+  --background-color: #242424;
+  --surface-color: #1a1a1a;
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: #666;
+  --error-color: #dc3545;
+  --success-color: #4CAF50;
+  
+  /* Typografie */
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+/* Základní reset a společné styly */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-a:hover {
-  color: #535bf2;
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  min-height: 100vh;
 }
+
 #root {
   display: flex;
   width: 100%;
   min-height: 100vh;
 }
 
+/* Společné styly pro texty */
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
 }
 
+h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+/* Společné styly pro odkazy */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--secondary-color);
+}
+
+/* Společné styly pro tlačítka */
 button {
-  background-color: #A81916;
+  background-color: var(--primary-color);
   color: white;
   border: none;
   padding: 0.8rem 1rem;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: var(--secondary-color);
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(16, 23, 234, 0.3);
+}
+
+/* Společné styly pro formulářové prvky */
+input, select, textarea {
   width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  color: var(--text-primary);
   font-size: 1rem;
 }
-button:hover {
-  background-color: #ca261a;
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(16, 23, 234, 0.1);
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+
+/* Společné utility třídy */
+.text-center {
+  text-align: center;
 }
-/*
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+
+.error-message {
+  color: var(--error-color);
+  margin: 0.5rem 0;
+}
+
+.success-message {
+  color: var(--success-color);
+  margin: 0.5rem 0;
+}
+
+/* Layout */
+.main-content {
+  flex: 1;
+  padding: 1rem;
+  margin-left: 250px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+/* Responzivní design */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding-top: 4rem;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}*/
+}

@@ -1,5 +1,5 @@
 .widget {
-    background: #1a1a1a;
+    background: var(--surface-color);
     border-radius: 8px;
     padding: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -23,10 +23,12 @@
     padding: 0.25rem;
     border-radius: 4px;
     transition: all 0.2s ease;
+    color: var(--text-secondary);
 }
 
 .widget-icon:hover {
     background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
 }
 
 .refresh-button {
@@ -38,13 +40,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #666;
+    color: var(--text-secondary);
     transition: all 0.2s ease;
 }
 
 .refresh-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .refresh-button:disabled {
@@ -56,29 +58,10 @@
     animation: rotate 1s linear infinite;
 }
 
-@keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.error-message {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 300px;
-    color: #dc3545;
-    gap: 1rem;
-}
-
 .time-range-select {
     background: transparent;
-    border: 1px solid #666;
-    color: #fff;
+    border: 1px solid var(--text-secondary);
+    color: var(--text-primary);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     font-size: 0.875rem;
@@ -86,13 +69,19 @@
 
 .time-range-select:focus {
     outline: none;
-    border-color: #0E58D7;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(16, 23, 234, 0.1);
 }
 
 .widget-footer {
     margin-top: 0.5rem;
     text-align: right;
     font-size: 0.75rem;
-    color: #666;
+    color: var(--text-secondary);
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 

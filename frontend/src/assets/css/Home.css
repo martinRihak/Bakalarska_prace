@@ -6,7 +6,7 @@
 
 .sideMenu {
     width: 250px;
-    background-color: #1a1a1a;
+    background-color: var(--surface-color);
     padding: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
@@ -20,14 +20,14 @@
 .sideMenu li {
     padding: 10px 15px;
     margin: 5px 0;
-    color: white;
+    color: var(--text-primary);
     cursor: pointer;
     border-radius: 5px;
     transition: background-color 0.3s;
 }
 
 .sideMenu li:hover {
-    background-color: #2c2c2c;
+    background-color: var(--primary-color);
 }
 
 .dashBoard {
@@ -43,7 +43,6 @@
     overflow: auto;
 }
 
-/* Responzivní design pro menší obrazovky */
 @media (max-width: 768px) {
     .main {
         flex-direction: column;

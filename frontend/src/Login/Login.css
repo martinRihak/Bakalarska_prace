@@ -1,66 +1,84 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    font-family: system-ui, -apple-system, sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-  }
-  
-  .my .main-content{
-    flex: 1;
     min-height: 100vh;
-    padding: 1rem;
-    transition: margin-left 0.3s ease;
-  }
-  .container {
-    background-color: #ffffff;
+    background-color: var(--background-color);
+}
+
+.container {
+    background-color: var(--surface-color);
     padding: 2rem;
     border-radius: 8px;
     width: 100%;
     max-width: 400px;
-  }
-  h1 {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
     text-align: center;
-    color: black;
-  }
-  .form-group {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
     margin-bottom: 1rem;
-  }
-  label {
+}
+
+label {
     display: block;
     text-align: left;
     margin-bottom: 0.5rem;
-    font-weight: bold;
-  }
-  input[type="text"],
-  input[type="password"],
-  input[type="email"] {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
     width: 100%;
     padding: 0.8rem;
-    border: 1px solid #dbdbdb;
-    background-color: #f4f4f4;
-    color: black;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--surface-color);
+    color: var(--text-primary);
     border-radius: 4px;
     box-sizing: border-box;
-  }
-  .toggle-form {
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(16, 23, 234, 0.1);
+}
+
+.toggle-form {
     text-align: center;
     margin-top: 1rem;
-  }
-  .toggle-form a {
-    color: black;
+}
+
+.toggle-form a {
+    color: var(--primary-color);
     text-decoration: none;
-  }
-  .error-message {
-    color: #f44336;
+    transition: color 0.2s;
+}
+
+.toggle-form a:hover {
+    color: var(--secondary-color);
+}
+
+.error-message {
+    color: var(--error-color);
     margin-top: 1rem;
     text-align: center;
-  }
-  .success-message {
-    color: #4caf50;
+}
+
+.success-message {
+    color: var(--success-color);
     margin-top: 1rem;
     text-align: center;
-  }
+}

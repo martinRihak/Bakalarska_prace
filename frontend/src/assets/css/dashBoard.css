@@ -5,6 +5,9 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: var(--surface-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .widget-header {
@@ -12,7 +15,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .widget-header h3 {
@@ -26,21 +29,6 @@
   gap: 0.5rem;
 }
 
-.widget-icon {
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.widget-icon:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.rotating {
-  animation: rotate 1s linear infinite;
-}
-
 .widget-content {
   flex: 1;
   padding: 1rem;
@@ -48,38 +36,73 @@
   position: relative;
 }
 
-/* Error Message */
-.error-message {
+/* Styl pro hlavičku dashboardu */
+.dashboard-header {
   display: flex;
-  flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
+  margin-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: inherit;
+  padding: 10px;
+  gap: 10px;
+}
+
+.create-dashboard-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+/* Modální okno */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
   justify-content: center;
-  height: 100%;
-  color: #dc3545;
-  gap: 1rem;
+  align-items: center;
+  z-index: 1000;
 }
-.no-widgets-message {
-  text-align: center;
+
+.modal-content {
+  background-color: var(--surface-color);
   padding: 2rem;
-  color: #666;
-  font-size: 1.1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 50%;
+  max-height: 90%;
+  overflow: auto;
 }
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* Zprávy */
+.no-widgets-message,
 .no-dashboards-message {
   text-align: center;
   padding: 2rem;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 1.1rem;
-  background-color: #f9fafb;
+  background-color: var(--surface-color);
   border-radius: 0.5rem;
   margin: 2rem auto;
   max-width: 600px;
 }
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
 
-/* Responsive Grid Layout Styles */
+/* Grid Layout */
 .react-grid-layout {
   position: relative;
   width: 100%;
@@ -90,138 +113,21 @@
 .react-grid-item {
   transition: all 200ms ease;
   transition-property: left, top, width, height;
-  background: white;
+  background: var(--surface-color);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.react-grid-item.cssTransforms {
-  transition-property: transform, width, height;
-}
-
-.react-grid-item.resizing {
-  z-index: 1;
-  will-change: width, height;
-}
-
-.react-grid-item.react-draggable-dragging {
-  transition: none;
-  z-index: 3;
-  will-change: transform;
-}
-
 .react-grid-item.react-grid-placeholder {
-  background: rgba(0, 0, 0, 0.1);
-  border: 2px dashed #aaa;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px dashed var(--text-secondary);
   opacity: 0.5;
   z-index: 2;
   transition-duration: 100ms;
   user-select: none;
 }
 
-/* Styl pro hlavičku dashboardu s tlačítkem */
-.dashboard-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
-}
-
-.create-dashboard-btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: white;
-  background-color: #4f46e5;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin: 0px 0px 10px 10px;
-}
-
-.create-dashboard-btn:hover {
-  background-color: #4338ca;
-}
-
-/* Styl pro modální overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Šedý podklad */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-/* Styl pro obsah modálního okna */
-.modal-content {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  max-width: 50%;
-  max-height: 90%;
-  overflow: auto;
-}
-
-/* Styl pro hlavičku modálního okna */
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #6b7280;
-}
-
-.close-button:hover {
-  color: #374151;
-}
-
-/* Styl pro tlačítko Zrušit */
-.form-button.cancel {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #4b5563;
-  background-color: #e5e7eb;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  margin-right: 0.5rem;
-  transition: background-color 0.2s;
-}
-
-.form-button.cancel:hover {
-  background-color: #d1d5db;
-}
-
-/* Styl pro main-content */
-.main-content {
-  padding: 1rem;
-}
-
-.no-data-message {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  min-height: 200px;
-  padding: 20px;
-  text-align: center;
-  color: #666;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  border: 1px dashed #ccc;
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

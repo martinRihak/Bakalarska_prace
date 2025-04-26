@@ -179,7 +179,9 @@ def get_latest_sensor_data(sensor_id):
             
         # Get sensor info
         sensor = Sensor.query.get_or_404(sensor_id)
-        
+        print(sensor)
+        print(latest_data)
+
         return jsonify({
             'sensor': {
                 'id': sensor.sensor_id,

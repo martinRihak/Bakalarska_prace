@@ -32,25 +32,41 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
   }, [sensorData, timeRange]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await api.getSensorHistory(id, timeRange);
+    fetchData();
+  }, [id, timeRange]);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      let response;
+      
+      // Pro radialBar widget volat API koncový bod pro nejnovější data
+      if (widgetType === 'radialBar' || widgetType === 'enhancedRadialBar') {
+        response = await api.getLatestSensorData(id);
+        if (!response || !response.data) {
+          setError("Žádná data k zobrazení");
+          return;
+        }
+        // Převést jediný datový bod na pole pro kompatibilitu
+        setSensorData([response.data]);
+      } else {
+        // Pro ostatní typy widgetů volat historická data jako dříve
+        response = await api.getSensorHistory(id, timeRange);
         if (!response || !response.data || response.data.length === 0) {
           setError("Žádná data k zobrazení");
           return;
         }
         setSensorData(response.data);
-        setError(null);
-        setLastUpdate(new Date());
-      } catch (err) {
-        setError("Nepodařilo se načíst data");
-      } finally {
-        setIsLoading(false);
       }
-    };
-    fetchData();
-  }, [id, timeRange]);
+      
+      setError(null);
+      setLastUpdate(new Date());
+    } catch (err) {
+      setError("Nepodařilo se načíst data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const chartOptions = useMemo(() => {
     const baseOptions = {
@@ -98,23 +114,6 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
   }, [widgetType, processedData, sensorName]);
 
   const handleRefresh = () => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await api.getSensorHistory(id, timeRange);
-        if (!response || !response.data || response.data.length === 0) {
-          setError("Žádná data k zobrazení");
-          return;
-        }
-        setSensorData(response.data);
-        setError(null);
-        setLastUpdate(new Date());
-      } catch (err) {
-        setError("Nepodařilo se načíst data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchData();
   };
 
@@ -123,15 +122,17 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
       <div className="widget-header">
         <h3>{title}</h3>
         <div className="widget-controls">
-          <select 
-            value={timeRange} 
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="time-range-select"
-          >
-            <option value="24h">24 hodin</option>
-            <option value="7d">7 dní</option>
-            <option value="30d">30 dní</option>
-          </select>
+          {(widgetType !== 'radialBar' && widgetType !== 'enhancedRadialBar') && (
+            <select 
+              value={timeRange} 
+              onChange={(e) => setTimeRange(e.target.value)}
+              className="time-range-select"
+            >
+              <option value="24h">24 hodin</option>
+              <option value="7d">7 dní</option>
+              <option value="30d">30 dní</option>
+            </select>
+          )}
           <button onClick={handleRefresh} disabled={isLoading}>
             <RefreshCw className={isLoading ? 'spinning' : ''} />
           </button>

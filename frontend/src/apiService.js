@@ -82,6 +82,11 @@ const api = {
   getSensorHistory: (sensorId, timeRange) => {
     return apiRequest(`/sensors/getSensorHistory/${sensorId}?timeRange=${timeRange}`);
   },
+  
+  getLatestSensorData: (sensorId) => {
+    return apiRequest(`/sensors/getLatestSensorData/${sensorId}`,"GET");
+  },
+  
   getDashboards: async () => {
     return apiRequest("/dashboard/userDashBoards", "GET");
   },
