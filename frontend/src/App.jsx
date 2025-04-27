@@ -16,6 +16,7 @@ import SensorDashboard from "@components/Dashboard";
 // Stránky
 import Home from "@pages/Home";
 import DataExport from "@pages/DataExport";
+import SensorsPage from "@pages/SensorsPage";
 import Login from "./Login/Login";
 
 // Formuláře
@@ -74,6 +75,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <DataExport />
+            </ProtectedRoute>
+          }
+        />
+                <Route
+          path="/sensors"
+          element={
+            <ProtectedRoute>
+              <SensorsPage />
             </ProtectedRoute>
           }
         />

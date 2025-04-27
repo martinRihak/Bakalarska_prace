@@ -113,6 +113,16 @@ const api = {
   exportSensorData: async (exportData) => {
     return apiRequest("/sensors/export_data", "POST", exportData);
   },
+
+  getAvailableSensors: () => apiRequest("/sensors/available"),
+  addSensorToUser: (sensorId) => apiRequest("/sensors/add-to-user", "POST", { sensorId }),
+  createSensor: (sensorData) => apiRequest("/sensors/create", "POST", sensorData),
+  updateSensor: (sensorId, sensorData) => apiRequest(`/sensors/${sensorId}`, "PATCH", sensorData),
+  toggleSensorActive: (sensorId, isActive) => apiRequest(`/sensors/${sensorId}/toggle-active`, "PATCH", { isActive }),
+
+// Widgets API
+  deleteWidget: (widgetId) => apiRequest(`/dashboard/widget/${widgetId}`, "DELETE"),
+
 };
 
 export default api;

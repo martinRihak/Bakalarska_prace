@@ -8,10 +8,10 @@ const chartTypes = [
   { type: "line", icon: Activity, label: "Line Chart" },
   { type: "area", icon: TrendingUp, label: "Area Chart" },
   { type: "enhancedRadialBar", icon: Gauge, label: "Enhanced Gauge" },
-  { type: "radialBar", icon: Loader, label: "Radial Bar" },
+  { type: "value", icon: Loader, label: "Value" },
 ];
 
-const WidgetForm = ({ onClose, onWidgetAdded }) => {
+const WidgetForm = ({ onClose, onSuccess }) => {
     const [sensors, setSensors] = useState([]);
     const [selectedSensor, setSelectedSensor] = useState(null);
     const [selectedChartType, setSelectedChartType] = useState(null);
@@ -56,8 +56,11 @@ const WidgetForm = ({ onClose, onWidgetAdded }) => {
         });
 
         // Success: refresh widgets and close modal
-        onWidgetAdded();
-        onClose();
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          onClose();
+        }
       } catch (err) {
         setError("Došlo k chybě při přidávání widgetu");
         console.error("Error adding widget:", err);

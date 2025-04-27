@@ -4,32 +4,30 @@ import ReactApexChart from "react-apexcharts";
 import api from "@services/apiService";
 import {
   getAreaChartOptions,
-  getEnhancedRadialBarOptions,
   getLineChartOptions,
   getRadialBarOptions,
   getAreaChartSeries,
-  getEnhancedRadialBarSeries,
   getLineChartSeries,
   getRadialBarSeries
 } from "./chartUtils";
+import ValueWidget from "./ValueWidget"; // Import the new component
 
 const Widget = ({ title, sensorName, id, widgetType }) => {
-  const [sensorData, setSensorData] = useState([]);
+  const [sensorData, setSensorData] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [timeRange, setTimeRange] = useState('24h');
 
-  // Memoizace zpracovaných dat pro grafy
   const processedData = useMemo(() => {
+    if (widgetType === 'radialBar' || widgetType === 'value') {
+      return null; // No processing needed for 'value' or 'radialBar'
+    }
     if (!sensorData || !sensorData.length) return [];
-    
-    // Optimalizace počtu bodů podle typu grafu a časového rozsahu
     const maxPoints = timeRange === '24h' ? 144 : timeRange === '7d' ? 168 : 720;
     const step = Math.max(1, Math.floor(sensorData.length / maxPoints));
-    
     return sensorData.filter((_, index) => index % step === 0);
-  }, [sensorData, timeRange]);
+  }, [sensorData, timeRange, widgetType]);
 
   useEffect(() => {
     fetchData();
@@ -39,19 +37,15 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
     setIsLoading(true);
     try {
       let response;
-      
-      // Pro radialBar widget volat API koncový bod pro nejnovější data
-      if (widgetType === 'radialBar' || widgetType === 'enhancedRadialBar') {
+      if (widgetType === 'value') {
         response = await api.getLatestSensorData(id);
         if (!response || !response.data) {
           setError("Žádná data k zobrazení");
           return;
         }
-        console.log("response", response); 
-        // Převést jediný datový bod na pole pro kompatibilitu
+
         setSensorData(response);
       } else {
-        // Pro ostatní typy widgetů volat historická data jako dříve
         response = await api.getSensorHistory(id, timeRange);
         if (!response || !response.data || response.data.length === 0) {
           setError("Žádná data k zobrazení");
@@ -59,9 +53,8 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
         }
         setSensorData(response.data);
       }
-      
+      setLastUpdate(new Date()); // Set to fetch time
       setError(null);
-      setLastUpdate(new Date());
     } catch (err) {
       setError("Nepodařilo se načíst data");
     } finally {
@@ -73,7 +66,7 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
     const baseOptions = {
       chart: {
         animations: {
-          enabled: sensorData.length < 1000,
+          enabled: !sensorData || (Array.isArray(sensorData) && sensorData.length < 1000),
           dynamicAnimation: {
             speed: 350
           }
@@ -92,27 +85,25 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
     switch (widgetType) {
       case "area":
         return { ...getAreaChartOptions(sensorName), ...baseOptions };
-      case "enhancedRadialBar":
-        return { ...getEnhancedRadialBarOptions(sensorName), ...baseOptions };
       case "radialBar":
         return { ...getRadialBarOptions(sensorName), ...baseOptions };
       default:
         return { ...getLineChartOptions(sensorName), ...baseOptions };
     }
-  }, [widgetType, sensorName, sensorData.length]);
+  }, [widgetType, sensorName, sensorData]);
 
   const chartSeries = useMemo(() => {
-    switch (widgetType) {
-      case "area":
-        return getAreaChartSeries(processedData, sensorName);
-      case "enhancedRadialBar":
-        return getEnhancedRadialBarSeries(processedData, sensorName);
-      case "radialBar":
-        return getRadialBarSeries(processedData, sensorName);
-      default:
-        return getLineChartSeries(processedData, sensorName);
+    if (widgetType === 'radialBar') {
+      return getRadialBarSeries(processedData);
+    } else if (widgetType === 'value') {
+      return []; // No series needed for ValueWidget
+    } else {
+      if (!processedData || processedData.length === 0) return [];
+      return widgetType === 'area'
+        ? getAreaChartSeries(processedData, sensorName)
+        : getLineChartSeries(processedData, sensorName);
     }
-  }, [widgetType, processedData, sensorName]);
+  }, [widgetType, sensorData, processedData, sensorName]);
 
   const handleRefresh = () => {
     fetchData();
@@ -123,7 +114,7 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
       <div className="widget-header">
         <h3>{title}</h3>
         <div className="widget-controls">
-          {(widgetType !== 'radialBar' && widgetType !== 'enhancedRadialBar') && (
+          {widgetType !== 'radialBar' && widgetType !== 'value' && (
             <select 
               value={timeRange} 
               onChange={(e) => setTimeRange(e.target.value)}
@@ -145,11 +136,13 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
             <ImageOff />
             <p>{error}</p>
           </div>
+        ) : widgetType === 'value' ? (
+          <ValueWidget sensorData={sensorData} />
         ) : (
           <ReactApexChart
             options={chartOptions}
             series={chartSeries}
-            type={widgetType}
+            type={widgetType === 'radialBar' ? 'radialBar' : widgetType}
             height="100%"
             width="100%"
           />
@@ -157,7 +150,7 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
       </div>
       {lastUpdate && (
         <div className="widget-footer">
-          <small>Poslední aktualizace: {lastUpdate.toLocaleTimeString()}</small>
+          <small>Poslední aktualizace: {lastUpdate.toLocaleTimeString('cs-CZ')}</small>
         </div>
       )}
     </div>

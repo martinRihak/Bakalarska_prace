@@ -32,7 +32,7 @@ function NavBar() {
           Domů
         </NavLink>
         <NavLink 
-          to="/sensors/"
+          to="/sensors"
           onClick={() => setIsOpen(false)}
           className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
         >

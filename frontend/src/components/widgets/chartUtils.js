@@ -1,4 +1,3 @@
-// Base chart options that are common for all chart types
 export const getBaseChartOptions = (sensorName) => ({
   chart: {
     zoom: {
@@ -88,7 +87,6 @@ export const getBaseChartOptions = (sensorName) => ({
   }
 });
 
-// Area chart specific options
 export const getAreaChartOptions = (sensorName) => ({
   ...getBaseChartOptions(sensorName),
   chart: {
@@ -127,87 +125,6 @@ export const getAreaChartOptions = (sensorName) => ({
   }
 });
 
-// Enhanced RadialBar chart specific options
-export const getEnhancedRadialBarOptions = (sensorName) => ({
-  ...getBaseChartOptions(sensorName),
-  chart: {
-    ...getBaseChartOptions(sensorName).chart,
-    type: "radialBar",
-    offsetY: -20
-  },
-  plotOptions: {
-    radialBar: {
-      startAngle: -135,
-      endAngle: 135,
-      hollow: {
-        margin: 15,
-        size: "70%",
-        background: "#fff",
-        imageOffsetX: 0,
-        imageOffsetY: 0,
-        dropShadow: {
-          enabled: true,
-          top: 3,
-          left: 0,
-          blur: 4,
-          opacity: 0.24
-        }
-      },
-      track: {
-        background: "#fff",
-        strokeWidth: "67%",
-        margin: 0,
-        dropShadow: {
-          enabled: true,
-          top: -3,
-          left: 0,
-          blur: 4,
-          opacity: 0.35
-        }
-      },
-      dataLabels: {
-        show: true,
-        name: {
-          offsetY: -10,
-          show: true,
-          color: "#888",
-          fontSize: "17px"
-        },
-        value: {
-          formatter: function(val) {
-            return typeof val === 'number' ? val.toFixed(1) : '0.0';
-          },
-          color: "#111",
-          fontSize: "36px",
-          show: true,
-          offsetY: 5
-        }
-      }
-    }
-  },
-  fill: {
-    type: "gradient",
-    gradient: {
-      shade: "dark",
-      type: "horizontal",
-      shadeIntensity: 0.5,
-      gradientToColors: ["#ABE5A1"],
-      inverseColors: true,
-      opacityFrom: 1,
-      opacityTo: 1,
-      stops: [0, 100]
-    }
-  },
-  states: {
-    hover: {
-      filter: {
-        type: 'none'
-      }
-    }
-  }
-});
-
-// Line chart specific options
 export const getLineChartOptions = (sensorName) => ({
   ...getBaseChartOptions(sensorName),
   chart: {
@@ -235,115 +152,108 @@ export const getLineChartOptions = (sensorName) => ({
   }
 });
 
-// Regular RadialBar options
 export const getRadialBarOptions = (sensorName) => ({
-  ...getBaseChartOptions(sensorName),
   chart: {
-    ...getBaseChartOptions(sensorName).chart,
-    type: "radialBar"
+    height: 350,
+    type: "radialBar",
+    toolbar: {
+      show: true
+    }
   },
   plotOptions: {
     radialBar: {
-      startAngle: -90,
-      endAngle: 90,
+      startAngle: -135,
+      endAngle: 225,
       hollow: {
         margin: 0,
-        size: "70%"
-      },
-      track: {
-        background: "#e7e7e7",
-        strokeWidth: "97%",
-        margin: 5,
+        size: '70%',
+        background: '#fff',
+        image: undefined,
+        imageOffsetX: 0,
+        imageOffsetY: 0,
+        position: 'front',
         dropShadow: {
           enabled: true,
-          top: 2,
+          top: 3,
           left: 0,
           blur: 4,
-          opacity: 0.15
+          opacity: 0.5
+        }
+      },
+      track: {
+        background: '#fff',
+        strokeWidth: '67%',
+        margin: 0,
+        dropShadow: {
+          enabled: true,
+          top: -3,
+          left: 0,
+          blur: 4,
+          opacity: 0.7
         }
       },
       dataLabels: {
+        show: true,
         name: {
+          offsetY: -10,
           show: true,
-          fontSize: "16px",
-          offsetY: -10
+          color: '#888',
+          fontSize: '17px'
         },
         value: {
-          show: true,
-          fontSize: "30px",
           formatter: function(val) {
-            return typeof val === 'number' ? val.toFixed(1) : '0.0';
-          }
+            return parseInt(val);
+          },
+          color: '#111',
+          fontSize: '36px',
+          show: true,
         }
       }
     }
   },
   fill: {
-    type: "gradient",
+    type: 'gradient',
     gradient: {
-      shade: "dark",
-      type: "horizontal",
-      colorStops: [
-        {
-          offset: 0,
-          color: "#4CAF50",
-          opacity: 1
-        },
-        {
-          offset: 100,
-          color: "#8BC34A",
-          opacity: 1
-        }
-      ]
+      shade: 'dark',
+      type: 'horizontal',
+      shadeIntensity: 0.5,
+      gradientToColors: ['#ABE5A1'],
+      inverseColors: true,
+      opacityFrom: 1,
+      opacityTo: 1,
+      stops: [0, 100]
     }
-  }
+  },
+  stroke: {
+    lineCap: 'round'
+  },
+  labels: ['Hodnota'],
 });
 
-// Data transformation functions for each chart type
 export const getAreaChartSeries = (data, sensorName) => [{
   name: sensorName || "Hodnota",
-  data: data.map(d => ({
-    x: new Date(d.timestamp).getTime(),
-    y: parseFloat(d.value.toFixed(1))
-  }))
+  data: data
+    .filter(d => d.timestamp)
+    .map(d => ({
+      x: new Date(d.timestamp).getTime(),
+      y: parseFloat(d.value.toFixed(1))
+    }))
 }];
-
-export const getEnhancedRadialBarSeries = (data, sensorName) => {
-
-  const minValue = data.sensor.min_value;
-  const maxValue = data.sensor.max_value;
-  const range = maxValue - minValue;
-  const value = data.data.value;
-  const percentage = range === 0 ? 0 : ((value - minValue) / range * 100);
-  
-  
-  return [{
-    name: sensorName || "Hodnota",
-    data: [parseFloat(percentage.toFixed(1))],
-    value
-  }];
-};
 
 export const getLineChartSeries = (data, sensorName) => [{
   name: sensorName || "Hodnota",
-  data: data.map(d => ({
-    x: new Date(d.timestamp).getTime(),
-    y: parseFloat(d.value.toFixed(1))
-  }))
+  data: data
+    .filter(d => d.timestamp)
+    .map(d => ({
+      x: new Date(d.timestamp).getTime(),
+      y: parseFloat(d.value.toFixed(1))
+    }))
 }];
 
-export const getRadialBarSeries = (data, sensorName) => {
-  const latestData = data[data.length - 1];
-  const allValues = data.map(d => d.value);
-  const minValue = Math.min(...allValues);
-  const maxValue = Math.max(...allValues);
-  const range = maxValue - minValue;
-  const value = latestData ? parseFloat(latestData.value.toFixed(1)) : 0;
-  const percentage = range === 0 ? 0 : ((value - minValue) / range * 100);
-  
+export const getRadialBarSeries = (data) => {
+  if (!data || data.length === 0) return [];
   return [{
-    name: sensorName || "Hodnota",
-    data: [parseFloat(percentage.toFixed(1))],
-    value
+    name: "Hodnota",
+    data: [parseFloat(data[0].value.toFixed(1))]
   }];
 };

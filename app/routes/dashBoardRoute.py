@@ -71,7 +71,6 @@ def getDashBoards():
     
     # Načtení všech dashboardů uživatele
     dashboards = Dashboard.query.filter_by(user_id=user_id).all()
-    
     if not dashboards:
         return jsonify([])
     
@@ -91,8 +90,8 @@ def getDashBoards():
 def get_dashboard_widgets():
     print("Getting dashboard widgets...")
     # Získání user_id z session
-    user_id = session.get('user_id', 1)  # Fallback na ID 1 pro testování
-    dashboard_id = request.args.get('dashboard_id', 1)  # Získání dashboard_id z query parametru
+    user_id = session.get('user_id')
+    dashboard_id = request.args.get('dashboard_id')  # Získání dashboard_id z query parametru
     
     print(f"Looking for dashboard_id: {dashboard_id} and user_id: {user_id}")
     
@@ -229,9 +228,9 @@ def delete_dashboard(dashboard_id):
 
 @dashboard_api.route('/widget', methods=['POST'])
 def add_widget():
-    user_id = session.get('user_id', 1)
+    user_id = session.get('user_id')
     data = request.get_json()
-    
+    print(f"Adding widget with data: {data}")
     if not data or not all(k in data for k in ['dashboard_id', 'widget_type', 'title', 'position']):
         return jsonify({'error': 'Missing required fields'}), 400
         
@@ -243,15 +242,16 @@ def add_widget():
     
     if not dashboard:
         return jsonify({'error': 'Dashboard not found or access denied'}), 404
-
+    print(f"Dashboard found: {dashboard}")
     # Vytvoření nového widgetu
     new_widget = Widget(
         widget_type=data['widget_type'],
         title=data['title']
     )
+    print(f"New widget created: {new_widget.widget_type}")
     db.session.add(new_widget)
     db.session.flush()  # Získáme ID widgetu před commitem
-    
+    print(f"New widget flushed: {new_widget.widget_id}")
     # Vytvoření vazby mezi dashboardem a widgetem
     dashboard_widget = DashboardWidget(
         dashboard_id=data['dashboard_id'],
@@ -262,7 +262,7 @@ def add_widget():
         height=data['position'].get('height', 2)
     )
     
-    # Přidání senzorů k widgetu
+
     if 'sensors' in data:
         for sensor_id in data['sensors']:
             sensor = Sensor.query.get(sensor_id)

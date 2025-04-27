@@ -1,4 +1,4 @@
-from flask import Blueprint, send_file, request, redirect, url_for, flash, jsonify,session
+from flask import Blueprint, send_file, request, redirect, url_for, flash, jsonify, session
 from models.models import db, Sensor, SensorData, UserSensor
 from routes.authRoute import login_required
 from datetime import datetime, timedelta
@@ -15,28 +15,21 @@ def get_sensor_history(sensor_id):
         time_range = request.args.get('timeRange', '24h')  # default to '24h' if not specified
 
         sensor = Sensor.query.get_or_404(sensor_id)
-        # Calculate time range based on parameter
-        print(sensor)
         now = datetime.utcnow()
-        print(f"Current UTC time: {now}")
         if time_range == '24h':
             delta = timedelta(days=1)
         elif time_range == '7d':
             delta = timedelta(weeks=1)
-        elif time_range == '30d':  # Changed from 'month' to '30d' to match Widget.jsx
+        elif time_range == '30d':
             delta = timedelta(days=30)
         else:
-            delta = timedelta(days=1)  # default to 1 day
-        print(delta)
+            delta = timedelta(days=1)
         start_time = now - delta
-        print(f"Start time for sensor {sensor_id}: {start_time}")
-        # Query data within the time range
         sensor_data = SensorData.query.filter_by(sensor_id=sensor_id)\
             .filter(SensorData.timestamp >= start_time)\
             .order_by(SensorData.timestamp)\
             .all()
     
-        # Format data for frontend
         data = [{
             'timestamp': data.timestamp.isoformat(),
             'value': data.value
@@ -59,9 +52,7 @@ def get_sensor_history(sensor_id):
 @sensors_api.route('/add', methods=['POST'])
 @login_required
 def add_sensor():
-    """Přidání nového senzoru."""
     try:
-        # Získání dat z formuláře
         name = request.form.get('name')
         sensor_type = request.form.get('sensor_type')
         description = request.form.get('description')
@@ -74,7 +65,6 @@ def add_sensor():
         is_virtual = True if request.form.get('is_virtual') else False
         parent_sensor_id = request.form.get('parent_sensor_id')
         
-        # Převod typů
         if address:
             address = int(address)
         else:
@@ -105,7 +95,6 @@ def add_sensor():
         else:
             parent_sensor_id = None
         
-        # Vytvoření nového senzoru
         new_sensor = Sensor(
             name=name,
             sensor_type=sensor_type,
@@ -120,7 +109,6 @@ def add_sensor():
             parent_sensor_id=parent_sensor_id
         )
         
-        # Uložení do databáze
         db.session.add(new_sensor)
         db.session.commit()
         
@@ -134,7 +122,6 @@ def add_sensor():
 @sensors_api.route('/delete/<int:sensor_id>', methods=['POST'])
 @login_required
 def delete_sensor(sensor_id):
-    """Smazání senzoru."""
     try:
         sensor = Sensor.query.get_or_404(sensor_id)
         db.session.delete(sensor)
@@ -146,25 +133,24 @@ def delete_sensor(sensor_id):
     
     return redirect(url_for('sensors.list_sensors'))
 
-
-@sensors_api.route('/getSensors',methods=['GET'])
+@sensors_api.route('/getSensors', methods=['GET'])
 @login_required
 def get_sensors():
     try:
         user_id = session.get('user_id')
-        # Query sensors through UserSensor relationship
         user_sensors = Sensor.query.join(UserSensor).filter(UserSensor.user_id == user_id).all()
 
-        sensore_data = [{
+        sensor_data = [{
             'sensor_id': sensor.sensor_id,
             'name': sensor.name,
             'sensor_type': sensor.sensor_type,
             'address': sensor.address,
             'functioncode': sensor.functioncode,
-            'unit': sensor.unit
+            'unit': sensor.unit,
+            'is_active': sensor.is_active
         } for sensor in user_sensors]
             
-        return jsonify(sensore_data), 200
+        return jsonify(sensor_data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -172,14 +158,12 @@ def get_sensors():
 @login_required
 def get_latest_sensor_data(sensor_id):
     try:
-        # Get the latest data point for this sensor
         latest_data = SensorData.query.filter_by(sensor_id=sensor_id)\
             .order_by(SensorData.timestamp.desc())\
             .first()
         if not latest_data:
             return jsonify({'error': 'No data available for this sensor'}), 404
             
-        # Get sensor info
         sensor = Sensor.query.get_or_404(sensor_id)
 
         return jsonify({
@@ -187,9 +171,8 @@ def get_latest_sensor_data(sensor_id):
                 'id': sensor.sensor_id,
                 'name': sensor.name,
                 'unit': sensor.unit,
-                'min_value' : sensor.min_value,
-                'max_value' : sensor.max_value, 
-  
+                'min_value': sensor.min_value,
+                'max_value': sensor.max_value, 
             },
             'data': {
                 'timestamp': latest_data.timestamp.isoformat(),
@@ -238,7 +221,6 @@ def export_sensor_data():
                 'timestamp': d.timestamp.isoformat(),
                 'value': d.value
             } for d in sensor_data]
-            print(data_to_export)
             output.write(json.dumps(data_to_export))
             content_type = 'application/json'
         else:  # csv
@@ -257,3 +239,70 @@ def export_sensor_data():
         )
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@sensors_api.route('/available', methods=['GET'])
+@login_required
+def get_available_sensors():
+    user_id = session.get('user_id')
+    user_sensors = [us.sensor_id for us in UserSensor.query.filter_by(user_id=user_id).all()]
+    available_sensors = Sensor.query.filter(~Sensor.sensor_id.in_(user_sensors)).all()
+    return jsonify([{
+        'sensor_id': s.sensor_id,
+        'name': s.name,
+        'sensor_type': s.sensor_type,
+        'unit': s.unit
+    } for s in available_sensors])
+
+@sensors_api.route('/add-to-user', methods=['POST'])
+@login_required
+def add_sensor_to_user():
+    data = request.get_json()
+    sensor_id = data.get('sensorId')
+    user_id = session.get('user_id')
+    if UserSensor.query.filter_by(user_id=user_id, sensor_id=sensor_id).first():
+        return jsonify({'error': 'Sensor already associated with user'}), 400
+    new_user_sensor = UserSensor(user_id=user_id, sensor_id=sensor_id)
+    db.session.add(new_user_sensor)
+    db.session.commit()
+    return jsonify({'message': 'Sensor added to user'}), 201
+
+@sensors_api.route('/create', methods=['POST'])
+@login_required
+def create_sensor():
+    data = request.get_json()
+    new_sensor = Sensor(
+        name=data['name'],
+        sensor_type=data['sensor_type'],
+        unit=data['unit'],
+        address=data['address'],  
+        functioncode= data['functioncode'],
+        bit=data['bit'],
+        min_value=data.get('min_value'),
+        max_value=data.get('max_value'),
+        scaling=data.get('scaling'),
+        sampling_rate=data['sampling_rate']
+    )
+    db.session.add(new_sensor)
+    db.session.commit()
+    return jsonify({'message': 'Sensor created', 'sensor_id': new_sensor.sensor_id}), 201
+
+@sensors_api.route('/<int:sensor_id>', methods=['PATCH'])
+@login_required
+def update_sensor(sensor_id):
+    sensor = Sensor.query.get_or_404(sensor_id)
+    data = request.get_json()
+    for key, value in data.items():
+        if hasattr(sensor, key):
+            setattr(sensor, key, value)
+    db.session.commit()
+    return jsonify({'message': 'Sensor updated'}), 200
+
+@sensors_api.route('/<int:sensor_id>/toggle-active', methods=['PATCH'])
+@login_required
+def toggle_sensor_active(sensor_id):
+    sensor = Sensor.query.get_or_404(sensor_id)
+    data = request.get_json()
+    is_active = data.get('isActive')
+    sensor.is_active = is_active
+    db.session.commit()
+    return jsonify({'message': 'Sensor active status updated'}), 200

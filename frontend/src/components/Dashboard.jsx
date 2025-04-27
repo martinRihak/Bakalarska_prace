@@ -3,7 +3,7 @@ import { Responsive, WidthProvider } from "react-grid-layout";
 import Widget from "@widgets/Widget";
 import api from "@services/apiService";
 import DashBoardForm from "@forms/DashBoardForm";
-import WidgetForm from "@forms/WidgetForm"; // New component for adding widgets
+import WidgetForm from "@forms/WidgetForm";
 
 // CSS
 import "react-grid-layout/css/styles.css";
@@ -14,6 +14,7 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const SensorDashboard = () => {
   const [dashboards, setDashboards] = useState([]);
+  const [selectedDashboard, setSelectedDashboard] = useState(null);
   const [widgets, setWidgets] = useState([]);
   const [layouts, setLayouts] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -21,71 +22,103 @@ const SensorDashboard = () => {
   const [isDashboardFormOpen, setIsDashboardFormOpen] = useState(false);
   const [isWidgetFormOpen, setIsWidgetFormOpen] = useState(false);
 
-  // Function to load dashboards and widgets from the API
-  const loadData = async () => {
+  // Načtení dashboardů
+  const loadDashboards = async () => {
     try {
-      setIsLoading(true);
-      // First load dashboards
       const userDashboards = await api.getDashboards();
-
-      // Pokud API vrátí null nebo undefined, nastavíme prázdné pole
       setDashboards(userDashboards || []);
-
       if (userDashboards && userDashboards.length > 0) {
-        try {
-          const dashboardWidgets = await api.getDashboardWidgets();
-          const newLayouts = {
-            lg: dashboardWidgets.map((widget) => ({
-              i: widget.widget_id.toString(),
-              x: widget.position_x || 0,
-              y: widget.position_y || 0,
-              w: widget.width || 4,
-              h: widget.height || 4,
-            })),
-          };
-          setWidgets(dashboardWidgets);
-          setLayouts(newLayouts);
-        } catch (widgetErr) {
-          console.error("Failed to load widgets:", widgetErr);
-          setWidgets([]);
-          setLayouts({});
-        }
-      } else {
-        // Když nejsou dashboardy, nastavíme prázdné widgety a layouts
-        setWidgets([]);
-        setLayouts({});
+        setSelectedDashboard(userDashboards[0].dashboard_id);
       }
-      setError(null);
     } catch (err) {
       console.error("Failed to load dashboards:", err);
-      // Místo nastavení error stavu nastavíme prázdné pole dashboardů
       setDashboards([]);
+    }
+  };
+
+  // Načtení widgetů pro vybraný dashboard
+  const loadWidgets = async (dashboardId) => {
+    try {
+      setIsLoading(true);
+      const dashboardWidgets = await api.getDashboardWidgets(dashboardId);
+      const newLayouts = {
+        lg: dashboardWidgets.map((widget) => ({
+          i: widget.widget_id.toString(),
+          x: widget.position_x || 0,
+          y: widget.position_y || 0,
+          w: widget.width || 4,
+          h: widget.height || 4,
+        })),
+      };
+      setWidgets(dashboardWidgets);
+      setLayouts(newLayouts);
+      setError(null);
+    } catch (err) {
+      console.error("Failed to load widgets:", err);
       setWidgets([]);
       setLayouts({});
+      setError("Nepodařilo se načíst widgety");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
+    loadDashboards();
   }, []);
+
+  useEffect(() => {
+    if (selectedDashboard) {
+      loadWidgets(selectedDashboard);
+    }
+  }, [selectedDashboard]);
 
   const onLayoutChange = (layout, allLayouts) => {
     setLayouts(allLayouts);
   };
 
   const handleDashboardCreate = () => {
-    console.log("Opening dashboard form"); // Pro debugování
     setIsDashboardFormOpen(true);
   };
 
   const handleWidgetCreate = () => {
-    console.log("Opening widget form"); // Pro debugování
     setIsWidgetFormOpen(true);
   };
 
-  // Upravený DashboardHeader s novými handlery
+  const handleDashboardChange = (e) => {
+    setSelectedDashboard(e.target.value);
+  };
+
+  const handleDeleteDashboard = async () => {
+    if (window.confirm("Opravdu chcete smazat tento dashboard?")) {
+      try {
+        await api.deleteDashboard(selectedDashboard);
+        loadDashboards();
+        setSelectedDashboard(null);
+      } catch (err) {
+        console.error("Failed to delete dashboard:", err);
+        setError("Nepodařilo se smazat dashboard");
+      }
+    }
+  };
+
+  const handleSaveWidgetPositions = async () => {
+    try {
+      const widgetPositions = layouts.lg.map((layout) => ({
+        widget_id: layout.i,
+        position_x: layout.x,
+        position_y: layout.y,
+        width: layout.w,
+        height: layout.h,
+      }));
+      await api.saveWidgetPositions(selectedDashboard, widgetPositions);
+      alert("Pozice widgetů byly uloženy");
+    } catch (err) {
+      console.error("Failed to save widget positions:", err);
+      setError("Nepodařilo se uložit pozice widgetů");
+    }
+  };
+
   const DashboardHeader = () => (
     <div className="dashboard-header">
       <button className="create-dashboard-btn" onClick={handleDashboardCreate}>
@@ -94,10 +127,22 @@ const SensorDashboard = () => {
       <button className="create-dashboard-btn" onClick={handleWidgetCreate}>
         Vytvořit nový widget
       </button>
+      {dashboards.length > 0 && (
+        <>
+          <select value={selectedDashboard || ''} onChange={handleDashboardChange}>
+            {dashboards.map((dashboard) => (
+              <option key={dashboard.dashboard_id} value={dashboard.dashboard_id}>
+                {dashboard.name}
+              </option>
+            ))}
+          </select>
+          <button onClick={handleDeleteDashboard}>Smazat dashboard</button>
+          <button onClick={handleSaveWidgetPositions}>Uložit pozice widgetů</button>
+        </>
+      )}
     </div>
   );
 
-  // Replace the existing loading and error returns with these:
   if (isLoading) {
     return (
       <div className="main-content">
@@ -144,7 +189,7 @@ const SensorDashboard = () => {
                     title={widget.title}
                     sensorName={`Sensor ${widget.sensors[0].name}`}
                     id={widget.sensors[0].sensor_id}
-                    widgetType={widget.widget_type} // Přidána nová prop
+                    widgetType={widget.widget_type}
                   />
                 </div>
               ))}
@@ -163,7 +208,7 @@ const SensorDashboard = () => {
               onClose={() => setIsDashboardFormOpen(false)}
               onSuccess={() => {
                 setIsDashboardFormOpen(false);
-                loadData(); // Použijeme loadData místo loadWidgets
+                loadDashboards();
               }}
             />
           </div>
@@ -181,7 +226,7 @@ const SensorDashboard = () => {
               onClose={() => setIsWidgetFormOpen(false)}
               onSuccess={() => {
                 setIsWidgetFormOpen(false);
-                loadWidgets();
+                loadWidgets(selectedDashboard);
               }}
             />
           </div>
