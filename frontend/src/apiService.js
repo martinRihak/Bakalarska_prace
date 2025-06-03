@@ -95,8 +95,8 @@ const api = {
   getDashboards: async () => {
     return apiRequest("/dashboard/userDashBoards", "GET");
   },
-  getDashboardWidgets: async () => {
-    return apiRequest("/dashboard/widgets", "GET");
+  getDashboardWidgets: async (dashboardId) => {
+    return apiRequest(`/dashboard/widgets/${dashboardId}`, "GET");
   },
 
   createDashboard: async (dashboardData) => {
@@ -120,9 +120,12 @@ const api = {
   updateSensor: (sensorId, sensorData) => apiRequest(`/sensors/${sensorId}`, "PATCH", sensorData),
   toggleSensorActive: (sensorId, isActive) => apiRequest(`/sensors/${sensorId}/toggle-active`, "PATCH", { isActive }),
 
-// Widgets API
-  deleteWidget: (widgetId) => apiRequest(`/dashboard/widget/${widgetId}`, "DELETE"),
-
+  // Widgets API
+  deleteWidget: (dashboardId,widgetId) => apiRequest(`/widget/delete/${dashboardId}/${widgetId}`, "DELETE"),
+  
+  // Nové funkce
+  deleteDashboard: (dashboardId) => apiRequest(`/dashboard/dashboard/${dashboardId}`, "DELETE"),
+  saveWidgetPositions: (dashboardId, widgetPositions) => apiRequest(`/dashboard/dashboard/${dashboardId}/save_positions`, "POST", { widgetPositions }),
 };
 
 export default api;

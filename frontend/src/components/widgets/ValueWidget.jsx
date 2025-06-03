@@ -1,6 +1,5 @@
 import React from 'react';
 import { Thermometer, Droplet } from 'lucide-react';
-import "@css/valueWidget.css"; 
 const ValueWidget = ({ sensorData }) => {
   // Fallback if sensorData is missing or incomplete
   if (!sensorData || !sensorData.sensor || !sensorData.data) {
@@ -13,9 +12,9 @@ const ValueWidget = ({ sensorData }) => {
   const getIcon = (unit) => {
     switch (unit) {
       case '°C':
-        return <Thermometer size={40} color="var(--highlight-color)" />;
+        return <Thermometer  color="var(--highlight-color)" />;
       case '%':
-        return <Droplet size={40} color="var(--accent-color)" />;
+        return <Droplet  color="var(--accent-color)" />;
       default:
         return null; // No icon if unit is unrecognized
     }
@@ -27,7 +26,6 @@ const ValueWidget = ({ sensorData }) => {
 
   return (
     <div className="value-widget">
-      <h3>{sensor.name}</h3>
       <div className="value-container">
         {icon && <div className="icon">{icon}</div>}
         <div className="value">{formattedValue}</div>

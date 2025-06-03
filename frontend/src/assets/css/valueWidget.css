@@ -1,22 +1,10 @@
-.value-widget {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 1rem;
-    background-color: var(--surface-color); /* #FAFAFA */
-    border-radius: 8px;
-  }
+
   
-  .value-container {
-    display: flex;
-    align-items: center;
-    margin: 1rem 0;
-  }
+
   
   .icon {
     margin-right: 1rem;
+    size: 150px;
   }
   
   .value {

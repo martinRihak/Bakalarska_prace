@@ -1,21 +1,45 @@
 .widget {
-    background: var(--surface-color);
-    border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #FFFFFF; /* Light background for modern look */
+    border-radius: 15px; /* Rounded corners matching the first image */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for elevation */
 }
 
+/* Widget header */
 .widget-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    padding: 1rem; /* Adjusted padding for a balanced look */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.widget-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000000; /* Dark title color */
 }
 
 .widget-controls {
     display: flex;
     gap: 0.5rem;
     align-items: center;
+}
+
+
+.widget-content {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    justify-content: center;
 }
 
 .widget-icon {
@@ -29,6 +53,10 @@
 .widget-icon:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
+}
+
+.widget.radialBar {
+    background: var(--primary-color); /* #1017EA */
 }
 
 .refresh-button {
@@ -74,14 +102,107 @@
 }
 
 .widget-footer {
-    margin-top: 0.5rem;
-    text-align: right;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+    font-size: 0.75rem; /* Small footer text */
+    color: #666666; /* Muted gray color */
+    text-align: center;
+    padding: 0.5rem; /* Adjusted padding */
+}
+
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+  
+  .switch input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1; /* Zajistí, že input je nad sliderem */
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+  
+  input:checked + .slider {
+    background-color: var(--success-color);
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(26px);
+  }
+/* Value widget specific styles */
+.value-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.value-container {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center icon and value */
+    margin-bottom: 1rem; /* Spacing below the value */
+}
+
+.icon svg {
+    margin-right: 1.5rem; /* Increased spacing between icon and value */
+    padding: 1.5rem;
+    background: #FFFFFF; /* Consistent light background */
+    border-radius: 30px; /* Rounded corners */
+    box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    border: none; /* Remove border for a cleaner look */
+    width: 150px; /* Fixed width for the icon */
+    height: 150px; /* Fixed height for the icon */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.value {
+    font-size: 3.5rem; /* Large, prominent value */
+    font-weight: bold;
+    color: #000000; /* Black for contrast */
+}
+
+.timestamp {
+    font-size: 0.8rem; /* Smaller timestamp */
+    color: #666666; /* Muted gray */
+    text-align: center;
 }
 
 @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
-

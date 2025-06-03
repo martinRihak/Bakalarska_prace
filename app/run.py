@@ -55,14 +55,20 @@ CORS(app,
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
 
-# Create ModbusManager instance within app context
-with app.app_context():
-    modbus_manager = ModbusManager()
-    app.config['MODBUS_MANAGER'] = modbus_manager
 
-setup_logger()
+logger = setup_logger()
 init_db(app)
 init_routes(app)
+# Inicializace ModbusManager v kontextu aplikace
+with app.app_context():
+    try:
+        modbus_manager = ModbusManager()
+        app.config['MODBUS_MANAGER'] = modbus_manager
+        logger.info("ModbusManager successfully initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize ModbusManager: {e}")
+        sys.exit(1)  # Ukončí aplikaci při selhání inicializace
+
 
 @app.route('/api/data', methods=['GET'])
 @login_required
@@ -80,5 +86,6 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    logger = setup_logger()
+    
     app.run(debug=True, use_reloader=True)
+    

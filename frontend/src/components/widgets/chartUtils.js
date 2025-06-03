@@ -15,19 +15,7 @@ export const getBaseChartOptions = (sensorName) => ({
         }
       }
     },
-    toolbar: {
-      show: true,
-      tools: {
-        download: true,
-        selection: true,
-        zoom: true,
-        zoomin: true,
-        zoomout: true,
-        pan: true,
-        reset: true
-      },
-      autoSelected: 'zoom'
-    },
+
     animations: {
       enabled: true,
       easing: 'easeinout',
@@ -110,9 +98,6 @@ export const getAreaChartOptions = (sensorName) => ({
       hideOverlappingLabels: true
     },
     tickAmount: 6,
-    tooltip: {
-      enabled: false
-    }
   },
   fill: {
     type: "gradient",
@@ -151,85 +136,6 @@ export const getLineChartOptions = (sensorName) => ({
     width: 2
   }
 });
-
-export const getRadialBarOptions = (sensorName) => ({
-  chart: {
-    height: 350,
-    type: "radialBar",
-    toolbar: {
-      show: true
-    }
-  },
-  plotOptions: {
-    radialBar: {
-      startAngle: -135,
-      endAngle: 225,
-      hollow: {
-        margin: 0,
-        size: '70%',
-        background: '#fff',
-        image: undefined,
-        imageOffsetX: 0,
-        imageOffsetY: 0,
-        position: 'front',
-        dropShadow: {
-          enabled: true,
-          top: 3,
-          left: 0,
-          blur: 4,
-          opacity: 0.5
-        }
-      },
-      track: {
-        background: '#fff',
-        strokeWidth: '67%',
-        margin: 0,
-        dropShadow: {
-          enabled: true,
-          top: -3,
-          left: 0,
-          blur: 4,
-          opacity: 0.7
-        }
-      },
-      dataLabels: {
-        show: true,
-        name: {
-          offsetY: -10,
-          show: true,
-          color: '#888',
-          fontSize: '17px'
-        },
-        value: {
-          formatter: function(val) {
-            return parseInt(val);
-          },
-          color: '#111',
-          fontSize: '36px',
-          show: true,
-        }
-      }
-    }
-  },
-  fill: {
-    type: 'gradient',
-    gradient: {
-      shade: 'dark',
-      type: 'horizontal',
-      shadeIntensity: 0.5,
-      gradientToColors: ['#ABE5A1'],
-      inverseColors: true,
-      opacityFrom: 1,
-      opacityTo: 1,
-      stops: [0, 100]
-    }
-  },
-  stroke: {
-    lineCap: 'round'
-  },
-  labels: ['Hodnota'],
-});
-
 export const getAreaChartSeries = (data, sensorName) => [{
   name: sensorName || "Hodnota",
   data: data
@@ -249,11 +155,3 @@ export const getLineChartSeries = (data, sensorName) => [{
       y: parseFloat(d.value.toFixed(1))
     }))
 }];
-
-export const getRadialBarSeries = (data) => {
-  if (!data || data.length === 0) return [];
-  return [{
-    name: "Hodnota",
-    data: [parseFloat(data[0].value.toFixed(1))]
-  }];
-};

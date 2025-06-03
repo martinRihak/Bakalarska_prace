@@ -14,7 +14,7 @@ def get_sensor_data(sensor_id):
         modbus_manager = current_app.config['MODBUS_MANAGER']
         
         # Získání informací o senzoru
-        sensor_info = modbus_manager.get_sensor_info(sensor_id)
+        sensor_info = modbus_manager.read_sensor(sensor_id)
         print(sensor_info)
         if not sensor_info:
             return jsonify({

@@ -1,30 +1,40 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { RefreshCw, ImageOff } from "lucide-react";
+import { RefreshCw, ImageOff, CircleX, ChartNoAxesColumnIcon } from "lucide-react";
 import ReactApexChart from "react-apexcharts";
 import api from "@services/apiService";
 import {
   getAreaChartOptions,
   getLineChartOptions,
-  getRadialBarOptions,
   getAreaChartSeries,
   getLineChartSeries,
-  getRadialBarSeries
 } from "./chartUtils";
-import ValueWidget from "./ValueWidget"; // Import the new component
+import ValueWidget from "./ValueWidget";
+import "./Widget.css";
 
-const Widget = ({ title, sensorName, id, widgetType }) => {
+const Widget = ({
+  title,
+  widget_id,
+  sensorName,
+  id,
+  active,
+  widgetType,
+  dashboard_id,
+  onDelete,
+}) => {
   const [sensorData, setSensorData] = useState(null);
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [sensor, setSensor] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [timeRange, setTimeRange] = useState('24h');
+  const [timeRange, setTimeRange] = useState("24h");
+  const [localActive, setLocalActive] = useState(active); // Lokální stav pro switch
 
   const processedData = useMemo(() => {
-    if (widgetType === 'radialBar' || widgetType === 'value') {
-      return null; // No processing needed for 'value' or 'radialBar'
+    if (widgetType === "minMax" || widgetType === "value") {
+      return null;
     }
     if (!sensorData || !sensorData.length) return [];
-    const maxPoints = timeRange === '24h' ? 144 : timeRange === '7d' ? 168 : 720;
+    const maxPoints =
+      timeRange === "24h" ? 144 : timeRange === "7d" ? 168 : 720;
     const step = Math.max(1, Math.floor(sensorData.length / maxPoints));
     return sensorData.filter((_, index) => index % step === 0);
   }, [sensorData, timeRange, widgetType]);
@@ -33,19 +43,24 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
     fetchData();
   }, [id, timeRange]);
 
+  useEffect(() => {
+    setLocalActive(active); // Synchronizace s prop při změně z nadřazené komponenty
+  }, [active]);
+
   const fetchData = async () => {
-    setIsLoading(true);
     try {
       let response;
-      if (widgetType === 'value') {
+      console.log(id)
+      console.log(active)
+      if (widgetType === "value") {
         response = await api.getLatestSensorData(id);
         if (!response || !response.data) {
           setError("Žádná data k zobrazení");
           return;
         }
-
         setSensorData(response);
-      } else {
+      } 
+      else {
         response = await api.getSensorHistory(id, timeRange);
         if (!response || !response.data || response.data.length === 0) {
           setError("Žádná data k zobrazení");
@@ -53,12 +68,11 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
         }
         setSensorData(response.data);
       }
-      setLastUpdate(new Date()); // Set to fetch time
+      setLastUpdate(new Date());
       setError(null);
     } catch (err) {
       setError("Nepodařilo se načíst data");
     } finally {
-      setIsLoading(false);
     }
   };
 
@@ -66,19 +80,15 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
     const baseOptions = {
       chart: {
         animations: {
-          enabled: !sensorData || (Array.isArray(sensorData) && sensorData.length < 1000),
+          enabled:
+            !sensorData ||
+            (Array.isArray(sensorData) && sensorData.length < 1000),
           dynamicAnimation: {
-            speed: 350
-          }
+            speed: 350,
+          },
         },
         redrawOnParentResize: true,
         redrawOnWindowResize: true,
-      },
-      tooltip: {
-        enabled: true,
-        shared: true,
-        intersect: false,
-        followCursor: true
       },
     };
 
@@ -93,30 +103,65 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
   }, [widgetType, sensorName, sensorData]);
 
   const chartSeries = useMemo(() => {
-    if (widgetType === 'radialBar') {
+    if (widgetType === "radialBar") {
       return getRadialBarSeries(processedData);
-    } else if (widgetType === 'value') {
-      return []; // No series needed for ValueWidget
+    } else if (widgetType === "value") {
+      return [];
     } else {
       if (!processedData || processedData.length === 0) return [];
-      return widgetType === 'area'
+      return widgetType === "area"
         ? getAreaChartSeries(processedData, sensorName)
         : getLineChartSeries(processedData, sensorName);
     }
   }, [widgetType, sensorData, processedData, sensorName]);
 
   const handleRefresh = () => {
+    console.log("Refreshing data...");
     fetchData();
   };
 
+  const handleToggleActive = async (sensorId, newStatus) => {
+    try {
+      await api.toggleSensorActive(sensorId, newStatus);
+      setLocalActive(newStatus);
+      
+      if (newStatus) {
+        // Pokud je senzor aktivován, okamžitě načteme nová data
+        setError(null); // Reset error message
+        fetchData();
+      } else {
+        // Pokud je senzor deaktivován, zobrazíme zprávu
+        setError("Senzor je neaktivní");
+        setSensorData(null);
+      }
+    } catch (err) {
+      setError("Nepodařilo se změnit stav senzoru");
+      setLocalActive(!newStatus); // Revert lokálního stavu při chybě
+    }
+  };
+
+  const deleteWidget =  () => {
+    api
+      .deleteWidget(dashboard_id, widget_id)
+      .then(() => {
+        console.log("Widget deleted successfully");
+        if (onDelete) {
+          onDelete();
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting widget:", error);
+      });
+  };
+
   return (
-    <div className="widget">
+    <div className="widget ${widgetType}">
       <div className="widget-header">
         <h3>{title}</h3>
         <div className="widget-controls">
-          {widgetType !== 'radialBar' && widgetType !== 'value' && (
-            <select 
-              value={timeRange} 
+          {widgetType !== "radialBar" && widgetType !== "value" && (
+            <select
+              value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
               className="time-range-select"
             >
@@ -125,9 +170,29 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
               <option value="30d">30 dní</option>
             </select>
           )}
-          <button onClick={handleRefresh} disabled={isLoading}>
-            <RefreshCw className={isLoading ? 'spinning' : ''} />
+          <label className="switch">
+            <input
+              type="checkbox"
+              checked={localActive}
+              onChange={() => {
+                const newStatus = !localActive;
+                setLocalActive(newStatus);
+                handleToggleActive(id, newStatus);
+              }}
+            />
+            <span className="slider"></span>
+            </label>
+          <button onClick={deleteWidget}>
+            <CircleX />
           </button>
+          <button
+  onClick={() => {
+    console.log("Button clicked, isLoading:");
+    handleRefresh();
+  }}
+>
+  <RefreshCw />
+</button>
         </div>
       </div>
       <div className="widget-content">
@@ -136,13 +201,13 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
             <ImageOff />
             <p>{error}</p>
           </div>
-        ) : widgetType === 'value' ? (
+        ) : widgetType === "value" ? (
           <ValueWidget sensorData={sensorData} />
         ) : (
           <ReactApexChart
             options={chartOptions}
             series={chartSeries}
-            type={widgetType === 'radialBar' ? 'radialBar' : widgetType}
+            type={widgetType === "radialBar" ? "radialBar" : widgetType}
             height="100%"
             width="100%"
           />
@@ -150,7 +215,9 @@ const Widget = ({ title, sensorName, id, widgetType }) => {
       </div>
       {lastUpdate && (
         <div className="widget-footer">
-          <small>Poslední aktualizace: {lastUpdate.toLocaleTimeString('cs-CZ')}</small>
+          <small>
+            Poslední aktualizace: {lastUpdate.toLocaleTimeString("cs-CZ")}
+          </small>
         </div>
       )}
     </div>

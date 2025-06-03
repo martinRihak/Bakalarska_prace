@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import api from "@services/apiService";
-import { Activity, TrendingUp, Gauge, Loader } from "lucide-react";
+import { Activity, TrendingUp, Gauge, Loader, ArrowDownUp} from "lucide-react";
 import "@css/forms.css";
 
 // Define available chart types with icons
 const chartTypes = [
   { type: "line", icon: Activity, label: "Line Chart" },
   { type: "area", icon: TrendingUp, label: "Area Chart" },
-  { type: "enhancedRadialBar", icon: Gauge, label: "Enhanced Gauge" },
+  { type: "minMax", icon: ArrowDownUp, label: "Min Max" },
   { type: "value", icon: Loader, label: "Value" },
 ];
 

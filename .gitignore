@@ -1,2 +1,4 @@
 env/
 database/
+app/models/__pycache__
+app/routes/__pycache__

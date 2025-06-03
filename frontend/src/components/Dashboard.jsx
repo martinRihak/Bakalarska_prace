@@ -26,13 +26,17 @@ const SensorDashboard = () => {
   const loadDashboards = async () => {
     try {
       const userDashboards = await api.getDashboards();
+      console.log(userDashboards);
       setDashboards(userDashboards || []);
       if (userDashboards && userDashboards.length > 0) {
         setSelectedDashboard(userDashboards[0].dashboard_id);
+      } else {
+        setIsLoading(false); // Pokud nejsou dashboardy, nastavíme isLoading na false
       }
     } catch (err) {
       console.error("Failed to load dashboards:", err);
       setDashboards([]);
+      setIsLoading(false); // I při chybě nastavíme isLoading na false
     }
   };
 
@@ -41,6 +45,7 @@ const SensorDashboard = () => {
     try {
       setIsLoading(true);
       const dashboardWidgets = await api.getDashboardWidgets(dashboardId);
+      console.log(dashboardWidgets);
       const newLayouts = {
         lg: dashboardWidgets.map((widget) => ({
           i: widget.widget_id.toString(),
@@ -70,6 +75,8 @@ const SensorDashboard = () => {
   useEffect(() => {
     if (selectedDashboard) {
       loadWidgets(selectedDashboard);
+    } else {
+      setIsLoading(false); // Pokud není vybrán dashboard, nastavíme isLoading na false
     }
   }, [selectedDashboard]);
 
@@ -93,8 +100,8 @@ const SensorDashboard = () => {
     if (window.confirm("Opravdu chcete smazat tento dashboard?")) {
       try {
         await api.deleteDashboard(selectedDashboard);
+        load, setSelectedDashboard(null);
         loadDashboards();
-        setSelectedDashboard(null);
       } catch (err) {
         console.error("Failed to delete dashboard:", err);
         setError("Nepodařilo se smazat dashboard");
@@ -104,13 +111,14 @@ const SensorDashboard = () => {
 
   const handleSaveWidgetPositions = async () => {
     try {
-      const widgetPositions = layouts.lg.map((layout) => ({
+      const widgetPositions = layouts.md.map((layout) => ({
         widget_id: layout.i,
         position_x: layout.x,
         position_y: layout.y,
         width: layout.w,
         height: layout.h,
       }));
+      console.log("Saving widget positions:", widgetPositions[0]);
       await api.saveWidgetPositions(selectedDashboard, widgetPositions);
       alert("Pozice widgetů byly uloženy");
     } catch (err) {
@@ -121,10 +129,10 @@ const SensorDashboard = () => {
 
   const DashboardHeader = () => (
     <div className="dashboard-header">
-      <button className="create-dashboard-btn" onClick={handleDashboardCreate}>
+      <button className="dashboard-btn" onClick={handleDashboardCreate}>
         Vytvořit nový dashboard
       </button>
-      <button className="create-dashboard-btn" onClick={handleWidgetCreate}>
+      <button className="dashboard-btn" onClick={handleWidgetCreate}>
         Vytvořit nový widget
       </button>
       {dashboards.length > 0 && (
@@ -136,26 +144,21 @@ const SensorDashboard = () => {
               </option>
             ))}
           </select>
-          <button onClick={handleDeleteDashboard}>Smazat dashboard</button>
-          <button onClick={handleSaveWidgetPositions}>Uložit pozice widgetů</button>
+          <button className="dashboard-btn" onClick={handleDeleteDashboard}>Smazat dashboard</button>
+          <button className="dashboard-btn" onClick={handleSaveWidgetPositions}>Uložit pozice widgetů</button>
         </>
       )}
     </div>
   );
-
-  if (isLoading) {
-    return (
-      <div className="main-content">
-        <DashboardHeader />
-        <div>Načítání...</div>
-      </div>
-    );
-  }
-
+  const handleWidgetDelete = () => {
+    loadWidgets(selectedDashboard);
+  };
   return (
     <div className="main-content">
       <DashboardHeader />
-      {!isLoading && (
+      {isLoading ? (
+        <div>Načítání...</div>
+      ) : (
         <>
           {dashboards.length === 0 ? (
             <div className="no-dashboards-message">
@@ -183,13 +186,18 @@ const SensorDashboard = () => {
               {widgets.map((widget) => (
                 <div
                   key={widget.widget_id.toString()}
-                  className="widget-wrapper"
+                  className="widget"
                 >
+  
                   <Widget
                     title={widget.title}
+                    widget_id={widget.widget_id}
                     sensorName={`Sensor ${widget.sensors[0].name}`}
                     id={widget.sensors[0].sensor_id}
+                    active={widget.sensors[0].is_active}
                     widgetType={widget.widget_type}
+                    dashboard_id={selectedDashboard}
+                    onDelete={handleWidgetDelete} // Předání callbacku
                   />
                 </div>
               ))}

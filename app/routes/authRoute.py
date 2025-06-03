@@ -8,6 +8,17 @@ import jwt, redis
 auth_api = Blueprint('auth_api', __name__)
 JWT_SECRET_KEY = 'tajny_klic_pro_podpis_jwt'
 JWT_EXPIRATION = 24 * 60 * 60
+
+def setup_user_session(user):
+    # Nastavení modbus
+    modbus_manager = current_app.config['MODBUS_MANAGER']
+    modbus_manager.load_use_sensors(user.user_id)
+    
+    # Aktualizace posledního přihlášení
+    user.last_login = db.func.now()
+    db.session.commit()
+    
+    
 def create_token(user_id, username, role):
     """Vytvoří JWT token"""
     payload = {
@@ -36,12 +47,15 @@ def login_required(f):
         if auth_header and auth_header.startswith('Bearer '):
             token = auth_header.split(' ')[1]
             token_data = verify_token(token)
-            
+            print(token_data)   
+            user = User.query.get(token_data['user_id'])
             if token_data:
                 # Token je platný, přidáme data do session pro kompatibilitu
                 session['user_id'] = token_data['user_id']
                 session['username'] = token_data['username']
                 session['role'] = token_data['role']
+                
+                setup_user_session(user)
                 return f(*args, **kwargs)
             
             # Token je neplatný a jde o API požadavek

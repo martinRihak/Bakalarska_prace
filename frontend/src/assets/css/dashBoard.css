@@ -1,42 +1,24 @@
-/* Dashboard Styles */
-.widget {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: var(--surface-color);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Pro radialBar widget nastavíme bílý text */
+.widget.radialBar .widget-header h3 {
+  color: var(--text-secondary); /* #FAFAFA */
 }
 
-.widget-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.widget-header h3 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
+/* Widget controls */
 .widget-controls {
   display: flex;
   gap: 0.5rem;
 }
 
-.widget-content {
-  flex: 1;
-  padding: 1rem;
-  overflow: auto;
-  position: relative;
+.widget-controls button {
+  color: var(--text-primary); /* #000000 */
 }
 
-/* Styl pro hlavičku dashboardu */
+/* Pro radialBar widget nastavíme bílé tlačítka */
+.widget.radialBar .widget-controls button {
+  color: var(--text-secondary); /* #FAFAFA */
+}
+
+/* Ostatní styly zůstávají beze změny */
 .dashboard-header {
   display: flex;
   justify-content: flex-end;
@@ -45,20 +27,24 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: inherit;
+  background-color: var(--surface-color);
   padding: 10px;
   gap: 10px;
+  border-radius: 15px;
 }
 
-.create-dashboard-btn {
+.dashboard-btn {
+  
+  border-radius: 8px; /* Slightly rounded corners */
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
   white-space: nowrap;
   min-width: fit-content;
+  border: none; /* Clean button look */
+  cursor: pointer;
 }
 
-/* Modální okno */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -89,7 +75,6 @@
   margin-bottom: 1rem;
 }
 
-/* Zprávy */
 .no-widgets-message,
 .no-dashboards-message {
   text-align: center;
@@ -102,20 +87,13 @@
   max-width: 600px;
 }
 
-/* Grid Layout */
-.react-grid-layout {
-  position: relative;
-  width: 100%;
-  height: calc(100vh - 2rem);
-  transition: height 200ms ease;
-}
-
 .react-grid-item {
   transition: all 200ms ease;
   transition-property: left, top, width, height;
-  background: var(--surface-color);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--surface-color); /* Consistent with widget background */
+  border-radius: 15px; /* Matching widget rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Matching widget shadow */
+
 }
 
 .react-grid-item.react-grid-placeholder {
