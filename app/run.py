@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, session
 from flask_cors import CORS
-from utils.modbusManager import ModbusManager
+from utils.modbusManagerNew import ModbusManager_2_0
 from routes import init_routes
 from models.models import init_db
 from routes.authRoute import login_required
@@ -62,7 +62,7 @@ init_routes(app)
 # Inicializace ModbusManager v kontextu aplikace
 with app.app_context():
     try:
-        modbus_manager = ModbusManager()
+        modbus_manager = ModbusManager_2_0()
         app.config['MODBUS_MANAGER'] = modbus_manager
         logger.info("ModbusManager successfully initialized")
     except Exception as e:

@@ -12,7 +12,7 @@ JWT_EXPIRATION = 24 * 60 * 60
 def setup_user_session(user):
     # Nastavení modbus
     modbus_manager = current_app.config['MODBUS_MANAGER']
-    modbus_manager.load_use_sensors(user.user_id)
+    modbus_manager.load_user_sensors(user.user_id)
     
     # Aktualizace posledního přihlášení
     user.last_login = db.func.now()
@@ -99,7 +99,7 @@ def login():
     
     # Použít current_app místo app
     modbus_manager = current_app.config['MODBUS_MANAGER']
-    modbus_manager.load_use_sensors(user.user_id)
+    modbus_manager.load_user_sensors(user.user_id)
     
     return jsonify({
         'status': 'success',

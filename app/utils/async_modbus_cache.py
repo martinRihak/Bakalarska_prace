@@ -81,7 +81,7 @@ class AsyncModbusCache:
             
             self._setup_complete = True
             current_app.logger.info("AsyncModbusCache setup completed successfully")
-            current_app.logger.info(f"{self.sensor_map}")
+            
         except Exception as e:
             current_app.logger.error(f"Failed to setup AsyncModbusCache: {e}")
             raise
