@@ -44,7 +44,7 @@ def read_register(instrument,register_address, decimals, functioncode):
 
 
 PORT = "/dev/ttyUSB0"
-BAUDRATE = 4800
+BAUDRATE = 9600
 
 def scan_registers(device_address):
     instr = minimalmodbus.Instrument(PORT, device_address)
@@ -57,7 +57,7 @@ def scan_registers(device_address):
 
     print(f"📡 Čtení z adresy zařízení {device_address}...")
     while True:
-        address = 3
+        address =  2
         # Čtení hodnoty z registru 1
         value = instr.read_register(address, 0, functioncode=4)
         print(f"  ✅ Registr {address}: {value}")

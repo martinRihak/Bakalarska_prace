@@ -1,4 +1,4 @@
-from flask import Blueprint, send_file, request, redirect, url_for, flash, jsonify, session
+from flask import Blueprint, send_file, request, redirect, url_for, flash, jsonify, session,current_app
 from models.models import db, Sensor, SensorData, UserSensor
 from routes.authRoute import login_required
 from datetime import datetime, timedelta
@@ -158,25 +158,26 @@ def get_sensors():
 @login_required
 def get_latest_sensor_data(sensor_id):
     try:
-        latest_data = SensorData.query.filter_by(sensor_id=sensor_id)\
-            .order_by(SensorData.timestamp.desc())\
-            .first()
+       # modbus = current_app.config['MODBUS_MANAGER']
+       # latest_data = modbus.read_sensor(sensor_id)
+       # if not latest_data:
+       #     return jsonify({'error': 'No data available for this sensor'}), 404
+       # print(latest_data)
+        sensor = Sensor.query.get_or_404(sensor_id)
+        latest_data = SensorData.query.filter_by(sensor_id=sensor_id).order_by(SensorData.timestamp.desc()).first()
         if not latest_data:
             return jsonify({'error': 'No data available for this sensor'}), 404
-            
-        sensor = Sensor.query.get_or_404(sensor_id)
-
         return jsonify({
             'sensor': {
-                'id': sensor.sensor_id,
-                'name': sensor.name,
-                'unit': sensor.unit,
-                'min_value': sensor.min_value,
-                'max_value': sensor.max_value, 
+            'id': sensor.sensor_id,
+            'name': sensor.name,
+            'unit': sensor.unit,
+            'min_value': sensor.min_value,
+            'max_value': sensor.max_value, 
             },
             'data': {
-                'timestamp': latest_data.timestamp.isoformat(),
-                'value': latest_data.value
+            'timestamp': latest_data.timestamp.isoformat(),
+            'value': latest_data.value
             }
         })
         

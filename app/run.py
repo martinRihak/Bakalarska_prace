@@ -5,6 +5,7 @@ from routes import init_routes
 from models.models import init_db
 from routes.authRoute import login_required
 import os,sys,logging
+import asyncio
 import secrets
 def setup_logger():
         # Vytvoření formátovače s barevným výstupem
@@ -58,18 +59,18 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
 
 logger = setup_logger()
 init_db(app)
-init_routes(app)
 # Inicializace ModbusManager v kontextu aplikace
 with app.app_context():
     try:
-        modbus_manager = ModbusManager_2_0()
+        modbus_manager = ModbusManager_2_0(app=app)
         app.config['MODBUS_MANAGER'] = modbus_manager
         logger.info("ModbusManager successfully initialized")
     except Exception as e:
         logger.error(f"Failed to initialize ModbusManager: {e}")
-        sys.exit(1)  # Ukončí aplikaci při selhání inicializace
+        sys.exit(1)
 
 
+init_routes(app)
 @app.route('/api/data', methods=['GET'])
 @login_required
 def get_data():
