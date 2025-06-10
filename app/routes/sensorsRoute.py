@@ -29,7 +29,7 @@ def get_sensor_history(sensor_id):
             .filter(SensorData.timestamp >= start_time)\
             .order_by(SensorData.timestamp)\
             .all()
-    
+        
         data = [{
             'timestamp': data.timestamp.isoformat(),
             'value': data.value
@@ -146,8 +146,13 @@ def get_sensors():
             'sensor_type': sensor.sensor_type,
             'address': sensor.address,
             'functioncode': sensor.functioncode,
+            'bit' : sensor.bit,
+            'scaling': sensor.scaling,
+            'min_value': sensor.min_value,
+            'max_value':sensor.max_value,
+            'sampling_rate': sensor.sampling_rate,
             'unit': sensor.unit,
-            'is_active': sensor.is_active
+            'is_active': sensor.is_active,
         } for sensor in user_sensors]
             
         return jsonify(sensor_data), 200
@@ -158,15 +163,18 @@ def get_sensors():
 @login_required
 def get_latest_sensor_data(sensor_id):
     try:
-       # modbus = current_app.config['MODBUS_MANAGER']
-       # latest_data = modbus.read_sensor(sensor_id)
-       # if not latest_data:
-       #     return jsonify({'error': 'No data available for this sensor'}), 404
-       # print(latest_data)
-        sensor = Sensor.query.get_or_404(sensor_id)
-        latest_data = SensorData.query.filter_by(sensor_id=sensor_id).order_by(SensorData.timestamp.desc()).first()
+        modbus = current_app.config['MODBUS_MANAGER']
+        latest_data = modbus.read_sensor(sensor_id=sensor_id)
+        print(latest_data)
+        if latest_data is None:
+            current_app.logger.info(f"Load from database for sensore {sensor_id}")
+            latest_data = SensorData.query.filter_by(sensor_id=sensor_id).order_by(SensorData.timestamp.desc()).first()
+        
         if not latest_data:
             return jsonify({'error': 'No data available for this sensor'}), 404
+        
+        sensor = Sensor.query.get_or_404(sensor_id)
+        
         return jsonify({
             'sensor': {
             'id': sensor.sensor_id,
@@ -176,7 +184,7 @@ def get_latest_sensor_data(sensor_id):
             'max_value': sensor.max_value, 
             },
             'data': {
-            'timestamp': latest_data.timestamp.isoformat(),
+            'timestamp': latest_data.timestamp,
             'value': latest_data.value
             }
         })

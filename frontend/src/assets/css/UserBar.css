@@ -1,0 +1,9 @@
+.main-userBar{
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+.userName{
+    background-color: red;   
+    width: 200px;
+}

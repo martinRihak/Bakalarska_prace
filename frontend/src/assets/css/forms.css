@@ -29,7 +29,13 @@
 }
 
 /* Form controls */
-.form-input,
+.form-input[type="checkbox"]{
+  margin: 0;
+  cursor: pointer;
+  width: 1.6em;
+  height: 1.6em;
+  align-self: center;
+}
 .form-textarea,
 .form-select {
   width: 100%;
@@ -80,14 +86,12 @@
 
 /* Cancel button */
 .form-button.cancel {
-  background-color: transparent;
+  background-color: var(--error-color);
   color: var(--text-secondary);
   border: 1px solid var(--text-secondary);
 }
 
-.form-button.cancel:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
+
 
 /* Chart type selector */
 .chart-type-selector {

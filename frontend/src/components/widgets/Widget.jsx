@@ -26,10 +26,10 @@ const Widget = ({
   const [sensor, setSensor] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [timeRange, setTimeRange] = useState("24h");
-  const [localActive, setLocalActive] = useState(active); // Lokální stav pro switch
+  const [localActive, setLocalActive] = useState(active); // lokální stav pro switch
 
   const processedData = useMemo(() => {
-    if (widgetType === "minMax" || widgetType === "value") {
+    if (widgetType === "value") {
       return null;
     }
     if (!sensorData || !sensorData.length) return [];
@@ -40,8 +40,13 @@ const Widget = ({
   }, [sensorData, timeRange, widgetType]);
 
   useEffect(() => {
-    fetchData();
-  }, [id, timeRange]);
+    if (!localActive) {
+      setError("Senzor je neaktivní");
+      setSensorData(null);
+    } else {
+      fetchData();
+    }
+  }, [id, timeRange, localActive]);
 
   useEffect(() => {
     setLocalActive(active); // Synchronizace s prop při změně z nadřazené komponenty
@@ -155,21 +160,23 @@ const Widget = ({
   };
 
   return (
-    <div className="widget ${widgetType}">
+    <div className={`widget ${widgetType}`}>
       <div className="widget-header">
         <h3>{title}</h3>
         <div className="widget-controls">
-          {widgetType !== "radialBar" && widgetType !== "value" && (
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              className="time-range-select"
-            >
-              <option value="24h">24 hodin</option>
-              <option value="7d">7 dní</option>
-              <option value="30d">30 dní</option>
-            </select>
-          )}
+          <div>
+            {widgetType !== "radialBar" && widgetType !== "value" && (
+              <select
+                value={timeRange}
+                onChange={(e) => setTimeRange(e.target.value)}
+                className="time-range-select"
+              >
+                <option value="24h">24 hodin</option>
+                <option value="7d">7 dní</option>
+                <option value="30d">30 dní</option>
+              </select>
+            )}
+          </div>
           <label className="switch">
             <input
               type="checkbox"
@@ -181,16 +188,14 @@ const Widget = ({
               }}
             />
             <span className="slider"></span>
-            </label>
+          </label>                  
           <button onClick={deleteWidget}>
             <CircleX />
           </button>
-          <button
-  onClick={() => {
-    console.log("Button clicked, isLoading:");
-    handleRefresh();
-  }}
->
+          <button onClick={() => {
+              console.log("Button clicked, isLoading:");
+              handleRefresh();
+            }}>
   <RefreshCw />
 </button>
         </div>
@@ -201,16 +206,22 @@ const Widget = ({
             <ImageOff />
             <p>{error}</p>
           </div>
-        ) : widgetType === "value" ? (
-          <ValueWidget sensorData={sensorData} />
         ) : (
-          <ReactApexChart
-            options={chartOptions}
-            series={chartSeries}
-            type={widgetType === "radialBar" ? "radialBar" : widgetType}
-            height="100%"
-            width="100%"
-          />
+          <>
+            {widgetType === "value" ? (
+              <div className="value-widget">
+                <ValueWidget sensorData={sensorData} />
+              </div>
+            ) : (
+              <ReactApexChart
+                options={chartOptions}
+                series={chartSeries}
+                type={widgetType === "radialBar" ? "radialBar" : widgetType}
+                height="100%"
+                width="100%"
+              />
+            )}
+          </>
         )}
       </div>
       {lastUpdate && (

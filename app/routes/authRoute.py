@@ -10,19 +10,6 @@ JWT_SECRET_KEY = 'tajny_klic_pro_podpis_jwt'
 JWT_EXPIRATION = 24 * 60 * 60
 
 def setup_user_session(user):
-    # Nastavení modbus
-    modbus_manager = current_app.config['MODBUS_MANAGER']
-        
-    try:
-        success = modbus_manager.load_user_sensors(user.user_id)
-        if success:
-            current_app.logger.info(f"Senzory načteny pro uživatele {user.user_id}")
-        else:
-            current_app.logger.warning(f"Žádné senzory nebyly nalezeny pro uživatele {user.user_id}")
-    except Exception as e:
-        current_app.logger.error(f"Chyba při načítání senzorů pro uživatele {user.user_id}: {e}")
-    
-        
     # Aktualizace posledního přihlášení
     user.last_login = db.func.now()
     db.session.commit()
@@ -91,7 +78,7 @@ def login():
         return jsonify({'status': 'error', 'message': 'Chybějící uživatelské jméno nebo heslo'}), 400
     
     user = User.query.filter_by(username=data.get('username')).first()
-    print(user) 
+   # print(user) 
     if not user or not check_password_hash(user.password_hash, data.get('password')):
         return jsonify({'status': 'error', 'message': 'Nesprávné přihlašovací údaje'}), 401
     
@@ -133,10 +120,6 @@ def login():
 
 @auth_api.route('/logout', methods=['POST'])
 def logout():
-    if 'user_id' in session:
-        # Get ModbusManager from app config
-        modbus_manager = current_app.config['MODBUS_MANAGER']
-        modbus_manager.release_resources(session['user_id'])
     session.clear()
     return jsonify({'status': 'success', 'message': 'Odhlášení proběhlo úspěšně'}), 200
 

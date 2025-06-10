@@ -34,4 +34,9 @@ Tento projekt je webová aplikace určená pro sběr, zpracování a vizualizaci
 - pip install flask_cors
 - pip install flask_sqlalchemy
 - pip install PyJWT
-- - pip install redisw
+- - pip install redis
+
+
+# Ukoly
+
+- Nastait ze time bud mit tabulka widgets a bude se prirazovat pri volani funkce get_senzor_history v sensorRoute.py

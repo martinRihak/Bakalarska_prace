@@ -63,7 +63,6 @@ class DashboardWidget(db.Model):
     position_y = db.Column(db.Integer, nullable=False)
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
-    time = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
     
@@ -83,6 +82,7 @@ class Widget(db.Model):
     widget_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     widget_type = db.Column(db.String(50), nullable=False)
     title = db.Column(db.String(100))
+    time = db.Column(db.String(4), nullable=True)
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
     

@@ -53,14 +53,7 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <div>Profile Page</div>
-            </ProtectedRoute>
-          }
-        />
+
         <Route
           path="/create-dashboard"
           element={

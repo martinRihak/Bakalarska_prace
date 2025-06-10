@@ -71,15 +71,7 @@ with app.app_context():
 
 
 init_routes(app)
-@app.route('/api/data', methods=['GET'])
-@login_required
-def get_data():
-    return jsonify({'message': 'Hello, Flask!'})
 
-@app.route('/hello')
-@login_required
-def hello():
-    return 'Hello, World'
 
 @app.route('/')
 @login_required
@@ -88,5 +80,5 @@ def index():
 
 if __name__ == '__main__':
     
-    app.run(debug=True, use_reloader=True)
+    app.run(debug=True, use_reloader=False)
     

@@ -109,10 +109,7 @@ input:focus, select:focus, textarea:focus {
   text-align: center;
 }
 
-.error-message {
-  color: var(--error-color);
-  margin: 0.5rem 0;
-}
+
 
 .success-message {
   color: var(--success-color);

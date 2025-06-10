@@ -81,9 +81,7 @@ def getDashBoards():
 @login_required
 def get_dashboard_widgets(dashboard_id):
     user_id = session.get('user_id')
-    print(user_id)
     session['dashboard_id'] = dashboard_id
-    print(session['dashboard_id'])
     
     dashboard = Dashboard.query.filter_by(
         dashboard_id=dashboard_id,
@@ -112,7 +110,7 @@ def get_dashboard_widgets(dashboard_id):
             'position_y': dashboard_widget.position_y,
             'width': dashboard_widget.width,
             'height': dashboard_widget.height,
-            'sensors': [],
+            'sensors' :  [],
             'has_data': False
         }
         
@@ -273,13 +271,17 @@ def add_widget():
     db.session.add(new_widget)
     db.session.flush()
     
+    # Nastavení výchozí velikosti podle typu widgetu
+    default_width = 4 if data['widget_type'] == 'value' else 6
+    default_height = 3 if data['widget_type'] == 'value' else 4
+
     dashboard_widget = DashboardWidget(
         dashboard_id=dashboard_id,
         widget_id=new_widget.widget_id,
         position_x=data['position'].get('x', 0),
         position_y=data['position'].get('y', 0),
-        width=data['position'].get('width', 2),
-        height=data['position'].get('height', 2)
+        width=default_width,
+        height=default_height
     )
     
     if 'sensors' in data:

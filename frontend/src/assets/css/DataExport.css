@@ -13,8 +13,7 @@
 }
 
 .sensor-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 0.5rem;
   max-height: 200px;
   overflow-y: auto;
@@ -22,9 +21,37 @@
   border: 1px solid #ddd;
   border-radius: 4px;
 }
-
 .sensor-item {
-  display: flex;
+  display: flex; /* Nastaví label jako flex kontejner */
+  align-items: center; /* Vertikální zarovnání checkboxu a textu na střed */
+  justify-content: flex-start; /* Horizontální zarovnání vlevo */
+  gap: 2.5rem; /* Mezera 0.5rem mezi checkboxem a textem */
+}
+
+.sensor-item input {
   align-items: center;
-  gap: 0.5rem;
+  display: block;
+  width: 10rem;
+  margin: 0; /* Odstraní výchozí marginy checkboxu */
+  cursor: pointer; /* Zvýrazní, že je checkbox klikatelný */
+}
+.sensor-item input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+  width: 1.6em;
+  height: 1.6em;
+}
+
+.sensor-item label {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+.sensor-item input[type="checkbox"]:checked {
+  background-color: #007bff; /* Modrá barva při zaškrtnutí */
+  border-color: #007bff;
+  
+}
+.sensor-item:hover {
+  background-color: #e0e0e0; /* Světlejší pozadí při hover */
 }

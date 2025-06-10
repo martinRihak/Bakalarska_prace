@@ -1,21 +1,20 @@
 .widget {
     width: 100%;
     height: 100%;
-
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #FFFFFF; /* Light background for modern look */
-    border-radius: 15px; /* Rounded corners matching the first image */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for elevation */
+    background: #FFFFFF;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Widget header */
 .widget-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 1rem; /* Adjusted padding for a balanced look */
+    ;
+    padding: 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -23,7 +22,7 @@
     margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #000000; /* Dark title color */
+    color: #000000;
 }
 
 .widget-controls {
@@ -31,7 +30,6 @@
     gap: 0.5rem;
     align-items: center;
 }
-
 
 .widget-content {
     flex: 1;
@@ -56,7 +54,7 @@
 }
 
 .widget.radialBar {
-    background: var(--primary-color); /* #1017EA */
+    background: var(--primary-color);
 }
 
 .refresh-button {
@@ -102,32 +100,22 @@
 }
 
 .widget-footer {
-    font-size: 0.75rem; /* Small footer text */
-    color: #666666; /* Muted gray color */
+    font-size: 0.75rem;
+    color: #666666;
     text-align: center;
-    padding: 0.5rem; /* Adjusted padding */
+    padding: 0.5rem;
 }
 
 /* Toggle Switch */
 .switch {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     width: 60px;
     height: 34px;
-  }
-  
-  .switch input {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 1; /* Zajistí, že input je nad sliderem */
-  }
-  
-  .slider {
+}
+
+.slider {
     position: absolute;
     cursor: pointer;
     top: 0;
@@ -137,9 +125,10 @@
     background-color: #ccc;
     transition: 0.4s;
     border-radius: 34px;
-  }
-  
-  .slider:before {
+    width: 60px;
+}
+
+.slider:before {
     position: absolute;
     content: "";
     height: 26px;
@@ -149,52 +138,66 @@
     background-color: white;
     transition: 0.4s;
     border-radius: 50%;
-  }
-  
-  input:checked + .slider {
+}
+
+input:checked + .slider {
     background-color: var(--success-color);
-  }
-  
-  input:checked + .slider:before {
+}
+
+input:checked + .slider:before {
     transform: translateX(26px);
-  }
-/* Value widget specific styles */
-.value-widget {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .value-container {
     display: flex;
     align-items: center;
-    justify-content: center; /* Center icon and value */
-    margin-bottom: 1rem; /* Spacing below the value */
+    justify-content: center;
+    margin-bottom: 1rem;
 }
 
 .icon svg {
-    margin-right: 1.5rem; /* Increased spacing between icon and value */
+    margin-right: 1.5rem;
     padding: 1.5rem;
-    background: #FFFFFF; /* Consistent light background */
-    border-radius: 30px; /* Rounded corners */
-    box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    border: none; /* Remove border for a cleaner look */
-    width: 150px; /* Fixed width for the icon */
-    height: 150px; /* Fixed height for the icon */
+    background: #FFFFFF;
+    border-radius: 30px;
+    box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1);
+    border: none;
+    width: 250px;
+    height: 250px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.value {
-    font-size: 3.5rem; /* Large, prominent value */
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 3rem;
     font-weight: bold;
-    color: #000000; /* Black for contrast */
+}
+
+.error-message svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+}
+
+.error-message p {
+    margin: 0;
+}
+
+.value-widget .value {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #000000;
 }
 
 .timestamp {
-    font-size: 0.8rem; /* Smaller timestamp */
-    color: #666666; /* Muted gray */
+    font-size: 0.8rem;
+    color: #666666;
     text-align: center;
 }
 

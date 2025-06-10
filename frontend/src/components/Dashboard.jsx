@@ -51,8 +51,10 @@ const SensorDashboard = () => {
           i: widget.widget_id.toString(),
           x: widget.position_x || 0,
           y: widget.position_y || 0,
-          w: widget.width || 4,
-          h: widget.height || 4,
+          w: widget.width, 
+          h: widget.height, 
+          minW: widget.widget_type === 'value' ? 4 : 6 ,
+          minH: widget.widget_type === 'value' ? 3 : 4 ,
         })),
       };
       setWidgets(dashboardWidgets);
@@ -111,7 +113,13 @@ const SensorDashboard = () => {
 
   const handleSaveWidgetPositions = async () => {
     try {
-      const widgetPositions = layouts.md.map((layout) => ({
+      // Použijeme lg layout nebo první dostupný layout
+      const currentLayout = layouts.lg || Object.values(layouts)[0];
+      if (!currentLayout) {
+        throw new Error("No layout available");
+      }
+      
+      const widgetPositions = currentLayout.map((layout) => ({
         widget_id: layout.i,
         position_x: layout.x,
         position_y: layout.y,
@@ -182,6 +190,9 @@ const SensorDashboard = () => {
               isResizable={true}
               autoSize={true}
               useCSSTransforms={true}
+              preventCollision={true}
+              compactType={null}
+              verticalCompact={false}
             >
               {widgets.map((widget) => (
                 <div

@@ -24,6 +24,8 @@
     border-radius: 4px;
     transition: all 0.3s ease;
     background-color: transparent;
+    font-size: 1rem;
+    text-align: center;
 }
 
 .nav-link:hover {
@@ -48,7 +50,6 @@
     top: 1rem;
     left: 1rem;
     z-index: 1000;
-    background: var(--surface-color);
     padding: 0.5rem;
 }
 

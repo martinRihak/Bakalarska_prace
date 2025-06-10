@@ -7,7 +7,6 @@ import "@css/forms.css";
 const chartTypes = [
   { type: "line", icon: Activity, label: "Line Chart" },
   { type: "area", icon: TrendingUp, label: "Area Chart" },
-  { type: "minMax", icon: ArrowDownUp, label: "Min Max" },
   { type: "value", icon: Loader, label: "Value" },
 ];
 
@@ -124,7 +123,7 @@ const WidgetForm = ({ onClose, onSuccess }) => {
                     }`}
                     onClick={() => setSelectedChartType(type)}
                   >
-                    <Icon size={24} />
+                    <Icon size={24} color="black" />
                     <span>{label}</span>
                   </button>
                 ))}
