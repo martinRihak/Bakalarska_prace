@@ -1,15 +1,24 @@
 .export-form {
   display: flex;
   flex-direction: column;
+  background-color: var(--surface-color);
+  padding: 1rem;
   gap: 1rem;
   max-width: 600px;
   margin: 0 auto;
+  border-radius: 8px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 0.5rem;
+}
+
+.form-group label {
+  color: var(--text-primary);
+  font-size: 1rem;
 }
 
 .sensor-list {
@@ -18,23 +27,25 @@
   max-height: 200px;
   overflow-y: auto;
   padding: 0.5rem;
-  border: 1px solid #ddd;
   border-radius: 4px;
 }
+
 .sensor-item {
-  display: flex; /* Nastaví label jako flex kontejner */
-  align-items: center; /* Vertikální zarovnání checkboxu a textu na střed */
-  justify-content: flex-start; /* Horizontální zarovnání vlevo */
-  gap: 2.5rem; /* Mezera 0.5rem mezi checkboxem a textem */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2.5rem;
+  user-select: none; /* Zabrání označení textu */
 }
 
 .sensor-item input {
   align-items: center;
   display: block;
   width: 10rem;
-  margin: 0; /* Odstraní výchozí marginy checkboxu */
-  cursor: pointer; /* Zvýrazní, že je checkbox klikatelný */
+  margin: 0;
+  cursor: pointer;
 }
+
 .sensor-item input[type="checkbox"] {
   margin: 0;
   cursor: pointer;
@@ -47,11 +58,31 @@
   font-size: 1rem;
   color: #333;
 }
+
 .sensor-item input[type="checkbox"]:checked {
-  background-color: #007bff; /* Modrá barva při zaškrtnutí */
+  background-color: #007bff;
+  /* Modrá barva při zaškrtnutí */
   border-color: #007bff;
-  
+
 }
+
 .sensor-item:hover {
-  background-color: #e0e0e0; /* Světlejší pozadí při hover */
+  background-color: var(--background-color);
+  color: inherit; /* Zachová původní barvu textu při hover */
+}
+
+/* Dark mode styles */
+:root.dark-mode .export-form {
+  background-color: var(--dark-surface-color);
+  color: var(--dark-text-primary);
+  border: 1px solid var(--dark-text-secondary);
+}
+
+:root.dark-mode .form-group label {
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .sensor-item:hover {
+  background-color: var(--dark-background-color-alt);
+  color: var(--dark-text-primary); /* Zachová barvu textu v dark mode při hover */
 }

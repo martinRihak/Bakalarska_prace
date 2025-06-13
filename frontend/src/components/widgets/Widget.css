@@ -4,16 +4,15 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #FFFFFF;
     border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: var(--surface-color);
 }
 
 /* Widget header */
 .widget-header {
     display: flex;
     justify-content: space-between;
-    ;
     padding: 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -106,47 +105,7 @@
     padding: 0.5rem;
 }
 
-/* Toggle Switch */
-.switch {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    width: 60px;
-    height: 34px;
-}
 
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
-    border-radius: 34px;
-    width: 60px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: 0.4s;
-    border-radius: 50%;
-}
-
-input:checked + .slider {
-    background-color: var(--success-color);
-}
-
-input:checked + .slider:before {
-    transform: translateX(26px);
-}
 
 .value-container {
     display: flex;
@@ -189,7 +148,7 @@ input:checked + .slider:before {
     margin: 0;
 }
 
-.value-widget .value {
+.value {
     font-size: 3.5rem;
     font-weight: bold;
     color: #000000;
@@ -201,6 +160,28 @@ input:checked + .slider:before {
     text-align: center;
 }
 
+:root.dark-mode .widget{
+    background-color: var(--dark-surface-color);
+    color: var(--dark-text-primary);
+}
+:root.dark-mode .widget-header h3 {
+    color: var(--dark-text-primary);
+}
+:root.dark-mode .time-range-select:focus {
+    background-color: var(--dark-surface-color);
+    color: var(--dark-text-secondary);
+}
+:root.dark-mode .time-range-select {
+    background: transparent;
+    border: 1px solid var(--dark-text-secondary);
+    color: var(--dark-text-primary);
+}
+:root.dark-mode .widget-icon, .value {
+    color: var(--dark-text-secondary);
+}
+:root.dark-mode .icon svg{
+    background-color: var(--dark-surface-color);
+}
 @keyframes rotate {
     from {
         transform: rotate(0deg);

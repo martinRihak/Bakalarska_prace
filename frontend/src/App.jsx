@@ -11,7 +11,7 @@ import {
 // Komponenty
 import NavBar from "@components/NavBar";
 import ProtectedRoute from "@components/ProtectedRoute";
-import SensorDashboard from "@components/Dashboard";
+import ServerConnectionError from "@components/ServerConnectionError";
 
 // Stránky
 import Home from "@pages/Home";
@@ -36,15 +36,16 @@ function App() {
 // Vytvoření nové komponenty pro obsah, abychom mohli použít useLocation
 function AppContent() {
   const location = useLocation();
-  const hideNavBarPaths = ["/login"]; // Zde můžete přidat další cesty, kde chcete skrýt NavBar
+  const hideNavBarPaths = ["/login", "/server-error"]; // Přidáno server-error do cest bez NavBaru
 
   const shouldShowNavBar = !hideNavBarPaths.includes(location.pathname);
 
   return (
     <div className="app-container">
-      {shouldShowNavBar && <NavBar />}
+      {shouldShowNavBar && <NavBar /> }
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/server-error" element={<ServerConnectionError />} />
         <Route
           path="/"
           element={
@@ -71,7 +72,7 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-                <Route
+        <Route
           path="/sensors"
           element={
             <ProtectedRoute>

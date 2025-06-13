@@ -33,7 +33,7 @@
 .dashBoard {
     width: 100%;
     height: 100%;
-    padding: 1rem;
+    padding: 0rem 1rem 1rem 1rem;
     overflow: auto;
 }
 

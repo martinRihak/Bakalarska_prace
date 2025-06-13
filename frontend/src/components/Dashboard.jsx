@@ -137,14 +137,16 @@ const SensorDashboard = () => {
 
   const DashboardHeader = () => (
     <div className="dashboard-header">
+
+      {dashboards.length > 0 && (
+        <>
+
       <button className="dashboard-btn" onClick={handleDashboardCreate}>
         Vytvořit nový dashboard
       </button>
       <button className="dashboard-btn" onClick={handleWidgetCreate}>
         Vytvořit nový widget
       </button>
-      {dashboards.length > 0 && (
-        <>
           <select value={selectedDashboard || ''} onChange={handleDashboardChange}>
             {dashboards.map((dashboard) => (
               <option key={dashboard.dashboard_id} value={dashboard.dashboard_id}>
@@ -152,8 +154,8 @@ const SensorDashboard = () => {
               </option>
             ))}
           </select>
-          <button className="dashboard-btn" onClick={handleDeleteDashboard}>Smazat dashboard</button>
-          <button className="dashboard-btn" onClick={handleSaveWidgetPositions}>Uložit pozice widgetů</button>
+      <button className="dashboard-btn" onClick={handleDeleteDashboard}>Smazat dashboard</button>
+      <button className="dashboard-btn" onClick={handleSaveWidgetPositions}>Uložit pozice widgetů</button>
         </>
       )}
     </div>
@@ -192,7 +194,7 @@ const SensorDashboard = () => {
               useCSSTransforms={true}
               preventCollision={true}
               compactType={null}
-              verticalCompact={false}
+            
             >
               {widgets.map((widget) => (
                 <div
@@ -206,6 +208,7 @@ const SensorDashboard = () => {
                     sensorName={`Sensor ${widget.sensors[0].name}`}
                     id={widget.sensors[0].sensor_id}
                     active={widget.sensors[0].is_active}
+                    time={widget.time}
                     widgetType={widget.widget_type}
                     dashboard_id={selectedDashboard}
                     onDelete={handleWidgetDelete} // Předání callbacku

@@ -17,6 +17,7 @@ const Widget = ({
   sensorName,
   id,
   active,
+  time,
   widgetType,
   dashboard_id,
   onDelete,
@@ -25,7 +26,7 @@ const Widget = ({
   const [error, setError] = useState(null);
   const [sensor, setSensor] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [timeRange, setTimeRange] = useState("24h");
+  const [timeRange, setTimeRange] = useState(time);
   const [localActive, setLocalActive] = useState(active); // lokální stav pro switch
 
   const processedData = useMemo(() => {
@@ -66,7 +67,7 @@ const Widget = ({
         setSensorData(response);
       } 
       else {
-        response = await api.getSensorHistory(id, timeRange);
+        response = await api.getSensorHistory(id, timeRange,widget_id);
         if (!response || !response.data || response.data.length === 0) {
           setError("Žádná data k zobrazení");
           return;

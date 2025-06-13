@@ -8,6 +8,50 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.form-container {
+  background: var(--surface-color);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh; /* Maximální výška 80% výšky viewportu */
+  overflow-y: auto; /* Povolení vertikálního scrollování */
+  position: relative;
+}
+
+/* Styling scrollbaru pro WebKit prohlížeče */
+.form-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.form-container::-webkit-scrollbar-track {
+  background: var(--background-color);
+  border-radius: 4px;
+}
+
+.form-container::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+.form-container::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
+}
+
 .form-heading {
   font-size: 1.5rem;
   font-weight: 700;
@@ -29,7 +73,7 @@
 }
 
 /* Form controls */
-.form-input[type="checkbox"]{
+.form-input[type="checkbox"] {
   margin: 0;
   cursor: pointer;
   width: 1.6em;
@@ -60,8 +104,6 @@
 .form-submit {
   display: inline-flex;
   justify-content: center;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
   font-weight: 500;
   color: white;
   background-color: var(--primary-color);
@@ -79,11 +121,13 @@
 /* Form footer */
 .form-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-evenly;
   gap: 1rem;
   margin-top: 1rem;
 }
-
+.form-footer button{
+  width: 100%;
+}
 /* Cancel button */
 .form-button.cancel {
   background-color: var(--error-color);
@@ -133,4 +177,77 @@
     margin: 1rem;
     padding: 1rem;
   }
+}
+
+/* Dark mode styles */
+:root.dark-mode .form-container {
+  background-color: var(--dark-surface-color);
+  color: var(--dark-text-primary);
+  border: 1px solid var(--dark-text-secondary);
+}
+
+:root.dark-mode .form-heading {
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .form-label {
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .form-input,
+:root.dark-mode .form-textarea,
+:root.dark-mode .form-select {
+  background-color: var(--dark-background-color);
+  color: var(--dark-text-primary);
+  border-color: var(--dark-text-secondary);
+}
+
+:root.dark-mode .form-input:focus,
+:root.dark-mode .form-textarea:focus,
+:root.dark-mode .form-select:focus {
+  border-color: var(--dark-primary-color);
+  box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.1);
+}
+
+:root.dark-mode .form-input::placeholder {
+  color: var(--dark-text-secondary);
+}
+
+:root.dark-mode .form-select option {
+  background-color: var(--dark-background-color);
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .chart-type-button {
+  background-color: var(--dark-surface-color);
+  border-color: var(--dark-text-secondary);
+}
+
+:root.dark-mode .chart-type-button:hover {
+  background-color: var(--dark-primary-color);
+}
+
+:root.dark-mode .chart-type-button.selected {
+  background-color: var(--dark-primary-color);
+  border-color: var(--dark-secondary-color);
+}
+
+:root.dark-mode .chart-type-button span {
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+:root.dark-mode .form-container::-webkit-scrollbar-track {
+  background: var(--dark-background-color);
+}
+
+:root.dark-mode .form-container::-webkit-scrollbar-thumb {
+  background: var(--dark-primary-color);
+}
+
+:root.dark-mode .form-container::-webkit-scrollbar-thumb:hover {
+  background: var(--dark-secondary-color);
 }

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session, redirect, url_for, current_app
+from flask import Blueprint, request, jsonify, session, redirect, url_for, current_app, make_response
 from werkzeug.security import check_password_hash, generate_password_hash
 from models.models import User, db
 from datetime import datetime,timedelta,timezone
@@ -7,21 +7,31 @@ import jwt, redis,asyncio
 
 auth_api = Blueprint('auth_api', __name__)
 JWT_SECRET_KEY = 'tajny_klic_pro_podpis_jwt'
-JWT_EXPIRATION = 24 * 60 * 60
+ACCESS_TOKEN_EXPIRATION = 15 * 60  # 15 minut
+REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60  # 7 dní
 
 def setup_user_session(user):
     # Aktualizace posledního přihlášení
     user.last_login = db.func.now()
     db.session.commit()
-    
-    
-def create_token(user_id, username, role):
-    """Vytvoří JWT token"""
+
+def create_access_token(user_id, username, role):
+    """Vytvoří krátkodobý JWT access token"""
     payload = {
         'user_id': user_id,
         'username': username,
         'role': role,
-        'exp': datetime.now(tz=timezone.utc) + timedelta(seconds=JWT_EXPIRATION)
+        'exp': datetime.now(tz=timezone.utc) + timedelta(seconds=ACCESS_TOKEN_EXPIRATION),
+        'type': 'access'
+    }
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm='HS256')
+
+def create_refresh_token(user_id):
+    """Vytvoří dlouhodobý JWT refresh token"""
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.now(tz=timezone.utc) + timedelta(seconds=REFRESH_TOKEN_EXPIRATION),
+        'type': 'refresh'
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm='HS256')
 
@@ -43,13 +53,36 @@ def login_required(f):
         if auth_header and auth_header.startswith('Bearer '):
             token = auth_header.split(' ')[1]
             token_data = verify_token(token)
-            print(token_data)   
-            user = User.query.get(token_data['user_id'])
+            
+            # Pokud je token neplatný, zkusíme použít refresh token
+            if not token_data:
+                refresh_token = request.cookies.get('refresh_token')
+                if refresh_token:
+                    try:
+                        # Ověření refresh tokenu
+                        refresh_data = verify_token(refresh_token)
+                        if refresh_data and refresh_data.get('type') == 'refresh':
+                            # Načtení uživatele
+                            user = User.query.get(refresh_data['user_id'])
+                            if user:
+                                # Vytvoření nového access tokenu
+                                new_token = create_access_token(user.user_id, user.username, user.role)
+                                # Znovu ověříme nový token
+                                token_data = verify_token(new_token)
+                                # Nastavíme nový token do hlavičky odpovědi
+                                response = make_response(f(*args, **kwargs))
+                                response.headers['New-Access-Token'] = new_token
+                                return response
+                    except Exception as e:
+                        current_app.logger.error(f"Chyba při obnovení tokenu: {e}")
+            
             if token_data:
-                # Token je platný, přidáme data do session pro kompatibilitu
-                session['user_id'] = token_data['user_id']
-                session['username'] = token_data['username']
-                session['role'] = token_data['role']
+                user = User.query.get(token_data['user_id'])
+                if user:
+                    # Token je platný, přidáme data do session pro kompatibilitu
+                    session['user_id'] = token_data['user_id']
+                    session['username'] = token_data['username']
+                    session['role'] = token_data['role']
                 
                 setup_user_session(user)
                 return f(*args, **kwargs)
@@ -82,12 +115,32 @@ def login():
     if not user or not check_password_hash(user.password_hash, data.get('password')):
         return jsonify({'status': 'error', 'message': 'Nesprávné přihlašovací údaje'}), 401
     
-    token = create_token(user.user_id,user.username,user.role)
+    # Vytvoření access a refresh tokenů
+    access_token = create_access_token(user.user_id, user.username, user.role)
+    refresh_token = create_refresh_token(user.user_id)
     
-    # Uložení informací o přihlášení do session
-    session['user_id'] = user.user_id
-    session['username'] = user.username
-    session['role'] = user.role
+    # Uložení refresh tokenu do HTTP-only cookie
+    response = jsonify({
+        'status': 'success',
+        'message': 'Přihlášení bylo úspěšné',
+        'user': {
+            'id': user.user_id,
+            'username': user.username,
+            'email': user.email,
+            'role': user.role
+        },
+        'token': access_token  # Pro zpětnou kompatibilitu
+    })
+    
+    # Nastavení HTTP-only cookie pro refresh token
+    response.set_cookie(
+        'refresh_token',
+        refresh_token,
+        httponly=True,
+        secure=False,  # Jen pro HTTPS
+        samesite='Strict',
+        max_age=REFRESH_TOKEN_EXPIRATION
+    )
     
     # Aktualizace posledního přihlášení
     user.last_login = db.func.now()
@@ -104,6 +157,8 @@ def login():
                 current_app.logger.warning(f"Žádné senzory nebyly nalezeny pro uživatele {user.user_id}")
         except Exception as e:
             current_app.logger.error(f"Chyba při načítání senzorů pro uživatele {user.user_id}: {e}")
+            
+    return response
     
     
     return jsonify({
@@ -212,3 +267,31 @@ def register():
             'role': new_user.role
         }
     }), 201
+
+@auth_api.route('/refresh-token', methods=['POST'])
+def refresh_token():
+    refresh_token = request.cookies.get('refresh_token')
+    if not refresh_token:
+        return jsonify({'status': 'error', 'message': 'Refresh token chybí'}), 401
+    
+    try:
+        # Ověření refresh tokenu
+        token_data = verify_token(refresh_token)
+        if not token_data or token_data.get('type') != 'refresh':
+            return jsonify({'status': 'error', 'message': 'Neplatný refresh token'}), 401
+        
+        # Načtení uživatele
+        user = User.query.get(token_data['user_id'])
+        if not user:
+            return jsonify({'status': 'error', 'message': 'Uživatel nenalezen'}), 401
+        
+        # Vytvoření nového access tokenu
+        access_token = create_access_token(user.user_id, user.username, user.role)
+        
+        return jsonify({
+            'status': 'success',
+            'token': access_token
+        })
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 401

@@ -3,7 +3,7 @@ import api from '@services/apiService';
 import AddSensorModal from '@forms/AddSensorModal';
 import '@css/SensorsPage.css';
 import SensorForm from '@forms/SensorForm';
-
+import UserBar from "@components/UserBar";
 const SensorsPage = () => {
   const [sensors, setSensors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,6 +64,7 @@ const SensorsPage = () => {
 
   return (
     <div className="main-content">
+      <UserBar />
       <h1>Moje senzory</h1>
       <button onClick={() => setIsAddModalOpen(true)} className="add-sensor-btn">
         Přidat senzor

@@ -24,7 +24,7 @@ def aggregate_sensor_data(sensor_id, widget_type, start_time=None):
 def get_widget_data(widget_id):
     try:
         widget = Widget.query.get_or_404(widget_id)
-        time_range = request.args.get('timeRange', '24h')
+        time_range = request.args.get('timeRange')
         
         now = datetime.utcnow()
         if time_range == '24h':
@@ -106,6 +106,7 @@ def get_dashboard_widgets(dashboard_id):
             'widget_id': dashboard_widget.widget_id,
             'widget_type': widget.widget_type,
             'title': widget.title,
+            'time':widget.time,
             'position_x': dashboard_widget.position_x,
             'position_y': dashboard_widget.position_y,
             'width': dashboard_widget.width,

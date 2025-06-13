@@ -9,9 +9,6 @@
   gap: 0.5rem;
 }
 
-.widget-controls button {
-  color: var(--text-primary); /* #000000 */
-}
 
 /* Pro radialBar widget nastavíme bílé tlačítka */
 .widget.radialBar .widget-controls button {
@@ -23,12 +20,12 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-bottom: 1rem;
+  margin: 1rem;
   position: sticky;
+  padding: 1rem;
   top: 0;
   z-index: 100;
   background-color: var(--surface-color);
-  padding: 10px;
   gap: 10px;
   border-radius: 15px;
   
@@ -92,7 +89,7 @@
 .no-dashboards-message {
   text-align: center;
   padding: 2rem;
-  color: var(--text-secondary);
+  color: black;
   font-size: 1.1rem;
   background-color: var(--surface-color);
   border-radius: 0.5rem;
@@ -103,7 +100,6 @@
 .react-grid-item {
   transition: all 200ms ease;
   transition-property: left, top, width, height;
-  background: var(--surface-color); /* Consistent with widget background */
   border-radius: 15px; /* Matching widget rounded corners */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Matching widget shadow */
 

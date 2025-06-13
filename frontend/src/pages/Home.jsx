@@ -1,17 +1,17 @@
-import React from 'react';
-import SensorDashboard from '@components/Dashboard';
-import UserBar from '@components/UserBar';
-import '@css/Home.css'
+import React, { useEffect, useState } from "react";
+import SensorDashboard from "@components/Dashboard";
+import UserBar from "@components/UserBar";
+import "@css/Home.css";
 
-function Home() {
-    return (
-        <div className='main'>
-            <UserBar />
-            <main className='dashBoard'>
-                <SensorDashboard />
-            </main>
-        </div>
-    );
-}
+const Home = () => {
+  return (
+    <div className="main">
+      <UserBar />
+      <main className="dashBoard">
+        <SensorDashboard />
+      </main>
+    </div>
+  );
+};
 
 export default Home;

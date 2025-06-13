@@ -38,13 +38,6 @@ function NavBar() {
         >
           Senzory
         </NavLink>
-        <NavLink 
-          to="/profile"
-          onClick={() => setIsOpen(false)}
-          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-        >
-          Profil
-        </NavLink>
         <NavLink
         to='/data-export'
         onClick={() => setIsOpen(false)}

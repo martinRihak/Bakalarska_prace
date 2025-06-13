@@ -1,5 +1,5 @@
 from flask import Blueprint, send_file, request, redirect, url_for, flash, jsonify, session,current_app
-from models.models import db, Sensor, SensorData, UserSensor
+from models.models import db, Sensor, SensorData, UserSensor,Widget
 from routes.authRoute import login_required
 from datetime import datetime, timedelta
 import json
@@ -12,9 +12,8 @@ sensors_api = Blueprint('sensors_api', __name__)
 @login_required
 def get_sensor_history(sensor_id):
     try:
-        time_range = request.args.get('timeRange', '24h')  # default to '24h' if not specified
-
-        sensor = Sensor.query.get_or_404(sensor_id)
+        time_range = request.args.get('timeRange')  # default to '24h' if not specified
+        widget_id = request.args.get('widget_id')
         now = datetime.utcnow()
         if time_range == '24h':
             delta = timedelta(days=1)
@@ -25,26 +24,30 @@ def get_sensor_history(sensor_id):
         else:
             delta = timedelta(days=1)
         start_time = now - delta
-        sensor_data = SensorData.query.filter_by(sensor_id=sensor_id)\
-            .filter(SensorData.timestamp >= start_time)\
-            .order_by(SensorData.timestamp)\
-            .all()
+        with db.session.begin():
+            sensor = Sensor.query.get_or_404(sensor_id)
+            Widget.query.filter_by(widget_id=widget_id).update({'time': time_range})
+            
+            sensor_data = SensorData.query.filter_by(sensor_id=sensor_id)\
+                .filter(SensorData.timestamp >= start_time)\
+                .order_by(SensorData.timestamp)\
+                .all()
         
-        data = [{
-            'timestamp': data.timestamp.isoformat(),
-            'value': data.value
-        } for data in sensor_data]
+            data = [{
+                'timestamp': data.timestamp.isoformat(),
+                'value': data.value
+            } for data in sensor_data]
         
-        return jsonify({
-            'sensor': {
-                'id': sensor.sensor_id,
-                'name': sensor.name,
-                'unit': sensor.unit,
-                'type': sensor.sensor_type
-            },
-            'data': data,
-            'timeRange': time_range
-        })
+            return jsonify({
+                'sensor': {
+                    'id': sensor.sensor_id,
+                    'name': sensor.name,
+                    'unit': sensor.unit,
+                    'type': sensor.sensor_type
+                },
+                'data': data,
+                'timeRange': time_range
+            })
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -198,69 +201,72 @@ def get_latest_sensor_data(sensor_id):
 def export_sensor_data():
     try:
         data = request.get_json()
-        start_date = datetime.fromisoformat(data['startDate'].replace('Z', '+00:00'))
-        end_date = datetime.fromisoformat(data['endDate'].replace('Z', '+00:00'))
+        start_date = datetime.fromisoformat(data['startDate'])
+        end_date = datetime.fromisoformat(data['endDate'])
         sensor_ids = data['sensorIds']
-        format = data['format']
-        file_name = data['fileName']
-        
-        user_id = session.get('user_id')
-        allowed_sensors = Sensor.query.join(UserSensor)\
-            .filter(UserSensor.user_id == user_id)\
-            .filter(Sensor.sensor_id.in_(sensor_ids))\
-            .all()
-        
-        if len(allowed_sensors) != len(sensor_ids):
-            return jsonify({'error': 'Unauthorized access to some sensors'}), 403
+        export_format = data.get('format', 'json')
 
-        sensor_data = SensorData.query\
-            .filter(SensorData.sensor_id.in_(sensor_ids))\
-            .filter(SensorData.timestamp.between(start_date, end_date))\
-            .order_by(SensorData.timestamp)\
-            .all()
+        if start_date > end_date:
+            return jsonify({'message': 'Datum začátku musí být před datem konce'}), 400
+
+        if not sensor_ids:
+            return jsonify({'message': 'Vyberte alespoň jeden senzor'}), 400
+
+        # Načtení dat senzorů
+        sensor_data = []
+        for sensor_id in sensor_ids:
+            sensor = Sensor.query.get(sensor_id)
+            if not sensor:
+                continue
+
+            data = SensorData.query.filter(
+                SensorData.sensor_id == sensor_id,
+                SensorData.timestamp >= start_date,
+                SensorData.timestamp <= end_date
+            ).order_by(SensorData.timestamp).all()
+
+            for record in data:
+                sensor_data.append({
+                    'sensor_name': sensor.name,
+                    'sensor_type': sensor.sensor_type,
+                    'unit': sensor.unit,
+                    'timestamp': record.timestamp.isoformat(),
+                    'value': record.value
+                })
 
         if not sensor_data:
-            return jsonify({'error': 'No data found for the specified criteria'}), 404
+            return jsonify({'message': 'Žádná data nebyla nalezena pro zadané období'}), 404
 
-        output = io.StringIO()
-        
-        if format == 'json':
-            data_to_export = [{
-                'sensor_id': d.sensor_id,
-                'timestamp': d.timestamp.isoformat(),
-                'value': d.value
-            } for d in sensor_data]
-            output.write(json.dumps(data_to_export))
-            content_type = 'application/json'
-        else:  # csv
-            writer = csv.writer(output)
-            writer.writerow(['sensor_id', 'timestamp', 'value'])
-            for d in sensor_data:
-                writer.writerow([d.sensor_id, d.timestamp.isoformat(), d.value])
-            content_type = 'text/csv'
+        # Export do požadovaného formátu
+        if export_format == 'csv':
+            output = io.StringIO()
+            writer = csv.DictWriter(output, fieldnames=['sensor_name', 'sensor_type', 'unit', 'timestamp', 'value'])
+            writer.writeheader()
+            writer.writerows(sensor_data)
+            return output.getvalue()
+        else:
+            return jsonify(sensor_data)
 
-        output.seek(0)
-        return send_file(
-            io.BytesIO(output.getvalue().encode('utf-8')),
-            mimetype=content_type,
-            as_attachment=True,
-            download_name=f"{file_name}.{format}"
-        )
+    except ValueError as e:
+        return jsonify({'message': 'Neplatný formát data'}), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        current_app.logger.error(f'Chyba při exportu dat: {str(e)}')
+        return jsonify({'message': ''}), 500
 
 @sensors_api.route('/available', methods=['GET'])
 @login_required
 def get_available_sensors():
     user_id = session.get('user_id')
     user_sensors = [us.sensor_id for us in UserSensor.query.filter_by(user_id=user_id).all()]
-    available_sensors = Sensor.query.filter(~Sensor.sensor_id.in_(user_sensors)).all()
+    available_sensors = Sensor.query.filter(Sensor.sensor_id.in_(user_sensors)).all()
+    print(available_sensors)
     return jsonify([{
         'sensor_id': s.sensor_id,
         'name': s.name,
         'sensor_type': s.sensor_type,
         'unit': s.unit
     } for s in available_sensors])
+    
 
 @sensors_api.route('/add-to-user', methods=['POST'])
 @login_required

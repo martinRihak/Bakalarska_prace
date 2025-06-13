@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../apiService';
 import '@css/DataExport.css'; // Import your CSS file for styling
-
+import UserBar from "@components/UserBar";
 const DataExport = () => {
   const [sensors, setSensors] = useState([]);
   const [selectedSensors, setSelectedSensors] = useState([]);
@@ -34,7 +34,8 @@ const DataExport = () => {
 
   const handleExport = async () => {
     if (!startDate || !endDate || selectedSensors.length === 0) {
-      setError('Vyplňte všechna povinná pole');
+      const message = 'Vyplňte všechna povinná pole';
+      setError(message);
       return;
     }
 
@@ -51,6 +52,8 @@ const DataExport = () => {
       };
 
       const response = await api.exportSensorData(exportData);
+
+      // Vytvoření a stažení souboru
       const blob = new Blob([response], { type: format === 'json' ? 'application/json' : 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -60,8 +63,13 @@ const DataExport = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      
+      setError(''); // Vyčištění chybové hlášky po úspěšném exportu
     } catch (err) {
-      setError('Chyba při exportu dat');
+      // Zobrazení chybové hlášky z backendu
+      const errorMessage = err.message || 'Nastala neočekávaná chyba při exportu dat';
+      setError(errorMessage);
+      alert(`Chyba: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -69,6 +77,7 @@ const DataExport = () => {
 
   return (
     <div className="main-content">
+        <UserBar />
       <h1>Export dat</h1>
       <div className="export-form">
         <div className="form-group">
@@ -118,7 +127,6 @@ const DataExport = () => {
             <option value="csv">CSV</option>
           </select>
         </div>
-        {error && <div className="error-message">{error}</div>}
         <button onClick={handleExport} disabled={loading}>
           {loading ? 'Exportuji...' : 'Exportovat data'}
         </button>

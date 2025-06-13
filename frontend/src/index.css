@@ -1,6 +1,5 @@
 :root {
   /* Barvy */
-  /* Barvy */
   --primary-color: #1017EA;        /* Tmavě modrá */
   --secondary-color: #A81916;      /* Tmavě červená */
   --background-color: #EBEBEB;     /* Světle šedá jako pozadí hlavních sekcí */
@@ -12,7 +11,14 @@
   --highlight-color: #E12E20;      /* Jasně červená pro důležité akce */
   --error-color: #A81916;          /* Tmavě červená pro chybové stavy */
   --success-color: #4CAF50;        /* Ponecháno pro úspěšné stavy */
-  
+ /* Dark mode */
+  --dark-background-color: #121212; /* Tmavé pozadí pro tmavý režim */
+  --dark-background-color-alt: #817979; /* Tmavé alternativní pozadí pro tmavý režim */
+  --dark-text-primary: #E0E0E0;    /* Světlejší text pro tmavý režim */
+  --dark-text-secondary: #B0B0B0;  /* Ještě světlejší text pro tmavý režim */
+  --dark-surface-color: #1E1E1E;   /* Tmavší povrch pro widgety a karty v tmavém režimu */
+  --dark-primary-color: #1017EA;   /* Světle fialová pro primární akcent v tmavém režimu */
+  --dark-secondary-color: #CF6679; /* Světle červená pro sekundární akcent v tmavém režimu */ 
   /* Typografie */
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -21,6 +27,9 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+    /* Transitions for theme switching */
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Základní reset a společné styly */
@@ -46,11 +55,13 @@ body {
 h1 {
   font-size: 2rem;
   font-weight: 600;
+  font-family: Open-Sans, Roboto;
   margin-bottom: 1rem;
 }
 
 h2 {
   font-size: 1.5rem;
+  font-family: Open-Sans, Roboto;
   font-weight: 500;
   margin-bottom: 0.75rem;
 }
@@ -75,6 +86,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
+  font-family: Open-Sans, Roboto;
   transition: background-color 0.2s;
 }
 
@@ -109,7 +121,51 @@ input:focus, select:focus, textarea:focus {
   text-align: center;
 }
 
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
 
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--success-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
 
 .success-message {
   color: var(--success-color);
@@ -123,6 +179,62 @@ input:focus, select:focus, textarea:focus {
   margin-left: 250px;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
+}
+
+/* Dark mode class */
+:root.dark-mode {
+    background-color: var(--dark-background-color);
+    color: var(--dark-text-primary);
+}
+
+:root.dark-mode body {
+    background-color: var(--dark-background-color);
+    color: var(--dark-text-primary);
+}
+
+:root.dark-mode .userName,
+:root.dark-mode .dashboard-header,
+:root.dark-mode .modal-content,
+:root.dark-mode .no-widgets-message,
+:root.dark-mode .no-dashboards-message,
+:root.dark-mode .sensor-table tr:nth-child(even) {
+    background-color: var(--dark-surface-color);
+    color: var(--dark-text-primary);
+}
+
+:root.dark-mode .theme-toggle-button {
+    background-color: var(--dark-surface-color);
+    color: var(--dark-text-primary);
+}
+
+/* Dark mode form elements */
+:root.dark-mode input,
+:root.dark-mode h1,
+:root.dark-mode select,
+:root.dark-mode textarea {
+    background-color: var(--dark-background-color);
+    color: var(--dark-text-primary);
+    border-color: var(--dark-text-secondary);
+}
+
+:root.dark-mode input:focus,
+:root.dark-mode select:focus,
+:root.dark-mode textarea:focus {
+    border-color: var(--dark-primary-color);
+    box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.1);
+}
+
+:root.dark-mode input::placeholder {
+    color: var(--dark-text-secondary);
+}
+
+:root.dark-mode select option {
+    background-color: var(--dark-background-color);
+    color: var(--dark-text-primary);
+}
+
+:root.dark-mode input[type="datetime-local"] {
+    color-scheme: dark;
 }
 
 /* Responzivní design */
