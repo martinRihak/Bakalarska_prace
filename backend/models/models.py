@@ -3,11 +3,14 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 from datetime import datetime
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 db = SQLAlchemy()
 
 def init_db(app: Flask):
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + '/home/rih0075/BK_projekt.db' 
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv() 
     db.init_app(app)
     with app.app_context():
         db.create_all()
