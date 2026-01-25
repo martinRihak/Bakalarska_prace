@@ -1,9 +1,5 @@
-from flask import Blueprint, request, jsonify, session, current_app
-from werkzeug.security import check_password_hash, generate_password_hash
-from models.models import User, db
-from datetime import datetime,timedelta,timezone
-from functools import wraps
-import jwt, redis
+from flask import Blueprint, jsonify, current_app
+from services.modbus_service import ModbusService
 
 modbus_api = Blueprint('modbus_api', __name__)
 
@@ -11,25 +7,19 @@ modbus_api = Blueprint('modbus_api', __name__)
 def get_sensor_data(sensor_id):
     """Get sensor data and information."""
     try:
-        modbus_manager = current_app.config['MODBUS_MANAGER']
+        data = ModbusService.get_sensor_data(sensor_id)
         
-        # Získání informací o senzoru
-        sensor_info = modbus_manager.read_sensor(sensor_id)
-        print(sensor_info)
-        if not sensor_info:
+        if not data:
             return jsonify({
                 'status': 'error',
                 'message': f'Sensor {sensor_id} not found'
             }), 404
-
-        # Čtení aktuální hodnoty
-        value = modbus_manager.read_sensor(sensor_id)
-        
+            
         return jsonify({
             'status': 'success',
-            'sensor': sensor_info,
-            'current_value': value,
-            'timestamp': datetime.utcnow().isoformat()
+            'sensor': data['sensor'],
+            'current_value': data['current_value'],
+            'timestamp': data['timestamp']
         }), 200
         
     except Exception as e:
@@ -38,5 +28,3 @@ def get_sensor_data(sensor_id):
             'status': 'error',
             'message': str(e)
         }), 500
-    
-

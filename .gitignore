@@ -2,5 +2,6 @@ env/
 database/
 __pycache__/
 BK_projekt.db
+BK_projekt.dbb
 /home/rih/HDD/VSB/6.sem/Bakalarska_prace/app/routes/__pycache__
 /home/rih/HDD/VSB/6.sem/Bakalarska_prace/app/models/__pycache__

@@ -3,7 +3,7 @@ from flask_cors import CORS
 from utils.modbusManagerNew import ModbusManager_2_0
 from routes import init_routes
 from models.models import init_db
-from routes.authRoute import login_required
+from utils.auth_utils import login_required
 import os,sys,logging
 import asyncio
 import secrets
