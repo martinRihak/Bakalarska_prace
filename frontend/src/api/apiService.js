@@ -1,6 +1,5 @@
 // apiService.js
-const API_BASE_URL = "http://localhost:5000";
-
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 const apiRequest = async (endpoint, method = "GET", data = null) => {
   const token = localStorage.getItem("token");
   const headers = {
@@ -27,7 +26,7 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
 
     // Kontrola nového access tokenu v hlavičce
-    const newToken = response.headers.get('New-Access-Token');
+    const newToken = response.headers.get("New-Access-Token");
     if (newToken) {
       localStorage.setItem("token", newToken);
     }
@@ -38,32 +37,35 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
 
     if (response.status === 401 && !endpoint.includes("/auth/refresh-token")) {
       try {
-        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
-          method: "POST",
-          credentials: "include",
-        });
+        const refreshResponse = await fetch(
+          `${API_BASE_URL}/auth/refresh-token`,
+          {
+            method: "POST",
+            credentials: "include",
+          },
+        );
 
         if (refreshResponse.ok) {
           const refreshData = await refreshResponse.json();
           localStorage.setItem("token", refreshData.token);
-          
+
           // Opakování původního požadavku s novým tokenem
           const newResponse = await fetch(`${API_BASE_URL}${endpoint}`, {
             ...options,
             headers: {
               ...options.headers,
-              'Authorization': `Bearer ${refreshData.token}`
-            }
+              Authorization: `Bearer ${refreshData.token}`,
+            },
           });
-          
+
           if (newResponse.ok) {
             return await newResponse.json();
           }
         }
       } catch (error) {
-        console.error('Token refresh failed:', error);
+        console.error("Token refresh failed:", error);
       }
-      
+
       // Pokud refresh selhal, odhlásíme uživatele
       localStorage.removeItem("token");
       localStorage.removeItem("user");
@@ -73,16 +75,21 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
       throw new Error("Neautorizovaný přístup");
     }
 
-    if (endpoint === '/sensors/export_data') {
-      const contentType = response.headers.get('Content-Type');
-      
+    if (endpoint === "/sensors/export_data") {
+      const contentType = response.headers.get("Content-Type");
+
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData.message || errorData.error || 'Chyba při exportu dat';
+        const errorMessage =
+          errorData.message || errorData.error || "Chyba při exportu dat";
         throw new Error(errorMessage);
       }
-      
-      if (contentType && (contentType.includes('application/json') || contentType.includes('text/csv'))) {
+
+      if (
+        contentType &&
+        (contentType.includes("application/json") ||
+          contentType.includes("text/csv"))
+      ) {
         return await response.text();
       }
     }
@@ -94,13 +101,13 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
 
     return data;
   } catch (error) {
-    console.error('Api request error', error);
-    
+    console.error("Api request error", error);
+
     // Pokud je chyba typu NetworkError nebo TypeError (nemůžeme se připojit k serveru)
-    if (error instanceof TypeError || error.name === 'NetworkError') {
+    if (error instanceof TypeError || error.name === "NetworkError") {
       throw new Error("Server není dostupný");
     }
-    
+
     throw error;
   }
 };
@@ -144,13 +151,15 @@ const api = {
   },
 
   getSensorHistory: (sensorId, timeRange, widget_id) => {
-    return apiRequest(`/sensors/getSensorHistory/${sensorId}?timeRange=${timeRange}&widget_id=${widget_id}`);
+    return apiRequest(
+      `/sensors/getSensorHistory/${sensorId}?timeRange=${timeRange}&widget_id=${widget_id}`,
+    );
   },
-  
+
   getLatestSensorData: (sensorId) => {
     return apiRequest(`/sensors/getLatestSensorData/${sensorId}`, "GET");
   },
-  
+
   getDashboards: async () => {
     return apiRequest("/dashboard/userDashBoards", "GET");
   },
@@ -176,17 +185,26 @@ const api = {
     return apiRequest("/auth/user", "GET");
   },
   getAvailableSensors: () => apiRequest("/sensors/available"),
-  addSensorToUser: (sensorId) => apiRequest("/sensors/add-to-user", "POST", { sensorId }),
-  createSensor: (sensorData) => apiRequest("/sensors/create", "POST", sensorData),
-  updateSensor: (sensorId, sensorData) => apiRequest(`/sensors/${sensorId}`, "PATCH", sensorData),
-  toggleSensorActive: (sensorId, isActive) => apiRequest(`/sensors/${sensorId}/toggle-active`, "PATCH", { isActive }),
+  addSensorToUser: (sensorId) =>
+    apiRequest("/sensors/add-to-user", "POST", { sensorId }),
+  createSensor: (sensorData) =>
+    apiRequest("/sensors/create", "POST", sensorData),
+  updateSensor: (sensorId, sensorData) =>
+    apiRequest(`/sensors/${sensorId}`, "PATCH", sensorData),
+  toggleSensorActive: (sensorId, isActive) =>
+    apiRequest(`/sensors/${sensorId}/toggle-active`, "PATCH", { isActive }),
 
   // Widgets API
-  deleteWidget: (dashboardId,widgetId) => apiRequest(`/widget/delete/${dashboardId}/${widgetId}`, "DELETE"),
-  
+  deleteWidget: (dashboardId, widgetId) =>
+    apiRequest(`/widget/delete/${dashboardId}/${widgetId}`, "DELETE"),
+
   // Nové funkce
-  deleteDashboard: (dashboardId) => apiRequest(`/dashboard/dashboard/${dashboardId}`, "DELETE"),
-  saveWidgetPositions: (dashboardId, widgetPositions) => apiRequest(`/dashboard/dashboard/${dashboardId}/save_positions`, "POST", { widgetPositions }),
+  deleteDashboard: (dashboardId) =>
+    apiRequest(`/dashboard/dashboard/${dashboardId}`, "DELETE"),
+  saveWidgetPositions: (dashboardId, widgetPositions) =>
+    apiRequest(`/dashboard/dashboard/${dashboardId}/save_positions`, "POST", {
+      widgetPositions,
+    }),
 };
 
 export default api;

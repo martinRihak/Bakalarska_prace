@@ -5,3 +5,21 @@ BK_projekt.db
 BK_projekt.dbb
 /home/rih/HDD/VSB/6.sem/Bakalarska_prace/app/routes/__pycache__
 /home/rih/HDD/VSB/6.sem/Bakalarska_prace/app/models/__pycache__
+
+env*
+.venv
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules/*
+dist
+dist-ssr
+*.local
+.env
