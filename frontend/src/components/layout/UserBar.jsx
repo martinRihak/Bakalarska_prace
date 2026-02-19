@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "@services/apiService";
+import api from "@/api/apiService";
 import "@css/UserBar.css";
 
 const UserBar = () => {

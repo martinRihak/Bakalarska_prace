@@ -3,10 +3,11 @@ import jwt
 from flask import current_app
 from werkzeug.security import check_password_hash, generate_password_hash
 from models.models import User, db
+import os
 
 class AuthService:
-    JWT_SECRET_KEY = 'tajny_klic_pro_podpis_jwt'
-    ACCESS_TOKEN_EXPIRATION = 15 * 60  # 15 minutes
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
+    ACCESS_TOKEN_EXPIRATION = 1 * 60  # 15 minutes
     REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60  # 7 days
 
     @staticmethod

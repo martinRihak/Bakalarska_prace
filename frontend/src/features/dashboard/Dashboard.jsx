@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
-import Widget from "@widgets/Widget";
-import api from "@services/apiService";
-import DashBoardForm from "@forms/DashBoardForm";
-import WidgetForm from "@forms/WidgetForm";
+import Widget from "@/components/widgets/Widget";
+import api from '@/api/apiService';
+import DashboardForm from "@/components/forms/DashboardForm";
+import WidgetForm from "@/components/forms/WidgetForm";
 
 // CSS
 import "react-grid-layout/css/styles.css";
@@ -12,7 +12,7 @@ import "@css/dashBoard.css";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const SensorDashboard = () => {
+const Dashboard = () => {
   const [dashboards, setDashboards] = useState([]);
   const [selectedDashboard, setSelectedDashboard] = useState(null);
   const [widgets, setWidgets] = useState([]);
@@ -22,7 +22,6 @@ const SensorDashboard = () => {
   const [isDashboardFormOpen, setIsDashboardFormOpen] = useState(false);
   const [isWidgetFormOpen, setIsWidgetFormOpen] = useState(false);
 
-  // Načtení dashboardů
   const loadDashboards = async () => {
     try {
       const userDashboards = await api.getDashboards();
@@ -31,16 +30,15 @@ const SensorDashboard = () => {
       if (userDashboards && userDashboards.length > 0) {
         setSelectedDashboard(userDashboards[0].dashboard_id);
       } else {
-        setIsLoading(false); // Pokud nejsou dashboardy, nastavíme isLoading na false
+        setIsLoading(false); 
       }
     } catch (err) {
       console.error("Failed to load dashboards:", err);
       setDashboards([]);
-      setIsLoading(false); // I při chybě nastavíme isLoading na false
+      setIsLoading(false); 
     }
   };
 
-  // Načtení widgetů pro vybraný dashboard
   const loadWidgets = async (dashboardId) => {
     try {
       setIsLoading(true);
@@ -78,7 +76,7 @@ const SensorDashboard = () => {
     if (selectedDashboard) {
       loadWidgets(selectedDashboard);
     } else {
-      setIsLoading(false); // Pokud není vybrán dashboard, nastavíme isLoading na false
+      setIsLoading(false); 
     }
   }, [selectedDashboard]);
 
@@ -138,7 +136,7 @@ const SensorDashboard = () => {
   const DashboardHeader = () => (
     <div className="dashboard-header">
 
-      {dashboards.length > 0 && (
+      {(
         <>
 
       <button className="dashboard-btn" onClick={handleDashboardCreate}>
@@ -226,7 +224,7 @@ const SensorDashboard = () => {
           onClick={() => setIsDashboardFormOpen(false)}
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <DashBoardForm
+            <DashboardForm
               onClose={() => setIsDashboardFormOpen(false)}
               onSuccess={() => {
                 setIsDashboardFormOpen(false);
@@ -258,4 +256,4 @@ const SensorDashboard = () => {
   );
 };
 
-export default SensorDashboard;
+export default Dashboard;

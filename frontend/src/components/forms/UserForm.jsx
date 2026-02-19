@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '@services/apiService';
+import api from '@/api/apiService';
 import '@css/forms.css';
 
 const UserForm = () => {

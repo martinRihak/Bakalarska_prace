@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import useApi from "@services/useApi";
-import api from "@services/apiService";
+import useApi from "@/hooks/useApi";
+import api from '@/api/apiService';
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = localStorage.getItem("token") !== null;

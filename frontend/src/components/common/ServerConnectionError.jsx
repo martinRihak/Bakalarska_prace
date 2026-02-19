@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '@services/apiService';
+import api from '@/api/apiService';
 import '@css/ServerConnectionError.css';
 
 const ServerConnectionError = () => {

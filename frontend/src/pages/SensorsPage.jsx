@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import api from '@services/apiService';
-import AddSensorModal from '@forms/AddSensorModal';
+import api from '@/api/apiService';
+import AddSensorModal from '@/components/forms/AddSensorModal';
 import '@css/SensorsPage.css';
-import SensorForm from '@forms/SensorForm';
-import UserBar from "@components/UserBar";
+import SensorForm from '@/components/forms/SensorForm';
+import UserBar from "@/components/layout/UserBar";
 const SensorsPage = () => {
   const [sensors, setSensors] = useState([]);
   const [loading, setLoading] = useState(true);

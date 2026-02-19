@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import api from '@services/apiService';
-import SensorForm from '@forms/SensorForm';
+import api from '@/api/apiService';
+import SensorForm from '@/components/forms/SensorForm';
 import '@css/forms.css';
 
 const AddSensorModal = ({ onClose, onAdd }) => {

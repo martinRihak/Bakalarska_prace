@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import api from "@services/apiService";
+import api from "@/api/apiService";
 import { Activity, TrendingUp, Gauge, Loader, ArrowDownUp} from "lucide-react";
 import "@css/forms.css";
 
 // Define available chart types with icons
-const chartTypes = [
+const CHART_TYPES = [
   { type: "line", icon: Activity, label: "Line Chart" },
   { type: "area", icon: TrendingUp, label: "Area Chart" },
   { type: "value", icon: Loader, label: "Value" },
@@ -114,7 +114,7 @@ const WidgetForm = ({ onClose, onSuccess }) => {
             <div className="form-group">
               <label className="form-label">Vyberte typ grafu</label>
               <div className="chart-type-selector">
-                {chartTypes.map(({ type, icon: Icon, label }) => (
+                {CHART_TYPES.map(({ type, icon: Icon, label }) => (
                   <button
                     key={type}
                     type="button"

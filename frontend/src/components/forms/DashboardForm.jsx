@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import api from '../../apiService';
+import api from '@/api/apiService';
 import '@css/forms.css';
 
-const DashBoardForm = ({ onClose, onSuccess }) => {
+const DashboardForm = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: ''
@@ -99,4 +99,4 @@ const DashBoardForm = ({ onClose, onSuccess }) => {
   );
 };
 
-export default DashBoardForm;
+export default DashboardForm;
