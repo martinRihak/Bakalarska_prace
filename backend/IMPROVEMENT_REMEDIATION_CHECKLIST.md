@@ -26,7 +26,7 @@ Effort: **S**
 4. Fix `get_latest_data()` to support both live float read and DB object shape consistently.  
 Effort: **M**
 5. Fix `ModbusService.get_sensor_data()` double-read and response structure.  
-Effort: **S**
+Effort: **L**
 
 ## 3) API Contract and Architecture Cleanup
 1. Standardize routes to REST naming (for example `/sensors/{id}/history`, `/dashboards/{id}/widgets`).  

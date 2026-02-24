@@ -3,6 +3,28 @@ from flask import request, jsonify, session, redirect, url_for, make_response, c
 from services.auth_service import AuthService
 from models.models import User
 
+API_BLUEPRINTS = {
+    'auth_api',
+    'sensors_api',
+    'dash_api',
+    'modbus_api',
+    'widget_api',
+    'backUpRoute',
+}
+
+def is_api_request():
+    if request.blueprint in API_BLUEPRINTS:
+        return True
+    accept = request.headers.get('Accept', '')
+    if request.is_json or 'application/json' in accept:
+        return True
+    return False
+
+def _unauthorized_response():
+    if is_api_request():
+        return jsonify({'status': 'error', 'message': 'Nepřihlášený uživatel'}), 401
+    return redirect(url_for('auth_views.login'))
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -31,31 +53,30 @@ def login_required(f):
                                 response = make_response(f(*args, **kwargs))
                                 response.headers['New-Access-Token'] = new_token
                                 return response
+                            return _unauthorized_response()
                     except Exception as e:
                         current_app.logger.error(f"Chyba při obnovení tokenu: {e}")
             
             if token_data:
                 user = User.query.get(token_data['user_id'])
-                if user:
-                    # Token je platný, přidáme data do session pro kompatibilitu
-                    session['user_id'] = token_data['user_id']
-                    session['username'] = token_data['username']
-                    session['role'] = token_data['role']
-                
+                if not user:
+                    return _unauthorized_response()
+
+                # Token je platný, přidáme data do session pro kompatibilitu
+                session['user_id'] = token_data['user_id']
+                session['username'] = token_data['username']
+                session['role'] = token_data['role']
                 AuthService.setup_user_session(user)
                 return f(*args, **kwargs)
             
             # Token je neplatný a jde o API požadavek
-            if request.path.startswith('/api/'):
+            if is_api_request():
                 return jsonify({'status': 'error', 'message': 'Neplatný token nebo nepřihlášený uživatel'}), 401
         
         # Kontrola běžné session pro klasické požadavky
         if 'user_id' not in session:
             # Pro API požadavky vrátíme JSON
-            if request.path.startswith('/api/'):
-                return jsonify({'status': 'error', 'message': 'Nepřihlášený uživatel'}), 401
-            # Jinak přesměrujeme na přihlášení
-            return redirect(url_for('auth_views.login'))
+            return _unauthorized_response()
         
         return f(*args, **kwargs)
     return decorated_function

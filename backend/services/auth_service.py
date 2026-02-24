@@ -6,9 +6,12 @@ from models.models import User, db
 import os
 
 class AuthService:
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
     ACCESS_TOKEN_EXPIRATION = 1 * 60  # 15 minutes
     REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60  # 7 days
+
+    @staticmethod
+    def _get_jwt_secret():
+        return current_app.config.get('JWT_SECRET') or current_app.config.get('SECRET_KEY')
 
     @staticmethod
     def create_access_token(user_id, username, role):
@@ -20,7 +23,7 @@ class AuthService:
             'exp': datetime.now(tz=timezone.utc) + timedelta(seconds=AuthService.ACCESS_TOKEN_EXPIRATION),
             'type': 'access'
         }
-        return jwt.encode(payload, AuthService.JWT_SECRET_KEY, algorithm='HS256')
+        return jwt.encode(payload, AuthService._get_jwt_secret(), algorithm='HS256')
 
     @staticmethod
     def create_refresh_token(user_id):
@@ -30,13 +33,13 @@ class AuthService:
             'exp': datetime.now(tz=timezone.utc) + timedelta(seconds=AuthService.REFRESH_TOKEN_EXPIRATION),
             'type': 'refresh'
         }
-        return jwt.encode(payload, AuthService.JWT_SECRET_KEY, algorithm='HS256')
+        return jwt.encode(payload, AuthService._get_jwt_secret(), algorithm='HS256')
 
     @staticmethod
     def verify_token(token):
         """Verifies JWT token and returns token data"""
         try:
-            data = jwt.decode(token, AuthService.JWT_SECRET_KEY, algorithms=['HS256'])
+            data = jwt.decode(token, AuthService._get_jwt_secret(), algorithms=['HS256'])
             return data
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
             return None
@@ -63,10 +66,8 @@ class AuthService:
         if User.query.filter_by(email=email).first():
             raise ValueError("E-mail již existuje")
         
-        user_id = User.query.count() + 1
         password_hash = generate_password_hash(password)
         new_user = User(
-            user_id=user_id,
             username=username,
             password_hash=password_hash,
             email=email,

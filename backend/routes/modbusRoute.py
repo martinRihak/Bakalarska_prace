@@ -1,9 +1,11 @@
 from flask import Blueprint, jsonify, current_app
+from utils.auth_utils import login_required
 from services.modbus_service import ModbusService
 
 modbus_api = Blueprint('modbus_api', __name__)
 
 @modbus_api.route('/getValue/<int:sensor_id>', methods=['GET'])
+@login_required
 def get_sensor_data(sensor_id):
     """Get sensor data and information."""
     try:

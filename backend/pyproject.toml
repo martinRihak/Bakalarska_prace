@@ -16,5 +16,5 @@ dependencies = [
     "pymodbus>=3.11.4",
     "python-dotenv>=1.2.1",
     "redis>=7.1.0",
-    "serial>=0.0.97",
+    "pyserial>=3.5",
 ]

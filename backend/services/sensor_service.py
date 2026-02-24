@@ -1,4 +1,4 @@
-from models.models import db, Sensor, SensorData, UserSensor, Widget
+from models.models import db, Sensor, SensorData, UserSensor, Widget, DashboardWidget, Dashboard
 from datetime import datetime, timedelta
 import csv
 import io
@@ -6,7 +6,27 @@ from flask import current_app
 
 class SensorService:
     @staticmethod
-    def get_sensor_history(sensor_id, time_range, widget_id=None):
+    def _user_owns_sensor(user_id, sensor_id):
+        return UserSensor.query.filter_by(user_id=user_id, sensor_id=sensor_id).first() is not None
+
+    @staticmethod
+    def _ensure_user_owns_sensor(user_id, sensor_id):
+        if not SensorService._user_owns_sensor(user_id, sensor_id):
+            raise PermissionError("Access denied")
+
+    @staticmethod
+    def _ensure_user_owns_widget(user_id, widget_id):
+        if not widget_id:
+            return
+        owned_widget = DashboardWidget.query.join(Dashboard).filter(
+            DashboardWidget.widget_id == widget_id,
+            Dashboard.user_id == user_id
+        ).first()
+        if not owned_widget:
+            raise PermissionError("Access denied")
+
+    @staticmethod
+    def get_sensor_history(sensor_id, time_range, user_id, widget_id=None):
         now = datetime.utcnow()
         if time_range == '24h':
             delta = timedelta(days=1)
@@ -19,14 +39,17 @@ class SensorService:
             
         start_time = now - delta
         
-        # Side effect on widget
-        if widget_id:
-            Widget.query.filter_by(widget_id=widget_id).update({'time': time_range})
-            db.session.commit()
-            
         sensor = Sensor.query.get(sensor_id)
         if not sensor:
             return None
+
+        SensorService._ensure_user_owns_sensor(user_id, sensor_id)
+
+        # Side effect on widget
+        if widget_id:
+            SensorService._ensure_user_owns_widget(user_id, widget_id)
+            Widget.query.filter_by(widget_id=widget_id).update({'time': time_range})
+            db.session.commit()
             
         sensor_data = SensorData.query.filter_by(sensor_id=sensor_id)\
             .filter(SensorData.timestamp >= start_time)\
@@ -78,10 +101,11 @@ class SensorService:
         return new_sensor
 
     @staticmethod
-    def delete_sensor(sensor_id):
+    def delete_sensor(sensor_id, user_id):
         sensor = Sensor.query.get(sensor_id)
         if not sensor:
             raise ValueError("Sensor not found")
+        SensorService._ensure_user_owns_sensor(user_id, sensor_id)
         db.session.delete(sensor)
         db.session.commit()
 
@@ -90,7 +114,13 @@ class SensorService:
         return Sensor.query.join(UserSensor).filter(UserSensor.user_id == user_id).all()
 
     @staticmethod
-    def get_latest_data(sensor_id):
+    def get_latest_data(sensor_id, user_id):
+        sensor = Sensor.query.get(sensor_id)
+        if not sensor:
+            return None
+
+        SensorService._ensure_user_owns_sensor(user_id, sensor_id)
+
         modbus = current_app.config.get('MODBUS_MANAGER')
         latest_data = None
         if modbus:
@@ -105,10 +135,6 @@ class SensorService:
             
         if not latest_data:
             return None
-            
-        sensor = Sensor.query.get(sensor_id)
-        if not sensor:
-            return None # Should not happen if data exists but consistent check
             
         # If latest_data is from DB (SensorData object), it has timestamp/value attributes.
         # If from modbus, it might be an object or dict? The original code accessed ".timestamp" and ".value".
@@ -129,9 +155,16 @@ class SensorService:
         }
 
     @staticmethod
-    def export_data(start_date, end_date, sensor_ids, export_format):
+    def export_data(start_date, end_date, sensor_ids, export_format, user_id):
         if start_date > end_date:
             raise ValueError('Datum začátku musí být před datem konce')
+
+        if not sensor_ids:
+            return None
+
+        owned_sensor_ids = {us.sensor_id for us in UserSensor.query.filter_by(user_id=user_id).all()}
+        if not set(sensor_ids).issubset(owned_sensor_ids):
+            raise PermissionError("Access denied")
 
         sensor_data = []
         for sensor_id in sensor_ids:
@@ -203,11 +236,12 @@ class SensorService:
         return new_sensor
 
     @staticmethod
-    def update_sensor(sensor_id, data):
+    def update_sensor(sensor_id, data, user_id):
         sensor = Sensor.query.get(sensor_id)
         if not sensor:
             return False
-            
+        SensorService._ensure_user_owns_sensor(user_id, sensor_id)
+
         for key, value in data.items():
             if hasattr(sensor, key):
                 setattr(sensor, key, value)
@@ -215,10 +249,11 @@ class SensorService:
         return True
 
     @staticmethod
-    def toggle_sensor_active(sensor_id, is_active):
+    def toggle_sensor_active(sensor_id, is_active, user_id):
         sensor = Sensor.query.get(sensor_id)
         if not sensor:
             return False
+        SensorService._ensure_user_owns_sensor(user_id, sensor_id)
         sensor.is_active = is_active
         db.session.commit()
         return True

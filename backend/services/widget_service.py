@@ -1,4 +1,4 @@
-from models.models import db, Widget, WidgetSensor, DashboardWidget
+from models.models import db, Widget, WidgetSensor, DashboardWidget, Dashboard
 
 class WidgetService:
     @staticmethod
@@ -10,6 +10,14 @@ class WidgetService:
             widget = Widget.query.filter_by(widget_id=widget_id).first()
             if not widget:
                 return False
+
+            owned_widget = DashboardWidget.query.join(Dashboard).filter(
+                DashboardWidget.dashboard_id == dashboard_id,
+                DashboardWidget.widget_id == widget_id,
+                Dashboard.user_id == user_id
+            ).first()
+            if not owned_widget:
+                raise PermissionError("Access denied")
             
             # Explicit deletion of related records as per original code
             widget_sensor = WidgetSensor.query.filter_by(widget_id=widget_id).first()

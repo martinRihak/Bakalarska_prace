@@ -24,6 +24,8 @@ def delete_widget(dashboard_id, widget_id):
              return jsonify({"error": "Widget not found"}), 404
              
         return jsonify({"message": "Widget deleted successfully!"}), 200
+    except PermissionError:
+        return jsonify({"error": "Access denied"}), 403
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

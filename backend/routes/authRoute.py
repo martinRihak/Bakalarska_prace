@@ -34,12 +34,17 @@ def login():
     })
     
     # Nastavení HTTP-only cookie pro refresh token
+    secure = current_app.config.get('COOKIE_SECURE', False)
+    samesite = current_app.config.get('COOKIE_SAMESITE', 'Strict')
+    domain = current_app.config.get('COOKIE_DOMAIN')
     response.set_cookie(
         'refresh_token',
         refresh_token,
         httponly=True,
-        secure=False,  # Jen pro HTTPS, TODO: config
-        samesite='Strict',
+        secure=secure,
+        samesite=samesite,
+        domain=domain,
+        path='/auth',
         max_age=AuthService.REFRESH_TOKEN_EXPIRATION
     )
     

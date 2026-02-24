@@ -9,13 +9,15 @@ dashboard_api = Blueprint('dash_api', __name__)
 def get_widget_data(widget_id):
     try:
         time_range = request.args.get('timeRange')
-        
-        response_data = DashboardService.get_widget_data(widget_id, time_range)
+        user_id = session.get('user_id')
+
+        response_data = DashboardService.get_widget_data(user_id, widget_id, time_range)
         if response_data is None:
              return jsonify({'error': 'Widget not found'}), 404
              
         return jsonify(response_data)
-        
+    except PermissionError:
+        return jsonify({'error': 'Access denied'}), 403
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -141,7 +143,9 @@ def add_widget():
 @dashboard_api.route('/widget/<int:widget_id>', methods=['PUT'])
 @login_required
 def update_widget(widget_id):
-    user_id = session.get('user_id', 1) 
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'User not logged in'}), 401
     data = request.get_json()
     
     result = DashboardService.update_widget(user_id, widget_id, data)

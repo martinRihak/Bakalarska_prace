@@ -18,10 +18,17 @@ class DashboardService:
             return query.order_by(SensorData.timestamp.asc()).all()
 
     @staticmethod
-    def get_widget_data(widget_id, time_range_str):
+    def get_widget_data(user_id, widget_id, time_range_str):
         widget = Widget.query.get(widget_id)
         if not widget:
             return None
+
+        owned_widget = Widget.query.join(DashboardWidget).join(Dashboard).filter(
+            Widget.widget_id == widget_id,
+            Dashboard.user_id == user_id
+        ).first()
+        if not owned_widget:
+            raise PermissionError("Access denied")
             
         now = datetime.utcnow()
         if time_range_str == '24h':

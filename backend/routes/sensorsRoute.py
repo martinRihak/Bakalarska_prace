@@ -11,13 +11,16 @@ def get_sensor_history(sensor_id):
     try:
         time_range = request.args.get('timeRange')
         widget_id = request.args.get('widget_id')
-        
-        result = SensorService.get_sensor_history(sensor_id, time_range, widget_id)
+        user_id = session.get('user_id')
+
+        result = SensorService.get_sensor_history(sensor_id, time_range, user_id, widget_id)
         if not result:
             return jsonify({'error': 'Sensor not found'}), 404
             
         return jsonify(result)
         
+    except PermissionError:
+        return jsonify({'error': 'Access denied'}), 403
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -36,8 +39,10 @@ def add_sensor():
 @login_required
 def delete_sensor(sensor_id):
     try:
-        SensorService.delete_sensor(sensor_id)
+        SensorService.delete_sensor(sensor_id, session.get('user_id'))
         flash('Senzor byl úspěšně smazán!', 'success')
+    except PermissionError:
+        flash('Přístup odepřen', 'danger')
     except Exception as e:
         flash(f'Chyba při mazání senzoru: {str(e)}', 'danger')
     
@@ -73,10 +78,12 @@ def get_sensors():
 @login_required
 def get_latest_sensor_data(sensor_id):
     try:
-        result = SensorService.get_latest_data(sensor_id)
+        result = SensorService.get_latest_data(sensor_id, session.get('user_id'))
         if not result:
             return jsonify({'error': 'No data available for this sensor'}), 404
         return jsonify(result)
+    except PermissionError:
+        return jsonify({'error': 'Access denied'}), 403
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -94,7 +101,7 @@ def export_sensor_data():
         if not sensor_ids:
              return jsonify({'message': 'Vyberte alespoň jeden senzor'}), 400
              
-        result = SensorService.export_data(start_date, end_date, sensor_ids, export_format)
+        result = SensorService.export_data(start_date, end_date, sensor_ids, export_format, session.get('user_id'))
 
         if result is None:
             return jsonify({'message': 'Žádná data nebyla nalezena pro zadané období'}), 404
@@ -107,6 +114,8 @@ def export_sensor_data():
         else:
             return jsonify(result)
 
+    except PermissionError:
+        return jsonify({'message': 'Access denied'}), 403
     except ValueError as e:
         return jsonify({'message': str(e)}), 400
     except Exception as e:
@@ -147,7 +156,10 @@ def create_sensor():
 @login_required
 def update_sensor(sensor_id):
     data = request.get_json()
-    success = SensorService.update_sensor(sensor_id, data)
+    try:
+        success = SensorService.update_sensor(sensor_id, data, session.get('user_id'))
+    except PermissionError:
+        return jsonify({'error': 'Access denied'}), 403
     if not success:
          return jsonify({'error': 'Sensor not found'}), 404
     return jsonify({'message': 'Sensor updated'}), 200
@@ -156,7 +168,10 @@ def update_sensor(sensor_id):
 @login_required
 def toggle_sensor_active(sensor_id):
     data = request.get_json()
-    success = SensorService.toggle_sensor_active(sensor_id, data.get('isActive'))
+    try:
+        success = SensorService.toggle_sensor_active(sensor_id, data.get('isActive'), session.get('user_id'))
+    except PermissionError:
+        return jsonify({'error': 'Access denied'}), 403
     if not success:
          return jsonify({'error': 'Sensor not found'}), 404
     return jsonify({'message': 'Sensor active status updated'}), 200
