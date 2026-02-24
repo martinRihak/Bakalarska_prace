@@ -79,12 +79,14 @@ def get_sensors():
 def get_latest_sensor_data(sensor_id):
     try:
         result = SensorService.get_latest_data(sensor_id, session.get('user_id'))
+        print(result)
         if not result:
             return jsonify({'error': 'No data available for this sensor'}), 404
         return jsonify(result)
     except PermissionError:
         return jsonify({'error': 'Access denied'}), 403
     except Exception as e:
+        print(e)
         return jsonify({'error': str(e)}), 500
     
 

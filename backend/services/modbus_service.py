@@ -8,17 +8,10 @@ class ModbusService:
         if not modbus_manager:
             raise Exception("Modbus manager not initialized")
             
-        # Získání informací o senzoru
-        sensor_info = modbus_manager.read_sensor(sensor_id)
-        
-        if not sensor_info:
-            return None
-
         # Čtení aktuální hodnoty
         value = modbus_manager.read_sensor(sensor_id)
         
         return {
-            'sensor': sensor_info,
             'current_value': value,
             'timestamp': datetime.utcnow().isoformat()
         }

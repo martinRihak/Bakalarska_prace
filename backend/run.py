@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, session
 from flask_cors import CORS
-from utils.modbusManagerNew import ModbusManager_2_0
+from utils.modbusManagerNew import ModbusManager
 from routes import init_routes
 from models.models import init_db
 from utils.auth_utils import login_required
@@ -48,7 +48,7 @@ def setup_logger():
 app = Flask(__name__)
 
 is_production = os.environ.get("FLASK_ENV") == "production" or os.environ.get("ENV") == "production" or os.environ.get("APP_ENV") == "production"
-cors_origins = _get_env_list("CORS_ORIGINS", ["http://127.0.0.1:5173"])
+cors_origins = _get_env_list("CORS_ORIGINS", ["http://localhost:5173"])
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
 app.config['JWT_SECRET'] = os.environ.get('JWT_SECRET') or app.config['SECRET_KEY']
@@ -83,7 +83,7 @@ init_db(app)
 # Inicializace ModbusManager v kontextu aplikace
 with app.app_context():
     try:
-        modbus_manager = ModbusManager_2_0(app=app)
+        modbus_manager = ModbusManager(app=app)
         app.config['MODBUS_MANAGER'] = modbus_manager
         logger.info("ModbusManager successfully initialized")
     except Exception as e:

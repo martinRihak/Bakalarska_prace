@@ -19,7 +19,6 @@ def get_sensor_data(sensor_id):
             
         return jsonify({
             'status': 'success',
-            'sensor': data['sensor'],
             'current_value': data['current_value'],
             'timestamp': data['timestamp']
         }), 200
