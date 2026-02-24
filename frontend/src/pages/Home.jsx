@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import SensorDashboard from "@components/Dashboard";
-import UserBar from "@components/UserBar";
+import Dashboard from "@/features/dashboard/Dashboard";
+import UserBar from "@/components/layout/UserBar";
 import "@css/Home.css";
 
 const Home = () => {
@@ -8,7 +8,7 @@ const Home = () => {
     <div className="main">
       <UserBar />
       <main className="dashBoard">
-        <SensorDashboard />
+        <Dashboard />
       </main>
     </div>
   );

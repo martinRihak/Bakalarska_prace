@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import api from '../apiService';
+import api from '@/api/apiService';
 import '@css/DataExport.css'; // Import your CSS file for styling
-import UserBar from "@components/UserBar";
+import UserBar from "@/components/layout/UserBar";
 const DataExport = () => {
   const [sensors, setSensors] = useState([]);
   const [selectedSensors, setSelectedSensors] = useState([]);

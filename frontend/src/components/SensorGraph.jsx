@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '@services/apiService';
+import api from '@/api/apiService';
 import { useParams } from 'react-router-dom';
 import ReactApexChart from 'react-apexcharts';
 

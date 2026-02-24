@@ -9,19 +9,19 @@ import {
 } from "react-router-dom";
 
 // Komponenty
-import NavBar from "@components/NavBar";
-import ProtectedRoute from "@components/ProtectedRoute";
-import ServerConnectionError from "@components/ServerConnectionError";
+import NavBar from "@/components/layout/NavBar";
+import ProtectedRoute from "@/features/auth/ProtectedRoute";
+import ServerConnectionError from "@/components/common/ServerConnectionError";
 
 // Stránky
-import Home from "@pages/Home";
-import DataExport from "@pages/DataExport";
-import SensorsPage from "@pages/SensorsPage";
-import Login from "./Login/Login";
+import Home from "@/pages/Home";
+import DataExport from "@/pages/DataExport";
+import SensorsPage from "@/pages/SensorsPage";
+import Login from "@/features/auth/Login/Login";
 
 // Formuláře
-import UserForm from "@forms/UserForm";
-import DashBoardForm from "@forms/DashBoardForm";
+import UserForm from "@/components/forms/UserForm";
+import DashboardForm from "@/components/forms/DashboardForm";
 // Styly
 import "./App.css";
 
@@ -59,7 +59,7 @@ function AppContent() {
           path="/create-dashboard"
           element={
             <ProtectedRoute>
-              <DashBoardForm />
+              <DashboardForm />
             </ProtectedRoute>
           }
         />

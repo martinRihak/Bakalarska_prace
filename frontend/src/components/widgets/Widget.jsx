@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { RefreshCw, ImageOff, CircleX, ChartNoAxesColumnIcon } from "lucide-react";
 import ReactApexChart from "react-apexcharts";
-import api from "@services/apiService";
+import api from "@/api/apiService";
 import {
   getAreaChartOptions,
   getLineChartOptions,
@@ -101,17 +101,18 @@ const Widget = ({
     switch (widgetType) {
       case "area":
         return { ...getAreaChartOptions(sensorName), ...baseOptions };
-      case "radialBar":
-        return { ...getRadialBarOptions(sensorName), ...baseOptions };
+      // case "radialBar":
+      //   return { ...getRadialBarOptions(sensorName), ...baseOptions };
       default:
         return { ...getLineChartOptions(sensorName), ...baseOptions };
     }
   }, [widgetType, sensorName, sensorData]);
 
   const chartSeries = useMemo(() => {
-    if (widgetType === "radialBar") {
-      return getRadialBarSeries(processedData);
-    } else if (widgetType === "value") {
+    // if (widgetType === "radialBar") {
+    //   return getRadialBarSeries(processedData);
+    // } else 
+    if (widgetType === "value") {
       return [];
     } else {
       if (!processedData || processedData.length === 0) return [];
