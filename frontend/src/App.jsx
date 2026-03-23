@@ -17,6 +17,7 @@ import ServerConnectionError from "@/components/common/ServerConnectionError";
 import Home from "@/pages/Home";
 import DataExport from "@/pages/DataExport";
 import SensorsPage from "@/pages/SensorsPage";
+import UserPage from "@/pages/UserPage";
 import Login from "@/features/auth/Login/Login";
 
 // Formuláře
@@ -77,6 +78,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <SensorsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <UserPage />
             </ProtectedRoute>
           }
         />

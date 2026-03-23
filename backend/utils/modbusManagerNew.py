@@ -18,7 +18,7 @@ class ModbusManager:
         app=None,
         baudrate: int = 9600,
         cache_size: int = 1000,
-        flush_interval: int = 60,       # seconds
+        flush_interval: int = 60 * 5,       # seconds
         check_interval: int = 60        # seconds
     ):
         self.port = os.environ.get("USB_PORT")
@@ -70,7 +70,6 @@ class ModbusManager:
         ):
             self._start_background_threads()
 
-    # =========================
     # Logging helpers
     # =========================
 
@@ -88,7 +87,6 @@ class ModbusManager:
         else:
             print(msg)
 
-    # =========================
     # Modbus init
     # =========================
 
@@ -115,7 +113,6 @@ class ModbusManager:
             self.modbus_connected = False
             self._log_error(f"Selhala inicializace Modbus: {e}")
 
-    # =========================
     # Sensor loading
     # =========================
 
@@ -125,25 +122,29 @@ class ModbusManager:
 
         with self.app.app_context():
             sensors = Sensor.query.all()
-
             if not sensors:
                 self._log_error("Nenalezeny žádné senzory v DB")
                 return False
 
+            new_sensor_map = {}
             for s in sensors:
-                self.sensor_map[s.sensor_id] = {
-                    "address": s.address,                # Opraven název atributu
-                    "functioncode": s.functioncode,      # Přidáno
-                    "bit": s.bit,                        # Přidáno
-                    "scaling": s.scaling,                # Přidáno
-                    "sampling_rate": s.sampling_rate,
+                # Mapujeme atributy z models.py do slovníku v paměti
+                new_sensor_map[s.sensor_id] = {
+                    "address": s.address,          # Opraveno z register_address
+                    "functioncode": s.functioncode,
+                    "baudrate": s.bit,             # Sloupec 'bit' používáme jako baudrate
+                    "scaling": s.scaling,
+                    "sampling_rate": s.sampling_rate * 60,
                     "is_active": s.is_active,
-    }
-        print(sensors)
-        self._log_info("Senzory načteny z DB")
+                }
+                self.sensor_locks[s.sensor_id] = threading.Lock()
+                self.last_read[s.sensor_id] = 0.0
+            
+            self.sensor_map = new_sensor_map
+
+        self._log_info("Senzory úspěšně načteny z DB ")
         return True
 
-    # =========================
     # Reading
     # =========================
 
@@ -152,46 +153,37 @@ class ModbusManager:
             return None
 
         sensor = self.sensor_map.get(sensor_id)
-        print(sensor)
         if not sensor or not sensor["is_active"]:
-            self._log_error(f"Senzor {sensor_id} nenalezen nebo není aktivní")
             return None
 
-        try:
-            # 1. Zámek pro exkluzivní přístup k sériovému portu
-            with self.serial_lock:
-                # 2. Změna baudrate, pokud je aktuální jiná, než senzor potřebuje
-                target_baudrate = sensor["bit"]
-                if self.instrument.serial.baudrate != target_baudrate:
-                    self.instrument.serial.baudrate = target_baudrate
-                    # Někdy převodníky potřebují kratičkou pauzu po změně rychlosti
-                    time.sleep(0.02) 
+        with self.sensor_locks[sensor_id]:
+            try:
+                with self.serial_lock:
+                    # 1. Dynamické nastavení baudrate před čtením
+                    target_baudrate = sensor["baudrate"]
+                    if self.instrument.serial.baudrate != target_baudrate:
+                        self.instrument.serial.baudrate = target_baudrate
+                        time.sleep(0.05) # Krátká pauza na stabilizaci portu
 
-                # 3. Samotné čtení s využitím správných atributů z DB
-                value = self.instrument.read_register(
-                    registeraddress=sensor["address"],
-                    number_of_decimals=sensor["scaling"],
-                    functioncode=sensor["functioncode"]
-                )
-                print(value)
+                    # 2. Čtení s využitím FC a scalingu z DB
+                    value = self.instrument.read_register(
+                        registeraddress=sensor["address"],
+                        number_of_decimals=sensor["scaling"],
+                        functioncode=sensor["functioncode"]
+                    )
 
-            # 4. Zpracování úspěšného čtení
-            with self.stats_lock:
-                self.stats["successful_reads"] += 1
+                with self.stats_lock:
+                    self.stats["successful_reads"] += 1
 
-            self.last_read[sensor_id] = time.time()
-            self._add_to_cache(sensor_id, value)
-            self._log_info(f"Úspěšně načten senzor {sensor_id}: {value}")
+                self.last_read[sensor_id] = time.time()
+                self._add_to_cache(sensor_id, value)
+                return value
 
-            return value
-
-        except Exception as e:
-            with self.stats_lock:
-                self.stats["failed_reads"] += 1
-            self._log_error(f"Chyba čtení senzoru {sensor_id}: {e}")
-            return None
-
-    # =========================
+            except Exception as e:
+                with self.stats_lock:
+                    self.stats["failed_reads"] += 1
+                self._log_error(f"Chyba čtení senzoru {sensor_id}: {e}")
+                return None
     # Cache
     # =========================
 
@@ -216,7 +208,6 @@ class ModbusManager:
 
         return self.read_sensor(sensor_id)
 
-    # =========================
     # Background reading
     # =========================
 
@@ -239,12 +230,13 @@ class ModbusManager:
                 if not sensor["is_active"]:
                     continue
 
-                if now - self.last_read[sensor_id] >= sensor["sampling_rate"]:
+                last_time = self.last_read.get(sensor_id, 0.0)
+                
+                if now - last_time >= sensor["sampling_rate"]:
                     self.executor.submit(self.read_sensor, sensor_id)
 
             time.sleep(self.check_interval)
 
-    # =========================
     # DB FLUSH (SYNC)
     # =========================
 
@@ -276,7 +268,6 @@ class ModbusManager:
             self._log_error(f"Chyba při ukládání do DB: {e}")
             db.session.rollback()
 
-    # =========================
     # Shutdown
     # =========================
 

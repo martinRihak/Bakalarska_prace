@@ -184,6 +184,14 @@ const api = {
   getUser: async () => {
     return apiRequest("/auth/user", "GET");
   },
+  getAllUsers: () => apiRequest("/users", "GET"),
+  getUserById: (userId) => apiRequest(`/users/${userId}`, "GET"),
+  createUser: (userData) => apiRequest("/users", "POST", userData),
+  updateUser: (userId, userData) => apiRequest(`/users/${userId}`, "PATCH", userData),
+  deleteUser: (userId) => apiRequest(`/users/${userId}`, "DELETE"),
+  getSensorsForUser: (userId) => apiRequest(`/users/${userId}/sensors`, "GET"),
+  updateSensorForUser: (userId, sensorId, sensorData) =>
+    apiRequest(`/users/${userId}/sensors/${sensorId}`, "PATCH", sensorData),
   getAvailableSensors: () => apiRequest("/sensors/available"),
   addSensorToUser: (sensorId) =>
     apiRequest("/sensors/add-to-user", "POST", { sensorId }),

@@ -6,6 +6,7 @@ import '@css/NavBar.css';
 function NavBar() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const currentUser = api.getCurrentUser();
 
   const handleLogout = async () => {
     await api.logout();
@@ -43,6 +44,15 @@ function NavBar() {
         onClick={() => setIsOpen(false)}
         className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
         >Data Export </NavLink>
+        {currentUser?.role === "admin" && (
+          <NavLink
+            to="/users"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+          >
+            Uživatelé
+          </NavLink>
+        )}
         
       </div>
       <button 

@@ -9,6 +9,7 @@ API_BLUEPRINTS = {
     'dash_api',
     'modbus_api',
     'widget_api',
+    'user_api',
     'backUpRoute',
 }
 
