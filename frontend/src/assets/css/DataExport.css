@@ -28,6 +28,8 @@
   overflow-y: auto;
   padding: 0.5rem;
   border-radius: 4px;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
 }
 
 .sensor-item {
@@ -56,13 +58,12 @@
 .sensor-item label {
   margin: 0;
   font-size: 1rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .sensor-item input[type="checkbox"]:checked {
-  background-color: #007bff;
-  /* Modrá barva při zaškrtnutí */
-  border-color: #007bff;
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
 
 }
 
@@ -83,6 +84,6 @@
 }
 
 :root.dark-mode .sensor-item:hover {
-  background-color: var(--dark-background-color-alt);
-  color: var(--dark-text-primary); /* Zachová barvu textu v dark mode při hover */
+  background-color: var(--table-row-hover);
+  color: var(--text-primary);
 }

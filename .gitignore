@@ -23,6 +23,7 @@ dist
 dist-ssr
 *.local
 .env
+.cache*
 
 docker-compose.yml
 imageBuilds/
