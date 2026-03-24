@@ -71,6 +71,15 @@ function NavBar() {
           >
             Data Export{" "}
           </NavLink>
+          <NavLink
+            to="/data-import"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active" : ""}`
+            }
+          >
+            Data Import{" "}
+          </NavLink>
           {userRole === "admin" && (
             <NavLink
               to="/users"

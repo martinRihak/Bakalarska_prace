@@ -12,6 +12,7 @@ API_BLUEPRINTS = {
     'user_api',
     'weather_api',
     'backUpRoute',
+    'weather_api',
 }
 
 def is_api_request():
@@ -25,7 +26,7 @@ def is_api_request():
 def _unauthorized_response():
     if is_api_request():
         return jsonify({'status': 'error', 'message': 'Nepřihlášený uživatel'}), 401
-    return redirect(url_for('auth_views.login'))
+
 
 def login_required(f):
     @wraps(f)

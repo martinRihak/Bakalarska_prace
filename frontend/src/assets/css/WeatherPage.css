@@ -21,6 +21,10 @@
   position: relative;
 }
 
+.weather-location-field {
+  position: relative;
+}
+
 .weather-search-form input {
   width: 100%;
 }
@@ -82,8 +86,80 @@
   color: #555;
 }
 
+.weather-autocomplete {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.25rem);
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  z-index: 20;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.weather-autocomplete ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.weather-autocomplete li {
+  margin: 0;
+  padding: 0;
+}
+
+.weather-autocomplete li button {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  color: var(--text-primary);
+  padding: 0.65rem 0.85rem;
+  font-size: 0.95rem;
+}
+
+.weather-autocomplete li button:hover {
+  background: #f2f2f2;
+}
+
+.weather-autocomplete-status {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.weather-autocomplete-hint {
+  margin-top: -0.25rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
 .weather-hint {
   color: #444;
+}
+
+:root.dark-mode .weather-autocomplete {
+  background: var(--dark-surface-color);
+  border-color: #3a3a3a;
+}
+
+:root.dark-mode .weather-autocomplete li button {
+  background: var(--dark-surface-color);
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .weather-autocomplete li button:hover {
+  background: #2b2b2b;
+}
+
+:root.dark-mode .weather-autocomplete-status,
+:root.dark-mode .weather-autocomplete-hint {
+  color: var(--dark-text-secondary);
 }
 
 :root.dark-mode .weather-autocomplete {
@@ -190,8 +266,106 @@
   padding: 0.75rem;
 }
 
+/* Časový rozsah */
+.weather-time-range {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 700px;
+}
+
+.weather-time-range-btn {
+  padding: 0.5rem 1.1rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  background: var(--surface-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.weather-time-range-btn:hover {
+  border-color: #3b82f6;
+}
+
+.weather-time-range-btn.active {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+:root.dark-mode .weather-time-range-btn {
+  background: var(--dark-surface-color);
+  color: var(--dark-text-primary);
+  border-color: #3a3a3a;
+}
+
+:root.dark-mode .weather-time-range-btn.active {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+/* Hodinová mřížka */
+.weather-hourly-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+/* Porovnání se senzorem */
+.weather-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.weather-comparison-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.weather-comparison-controls label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.weather-comparison-controls select {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  min-width: 220px;
+}
+
+:root.dark-mode .weather-comparison-controls select {
+  background: var(--dark-surface-color);
+  color: var(--dark-text-primary);
+  border-color: #3a3a3a;
+}
+
+.weather-comparison-chart {
+  background: var(--surface-color);
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+:root.dark-mode .weather-comparison-chart {
+  background: var(--dark-surface-color);
+  border-color: #3a3a3a;
+}
+
 @media (max-width: 700px) {
   .weather-search-form {
     grid-template-columns: 1fr;
+  }
+
+  .weather-comparison-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .weather-comparison-controls select {
+    width: 100%;
   }
 }

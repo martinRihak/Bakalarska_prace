@@ -86,6 +86,30 @@ def get_latest_sensor_data(sensor_id):
         return jsonify({'error': str(e)}), 500
     
 
+@sensors_api.route('/import_data', methods=['PATCH'])
+@login_required
+def import_sensor_data():
+    try:
+        data = request.get_json()
+        sensor_id = data['sensorId']
+        records = data['records']
+        user_id = session.get('user_id')
+
+        if not records:
+            return jsonify({'message': 'Žádná data k importu'}), 400
+
+        inserted = SensorService.import_data(sensor_id, records, user_id)
+        return jsonify({'message': f'Úspěšně importováno {inserted} záznamů'}), 200
+
+    except PermissionError:
+        return jsonify({'error': 'Přístup odepřen'}), 403
+    except (KeyError, ValueError) as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
 @sensors_api.route('/export_data', methods=['POST'])
 @login_required
 def export_sensor_data():

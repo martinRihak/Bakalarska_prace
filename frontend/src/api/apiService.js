@@ -9,11 +9,16 @@ const fetchWithTimeout = (url, options, timeout = REQUEST_TIMEOUT) => {
   const id = setTimeout(() => controller.abort(), timeout);
 
   return fetch(url, { ...options, signal: controller.signal }).finally(() =>
-    clearTimeout(id)
+    clearTimeout(id),
   );
 };
 
-const apiRequest = async (endpoint, method = "GET", data = null, options = {}) => {
+const apiRequest = async (
+  endpoint,
+  method = "GET",
+  data = null,
+  options = {},
+) => {
   const token = localStorage.getItem("token");
   const headers = {
     "Content-Type": "application/json",
@@ -38,7 +43,7 @@ const apiRequest = async (endpoint, method = "GET", data = null, options = {}) =
   try {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}${endpoint}`,
-      fetchOptions
+      fetchOptions,
     );
 
     // Kontrola nového access tokenu v hlavičce
@@ -78,7 +83,10 @@ const apiRequest = async (endpoint, method = "GET", data = null, options = {}) =
           credentials: "include",
         });
       } catch (logoutError) {
-        console.error("Backend logout after refresh failure failed:", logoutError);
+        console.error(
+          "Backend logout after refresh failure failed:",
+          logoutError,
+        );
       }
 
       // Lokální cleanup
@@ -95,7 +103,7 @@ const apiRequest = async (endpoint, method = "GET", data = null, options = {}) =
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.message || errorData.error || "Chyba při zpracování"
+          errorData.message || errorData.error || "Chyba při zpracování",
         );
       }
       return await response.text();
@@ -125,7 +133,7 @@ const tryRefreshToken = async () => {
   try {
     const refreshResponse = await fetchWithTimeout(
       `${API_BASE_URL}/auth/refresh-token`,
-      { method: "POST", credentials: "include" }
+      { method: "POST", credentials: "include" },
     );
     if (refreshResponse.ok) {
       const refreshData = await refreshResponse.json();
@@ -178,11 +186,31 @@ const api = {
   checkAuthStatus: () => {
     return apiRequest("/auth/status");
   },
+  searchWeatherLocations: async (query) => {
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return [];
+
+    const response = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(trimmedQuery)}&count=8&language=cz&format=json`,
+    );
+
+    if (!response.ok) {
+      throw new Error("Nepodařilo se načíst návrhy lokalit.");
+    }
+
+    const data = await response.json();
+    return data.results || [];
+  },
+  getWeatherForecast: ({ latitude, longitude, locationName, timeRange = "7d" }) =>
+    apiRequest(
+      `/weather?latitude=${encodeURIComponent(latitude)}&longitude=${encodeURIComponent(longitude)}&locationName=${encodeURIComponent(locationName || "")}&timeRange=${encodeURIComponent(timeRange)}`,
+      "GET",
+    ),
 
   // Senzory
   getSensorHistory: (sensorId, timeRange, widget_id) => {
     return apiRequest(
-      `/sensors/getSensorHistory/${sensorId}?timeRange=${timeRange}&widget_id=${widget_id}`
+      `/sensors/getSensorHistory/${sensorId}?timeRange=${timeRange}`,
     );
   },
   getLatestSensorData: (sensorId) => {
@@ -242,7 +270,8 @@ const api = {
   updateSensorForUser: (userId, sensorId, sensorData) =>
     apiRequest(`/users/${userId}/sensors/${sensorId}`, "PATCH", sensorData),
   getAvailableSensors: () => apiRequest("/sensors/available"),
-  deleteUserSensor: (sensorId) => apiRequest(`/sensors/delete/${sensorId}`,"DELETE"),
+  deleteUserSensor: (sensorId) =>
+    apiRequest(`/sensors/delete/${sensorId}`, "DELETE"),
   addSensorToUser: (sensorId) =>
     apiRequest("/sensors/add-to-user", "POST", { sensorId }),
   createSensor: (sensorData) =>
@@ -251,6 +280,9 @@ const api = {
     apiRequest(`/sensors/${sensorData.sensor_id}`, "PATCH", sensorData),
   toggleSensorActive: (sensorId, isActive) =>
     apiRequest(`/sensors/${sensorId}/toggle-active`, "PATCH", { isActive }),
+
+  importSensorData: (importData) =>
+    apiRequest("/sensors/import_data", "PATCH", importData),
 
   // Export — BEZ hardcoded detekce uvnitř apiRequest
   exportSensorData: (exportData) => {
@@ -286,8 +318,7 @@ const api = {
   updateUser: (userId, userData) =>
     apiRequest(`/users/${userId}`, "PATCH", userData),
   deleteUser: (userId) => apiRequest(`/users/${userId}`, "DELETE"),
-  getSensorsForUser: (userId) =>
-    apiRequest(`/users/${userId}/sensors`, "GET"),
+  getSensorsForUser: (userId) => apiRequest(`/users/${userId}/sensors`, "GET"),
   updateSensorForUser: (userId, sensorId, sensorData) =>
     apiRequest(`/users/${userId}/sensors/${sensorId}`, "PATCH", sensorData),
 };

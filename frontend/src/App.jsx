@@ -18,7 +18,7 @@ import SensorsPage from "@/pages/SensorsPage";
 import UserPage from "@/pages/UserPage";
 import WeatherPage from "@/pages/WeatherPage";
 import Login from "@/features/auth/Login/Login";
-
+import DataImport from "./pages/DataImport";
 // Formuláře
 import UserForm from "@/components/forms/UserForm";
 import DashboardForm from "@/components/forms/DashboardForm";
@@ -69,6 +69,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <DataExport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/data-import"
+          element={
+            <ProtectedRoute>
+              <DataImport/>
             </ProtectedRoute>
           }
         />

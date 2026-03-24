@@ -165,7 +165,19 @@ class SensorService:
                 'value': result_data['value']
             }
         }
+        
+    @staticmethod
+    def import_data(sensor_id, records, user_id):
+        SensorService._ensure_user_owns_sensor(user_id, sensor_id)
 
+        for record in records:
+            timestamp = datetime.fromisoformat(record['timestamp'])
+            value = float(record['value'])
+            db.session.add(SensorData(sensor_id=sensor_id, timestamp=timestamp, value=value))
+
+        db.session.commit()
+        return len(records)
+    
     @staticmethod
     def export_data(start_date, end_date, sensor_ids, export_format, user_id):
         if start_date > end_date:
@@ -193,7 +205,7 @@ class SensorService:
             for record in data:
                 sensor_data.append({
                     'sensor_name': sensor.name,
-                    'sensor_type': sensor.sensor_type,
+                    'sensor_id': sensor.sensor_id,
                     'unit': sensor.unit,
                     'timestamp': record.timestamp.isoformat(),
                     'value': record.value
@@ -204,7 +216,7 @@ class SensorService:
 
         if export_format == 'csv':
             output = io.StringIO()
-            writer = csv.DictWriter(output, fieldnames=['sensor_name', 'sensor_type', 'unit', 'timestamp', 'value'])
+            writer = csv.DictWriter(output, fieldnames=['sensor_name', 'sensor_id', 'unit', 'timestamp', 'value'])
             writer.writeheader()
             writer.writerows(sensor_data)
             return output.getvalue()

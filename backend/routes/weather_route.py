@@ -5,15 +5,22 @@ from utils.auth_utils import login_required
 weather_api = Blueprint("weather_api", __name__)
 
 @weather_api.route("", methods=["GET", "OPTIONS"])
-@weather_api.route("/", methods=["GET"])
+@weather_api.route("/", methods=["GET", "OPTIONS"])
 @login_required
 def get_weather():
     latitude = request.args.get("latitude", "52.52437").strip()
     longitude = request.args.get("longitude", "13.41053").strip()
     location_name = request.args.get("locationName", "").strip() or None
+    time_range = request.args.get("timeRange", "7d").strip()
+
+   # print(f"Test:{latitude} , {longitude} , {location_name} {time_range}")
+    if time_range not in ("24h", "7d", "30d"):
+        time_range = "7d"
 
     try:
-        weather_data = WeatherService.get_weather(latitude, longitude, location_name)
+        weather_data = WeatherService.get_weather(
+            latitude, longitude, location_name, time_range
+        )
         return jsonify(weather_data), 200
     except ValueError as error:
         return jsonify({"error": f"Invalid coordinates: {error}"}), 400

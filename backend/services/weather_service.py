@@ -41,7 +41,7 @@ class WeatherService:
         return result
 
     @classmethod
-    def get_weather(cls, latitude, longitude, location_name=None):
+    def get_weather(cls, latitude, longitude, location_name, time_range="7d"):
         latitude = float(latitude)
         longitude = float(longitude)
         params = {
@@ -61,6 +61,15 @@ class WeatherService:
             ],
             "timezone": "auto",
         }
+
+        if time_range == "24h":
+            params["hourly"] = ["temperature_2m", "precipitation", "weather_code"]
+            params["forecast_days"] = 2
+        elif time_range == "30d":
+            params["past_days"] = 14
+            params["forecast_days"] = 16
+        else:
+            params["forecast_days"] = 7
 
         try:
             responses = cls._openmeteo.weather_api(cls._forecast_url, params=params)
@@ -86,7 +95,7 @@ class WeatherService:
             tz=timezone.utc,
         ).isoformat()
 
-        return {
+        result = {
             "location": {
                 "name": location_name,
                 "country": None,
@@ -99,6 +108,7 @@ class WeatherService:
             "timezone": cls._to_text(response.Timezone()),
             "timezone_abbreviation": cls._to_text(response.TimezoneAbbreviation()),
             "utc_offset_seconds": response.UtcOffsetSeconds(),
+            "time_range": time_range,
             "current_weather": {
                 "time": current_time_iso,
                 "temperature": cls._to_float(current.Variables(0).Value()),
@@ -123,3 +133,28 @@ class WeatherService:
                 ),
             },
         }
+
+        if time_range == "24h":
+            hourly = response.Hourly()
+            hourly_dates = pd.date_range(
+                start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
+                end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
+                freq=pd.Timedelta(seconds=hourly.Interval()),
+                inclusive="left",
+            ).strftime("%Y-%m-%dT%H:%M").tolist()
+
+            result["hourly"] = {
+                "time": hourly_dates,
+                "temperature_2m": cls._numpy_to_number_list(
+                    hourly.Variables(0).ValuesAsNumpy()
+                ),
+                "precipitation": cls._numpy_to_number_list(
+                    hourly.Variables(1).ValuesAsNumpy()
+                ),
+                "weather_code": cls._numpy_to_number_list(
+                    hourly.Variables(2).ValuesAsNumpy(),
+                    as_int=True,
+                ),
+            }
+#        print(result)
+        return result
