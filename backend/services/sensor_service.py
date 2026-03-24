@@ -122,23 +122,34 @@ class SensorService:
         SensorService._ensure_user_owns_sensor(user_id, sensor_id)
 
         modbus = current_app.config.get('MODBUS_MANAGER')
-        latest_data = None
+        result_data = None # Přejmenujeme pro jasnost
+
+        # 1. Pokus o čtení z Modbusu
         if modbus:
             try:
-                latest_data = modbus.read_sensor(sensor_id=sensor_id)
+                raw_value = modbus.read_sensor(sensor_id=sensor_id)
+                if raw_value is not None:
+                    # Vytvoříme strukturu, která imituje DB model
+                    result_data = {
+                        'timestamp': datetime.utcnow(),
+                        'value': raw_value
+                    }
             except Exception as e:
                 current_app.logger.error(f"Error reading from modbus: {e}")
-                
-        if latest_data is None:
+            
+        # 2. Pokud Modbus selhal, zkusíme DB
+        if result_data is None:
             current_app.logger.info(f"Load from database for sensor {sensor_id}")
-            latest_data = SensorData.query.filter_by(sensor_id=sensor_id).order_by(SensorData.timestamp.desc()).first()
-            
-        if not latest_data:
+            db_data = SensorData.query.filter_by(sensor_id=sensor_id).order_by(SensorData.timestamp.desc()).first()
+            if db_data:
+                result_data = {
+                    'timestamp': db_data.timestamp,
+                    'value': db_data.value
+                }
+
+        # 3. Pokud nemáme data odnikud
+        if not result_data:
             return None
-            
-        # If latest_data is from DB (SensorData object), it has timestamp/value attributes.
-        # If from modbus, it might be an object or dict? The original code accessed ".timestamp" and ".value".
-        # Assuming ModbusManager returns object compatible with SensorData interface or is a SensorData object.
         
         return {
             'sensor': {
@@ -149,8 +160,8 @@ class SensorService:
                 'max_value': sensor.max_value, 
             },
             'data': {
-                'timestamp': latest_data.timestamp,
-                'value': latest_data.value
+                'timestamp': result_data['timestamp'], # Nyní přistupujeme jako ke slovníku
+                'value': result_data['value']
             }
         }
 

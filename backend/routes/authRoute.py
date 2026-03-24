@@ -8,12 +8,12 @@ auth_api = Blueprint('auth_api', __name__)
 @auth_api.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    
+    print(data) 
     if not data or not data.get('username') or not data.get('password'):
         return jsonify({'status': 'error', 'message': 'Chybějící uživatelské jméno nebo heslo'}), 400
     
     user = AuthService.authenticate_user(data.get('username'), data.get('password'))
-    
+    print(user)
     if not user:
         return jsonify({'status': 'error', 'message': 'Nesprávné přihlašovací údaje'}), 401
     

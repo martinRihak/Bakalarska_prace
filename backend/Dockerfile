@@ -15,4 +15,7 @@ RUN uv sync --frozen --no-dev
 COPY . .
 
 
-CMD ["uv", "run", "run.py", "runserver"]
+EXPOSE 5000
+
+# Production entrypoint
+CMD ["uv", "run", "gunicorn", "-c", "gunicorn_config.py", "wsgi:app"]

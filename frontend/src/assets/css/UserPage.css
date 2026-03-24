@@ -1,0 +1,105 @@
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.users-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.create-user-btn {
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--primary-color);
+  color: var(--text-secondary);
+}
+
+.user-table th,
+.user-table td {
+  padding: 0.8rem;
+  text-align: left;
+}
+
+.user-table th {
+  background-color: var(--primary-color);
+  color: var(--text-secondary);
+}
+
+.user-table tr:nth-child(even) {
+  background-color: var(--surface-color);
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.user-row {
+  cursor: pointer;
+}
+
+.user-row.expanded {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.user-btn {
+  border: none;
+  padding: 0.45rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.edit-btn {
+  background-color: var(--primary-color);
+}
+
+.delete-btn {
+  background-color: var(--error-color);
+}
+
+.save-btn {
+  background-color: #0a8f47;
+}
+
+.cancel-btn {
+  background-color: #6b7280;
+}
+
+.table-input {
+  width: 100%;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid #c0c0c0;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.sensor-row-wrapper td {
+  background: #f7f7f7;
+}
+
+.sensor-loading {
+  padding: 0.75rem 0.25rem;
+}
+
+.sensor-subtable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+}
+
+.sensor-subtable th,
+.sensor-subtable td {
+  padding: 0.65rem;
+  text-align: left;
+}
+
+.sensor-subtable th {
+  background-color: #d7dde3;
+}

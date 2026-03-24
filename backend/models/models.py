@@ -3,9 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 from datetime import datetime
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 db = SQLAlchemy()
 

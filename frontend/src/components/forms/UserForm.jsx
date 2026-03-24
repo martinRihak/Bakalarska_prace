@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import api from '@/api/apiService';
 import '@css/forms.css';
+import '@css/UserPage.css'
+import { useNavigate } from 'react-router-dom';
 
 const UserForm = () => {
   // Počáteční stav formuláře
@@ -10,6 +12,7 @@ const UserForm = () => {
     email: '',
     role: 'user' // Výchozí role
   };
+  const navigate = useNavigate();
 
   // State pro data formuláře
   const [formData, setFormData] = useState(initialFormState);
@@ -36,7 +39,7 @@ const UserForm = () => {
 
     try {
       // Odeslání dat na API
-      await api.post('/users', formData);
+      await api.createUser(formData);
       
       // Úspěšné vytvoření uživatele
       setStatus({ isLoading: false, success: true, error: null });
@@ -55,7 +58,11 @@ const UserForm = () => {
   return (
     <div className="form-container">
       <h2 className="form-heading">Přidat nového uživatele</h2>
-      
+      <div className='users-toolbar'>
+        <button className='backbu' onClick={() => navigate('/users')}>
+          Zpet
+        </button>
+      </div> 
       {status.success && (
         <div className="form-success">
           Uživatel byl úspěšně vytvořen!
