@@ -1,13 +1,27 @@
+.users-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 2rem 2rem;
+}
+
+.users-page h1 {
+  margin: 0;
+}
+
 .user-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
+  margin-top: 0;
+  background-color: var(--surface-color);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .users-toolbar {
   display: flex;
   justify-content: flex-end;
-  margin-top: 1rem;
+  margin-top: 0;
 }
 
 .create-user-btn {
@@ -149,4 +163,10 @@
 
 :root.dark-mode .user-row.expanded {
   background-color: rgba(255, 255, 255, 0.04);
+}
+
+@media (max-width: 768px) {
+  .users-page {
+    padding: 1rem;
+  }
 }

@@ -6,19 +6,20 @@
     padding-top: 1rem;
     margin-top: 1rem;
 }
-p{
+
+p {
     margin-bottom: 0px;
-    font: 1.2rem ;
+    font: 1.2rem;
     font-weight: 700;
 }
+
 .userName {
     background-color: var(--surface-color);
     color: var(--text-primary);
     padding: 0.5rem 2rem;
-    margin-right: 3rem;
-    border-radius: 4px;
+    margin-right: 2.7rem;
+    border-radius: 15px;
     width: fit-content;
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .theme-toggle {
@@ -33,6 +34,7 @@ p{
     width: 60px;
     height: 34px;
     margin-right: 10px;
+    margin-bottom: 0px;
 }
 
 .switch input {
@@ -69,11 +71,22 @@ p{
     font-size: 16px;
 }
 
-input:checked + .slider-dark {
+input:checked+.slider-dark {
     background-color: #f1c40f;
 }
 
-input:checked + .slider-dark:before {
+input:checked+.slider-dark:before {
     transform: translateX(26px);
     content: "🌞";
+}
+
+@media (max-width: 768px) {
+    .userName {
+        margin-right: 0px;
+    }
+
+    .main-userBar {
+        margin-top: 3rem;
+        justify-content: center;
+    }
 }

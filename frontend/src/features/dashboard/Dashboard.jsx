@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import Widget from "@/components/widgets/Widget";
 import api from "@/api/apiService";
+import api from "@/api/apiService";
 import DashboardForm from "@/components/forms/DashboardForm";
 import WidgetForm from "@/components/forms/WidgetForm";
 
 // CSS
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import "@css/dashBoard.css";
+import "@css/pageLayout.css";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -44,10 +45,12 @@ const Dashboard = () => {
         setSelectedDashboard(userDashboards[0].dashboard_id);
       } else {
         setIsLoading(false);
+        setIsLoading(false);
       }
     } catch (err) {
       console.error("Failed to load dashboards:", err);
       setDashboards([]);
+      setIsLoading(false);
       setIsLoading(false);
     }
   };
@@ -64,6 +67,8 @@ const Dashboard = () => {
           y: widget.position_y || 0,
           w: widget.width,
           h: widget.height,
+          minW: widget.widget_type === "value" ? 3 : 5,
+          minH: widget.widget_type === "value" ? 3 : 5,
         })),
       };
       setWidgets(dashboardWidgets);
@@ -87,6 +92,7 @@ const Dashboard = () => {
     if (selectedDashboard) {
       loadWidgets(selectedDashboard);
     } else {
+      setIsLoading(false);
       setIsLoading(false);
     }
   }, [selectedDashboard]);
@@ -128,6 +134,7 @@ const Dashboard = () => {
         throw new Error("No layout available");
       }
 
+
       const widgetPositions = currentLayout.map((layout) => ({
         widget_id: layout.i,
         position_x: layout.x,
@@ -146,7 +153,18 @@ const Dashboard = () => {
   const DashboardHeader = () => (
     <div className="dashboard-header">
       {
+      {
         <>
+          <button className="dashboard-btn" onClick={handleDashboardCreate}>
+            Vytvořit nový dashboard
+          </button>
+          <button className="dashboard-btn" onClick={handleWidgetCreate}>
+            Vytvořit nový widget
+          </button>
+          <select
+            value={selectedDashboard || ""}
+            onChange={handleDashboardChange}
+          >
           <button className="dashboard-btn" onClick={handleDashboardCreate}>
             Vytvořit nový dashboard
           </button>
@@ -162,6 +180,10 @@ const Dashboard = () => {
                 key={dashboard.dashboard_id}
                 value={dashboard.dashboard_id}
               >
+              <option
+                key={dashboard.dashboard_id}
+                value={dashboard.dashboard_id}
+              >
                 {dashboard.name}
               </option>
             ))}
@@ -172,7 +194,14 @@ const Dashboard = () => {
           <button className="dashboard-btn" onClick={handleSaveWidgetPositions}>
             Uložit pozice widgetů
           </button>
+          <button className="dashboard-btn" onClick={handleDeleteDashboard}>
+            Smazat dashboard
+          </button>
+          <button className="dashboard-btn" onClick={handleSaveWidgetPositions}>
+            Uložit pozice widgetů
+          </button>
         </>
+      }
       }
     </div>
   );
@@ -180,94 +209,94 @@ const Dashboard = () => {
     loadWidgets(selectedDashboard);
   };
   return (
-    <div className="main-content">
-      <DashboardHeader />
-      {isLoading ? (
-        <div>Načítání...</div>
-      ) : (
-        <>
-          {dashboards.length === 0 ? (
-            <div className="no-dashboards-message">
-              Zatím nemáte vytvořený žádný dashboard. Vytvořte první pomocí
-              tlačítka výše.
-            </div>
-          ) : widgets.length === 0 ? (
-            <div className="no-widgets-message">
-              Dashboard je připraven. Nyní můžete přidat widgety.
-            </div>
-          ) : (
-            <ResponsiveGridLayout
-              className="layout"
-              layouts={layouts}
-              breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480 }}
-              cols={{ lg: 12, md: 10, sm: 4, xs: 3 }}
-              rowHeight={100}
-              margin={[8, 8]}
-              onLayoutChange={onLayoutChange}
-              isDraggable={true}
-              isResizable={true}
-              autoSize={true}
-              useCSSTransforms={true}
-              preventCollision={true}
-              compactType={null}
-            >
-              {widgets.map((widget) => (
-                <div key={widget.widget_id.toString()} className="widget">
-                  <Widget
-                    title={widget.title}
-                    widget_id={widget.widget_id}
-                    sensorName={`Sensor ${widget.sensors[0].name}`}
-                    id={widget.sensors[0].sensor_id}
-                    active={widget.sensors[0].is_active}
-                    time={widget.time}
-                    widgetType={widget.widget_type}
-                    dashboard_id={selectedDashboard}
-                    onDelete={handleWidgetDelete} // Předání callbacku
-                  />
-                </div>
-              ))}
-            </ResponsiveGridLayout>
-          )}
-        </>
-      )}
+      <div className="main-content">
+        <DashboardHeader />
+        {isLoading ? (
+          <div>Načítání...</div>
+        ) : (
+          <>
+            {dashboards.length === 0 ? (
+              <div className="no-dashboards-message">
+                Zatím nemáte vytvořený žádný dashboard. Vytvořte první pomocí
+                tlačítka výše.
+              </div>
+            ) : widgets.length === 0 ? (
+              <div className="no-widgets-message">
+                Dashboard je připraven. Nyní můžete přidat widgety.
+              </div>
+            ) : (
+              <ResponsiveGridLayout
+                className="layout"
+                layouts={layouts}
+                breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480 }}
+                cols={{ lg: 12, md: 12, sm: 6, xs: 4 }}
+                rowHeight={100}
+                margin={[16, 16]}
+                onLayoutChange={onLayoutChange}
+                isDraggable={true}
+                isResizable={true}
+                autoSize={true}
+                useCSSTransforms={true}
+                preventCollision={true}
+                compactType={null}
+              >
+                {widgets.map((widget) => (
+                  <div key={widget.widget_id.toString()} className="widget">
+                    <Widget
+                      title={widget.title}
+                      widget_id={widget.widget_id}
+                      sensorName={`Sensor ${widget.sensors[0].name}`}
+                      id={widget.sensors[0].sensor_id}
+                      active={widget.sensors[0].is_active}
+                      time={widget.time}
+                      widgetType={widget.widget_type}
+                      dashboard_id={selectedDashboard}
+                      onDelete={handleWidgetDelete} // Předání callbacku
+                    />
+                  </div>
+                ))}
+              </ResponsiveGridLayout>
+            )}
+          </>
+        )}
 
-      {isDashboardFormOpen && (
-        <div
-          className="modal-overlay"
-          onClick={() => setIsDashboardFormOpen(false)}
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <DashboardForm
-              onClose={() => setIsDashboardFormOpen(false)}
-              onSuccess={() => {
-                setIsDashboardFormOpen(false);
-                loadDashboards();
-              }}
-            />
+        {isDashboardFormOpen && (
+          <div
+            className="modal-overlay"
+            onClick={() => setIsDashboardFormOpen(false)}
+          >
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <DashboardForm
+                onClose={() => setIsDashboardFormOpen(false)}
+                onSuccess={() => {
+                  setIsDashboardFormOpen(false);
+                  loadDashboards();
+                }}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {isWidgetFormOpen && (
-        <div
-          className="modal-overlay"
-          onClick={() => setIsWidgetFormOpen(false)}
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Vytvořit nový widget</h2>
-            <WidgetForm
-              onClose={() => setIsWidgetFormOpen(false)}
-              dashboardId={selectedDashboard}
-              onSuccess={() => {
-                setIsWidgetFormOpen(false);
-                loadWidgets(selectedDashboard);
-              }}
-            />
+        {isWidgetFormOpen && (
+          <div
+            className="modal-overlay"
+            onClick={() => setIsWidgetFormOpen(false)}
+          >
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <h2>Vytvořit nový widget</h2>
+              <WidgetForm
+                onClose={() => setIsWidgetFormOpen(false)}
+                onSuccess={() => {
+                  setIsWidgetFormOpen(false);
+                  loadWidgets(selectedDashboard);
+                }}
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
   );
 };
 
 export default Dashboard;
+

@@ -15,12 +15,13 @@
     justify-content: space-between;
     padding: 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    align-items: center;
 }
 
 .widget-header h3 {
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: 1.3rem;
+    font-weight: 500;
     color: #000000;
 }
 
@@ -133,7 +134,7 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: bold;
 }
 
@@ -159,32 +160,40 @@
     text-align: center;
 }
 
-:root.dark-mode .widget{
+:root.dark-mode .widget {
     background-color: var(--dark-surface-color);
     color: var(--dark-text-primary);
 }
+
 :root.dark-mode .widget-header h3 {
     color: var(--dark-text-primary);
 }
+
 :root.dark-mode .time-range-select:focus {
     background-color: var(--dark-surface-color);
     color: var(--dark-text-secondary);
 }
+
 :root.dark-mode .time-range-select {
     background: transparent;
     border: 1px solid var(--dark-text-secondary);
     color: var(--dark-text-primary);
 }
-:root.dark-mode .widget-icon, .value {
+
+:root.dark-mode .widget-icon,
+.value {
     color: var(--dark-text-secondary);
 }
-:root.dark-mode .icon svg{
+
+:root.dark-mode .icon svg {
     background-color: var(--dark-surface-color);
 }
+
 @keyframes rotate {
     from {
         transform: rotate(0deg);
     }
+
     to {
         transform: rotate(360deg);
     }
