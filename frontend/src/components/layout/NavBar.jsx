@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
-import api from '@/api/apiService';
-import '@css/NavBar.css';
+import React, { useState } from "react";
+import { useNavigate, NavLink } from "react-router-dom";
+import api from "@/api/apiService";
+import "@css/NavBar.css";
 
 function NavBar() {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ function NavBar() {
 
   const handleLogout = async () => {
     await api.logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   const toggleMenu = () => {
@@ -19,50 +19,57 @@ function NavBar() {
 
   return (
     <>
-    <button className="menu-toggle" onClick={toggleMenu}>
-      ☰
-    </button>
-    <nav className={`side-nav ${isOpen ? 'open' : ''}`}>
-      <div className="nav-links">
-        <NavLink 
-          to="/" 
-          end
-          onClick={() => setIsOpen(false)}
-          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-        >
-          Domů
-        </NavLink>
-        <NavLink 
-          to="/sensors"
-          onClick={() => setIsOpen(false)}
-          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-        >
-          Senzory
-        </NavLink>
-        <NavLink
-        to='/data-export'
-        onClick={() => setIsOpen(false)}
-        className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-        >Data Export </NavLink>
-        {currentUser?.role === "admin" && (
+      <button className="menu-toggle" onClick={toggleMenu}>
+        ☰
+      </button>
+      <nav className={`side-nav ${isOpen ? "open" : ""}`}>
+        <div className="nav-links">
           <NavLink
-            to="/users"
+            to="/"
+            end
             onClick={() => setIsOpen(false)}
             className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
           >
-            Uživatelé
+            Domů
           </NavLink>
-        )}
-        
-      </div>
-      <button 
-        onClick={handleLogout}
-        className="logout-button"
-      >
-        Odhlásit se
-      </button>
-    </nav>
-  </>
+          <NavLink
+            to="/sensors"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+          >
+            Senzory
+          </NavLink>
+          <NavLink
+            to="/weather"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+          >
+           Předpověď{" "}
+          </NavLink>
+          <NavLink
+            to="/data-export"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+          >
+            Data Export{" "}
+          </NavLink>
+          {currentUser?.role === "admin" && (
+            <NavLink
+              to="/users"
+              onClick={() => setIsOpen(false)}
+              className={({ isActive }) =>
+                `nav-link ${isActive ? "active" : ""}`
+              }
+            >
+              Uživatelé
+            </NavLink>
+          )}
+        </div>
+        <button onClick={handleLogout} className="logout-button">
+          Odhlásit se
+        </button>
+      </nav>
+    </>
   );
 }
 

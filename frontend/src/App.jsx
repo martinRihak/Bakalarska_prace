@@ -18,6 +18,7 @@ import Home from "@/pages/Home";
 import DataExport from "@/pages/DataExport";
 import SensorsPage from "@/pages/SensorsPage";
 import UserPage from "@/pages/UserPage";
+import WeatherPage from "@/pages/WeatherPage";
 import Login from "@/features/auth/Login/Login";
 
 // Formuláře
@@ -86,6 +87,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <UserPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/weather"
+          element={
+            <ProtectedRoute>
+              <WeatherPage/>
             </ProtectedRoute>
           }
         />

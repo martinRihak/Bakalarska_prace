@@ -181,6 +181,8 @@ const api = {
   exportSensorData: async (exportData) => {
     return apiRequest("/sensors/export_data", "POST", exportData);
   },
+  getWeatherForecast: (location) =>
+    apiRequest(`/weather?location=${encodeURIComponent(location)}`, "GET"),
   getUser: async () => {
     return apiRequest("/auth/user", "GET");
   },
