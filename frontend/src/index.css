@@ -13,12 +13,18 @@
   --success-color: #4CAF50;        /* Ponecháno pro úspěšné stavy */
  /* Dark mode */
   --dark-background-color: #121212; /* Tmavé pozadí pro tmavý režim */
-  --dark-background-color-alt: #817979; /* Tmavé alternativní pozadí pro tmavý režim */
+  --dark-background-color-alt: #000000; /* Tmavé alternativní pozadí pro tmavý režim */
   --dark-text-primary: #E0E0E0;    /* Světlejší text pro tmavý režim */
   --dark-text-secondary: #B0B0B0;  /* Ještě světlejší text pro tmavý režim */
   --dark-surface-color: #1E1E1E;   /* Tmavší povrch pro widgety a karty v tmavém režimu */
   --dark-primary-color: #1017EA;   /* Světle fialová pro primární akcent v tmavém režimu */
   --dark-secondary-color: #CF6679; /* Světle červená pro sekundární akcent v tmavém režimu */ 
+  --dark-border-color: #303b50;
+  --dark-muted-text: #a7b4cd;
+  --dark-input-bg: #151b28;
+  --dark-table-row-alt: #202839;
+  --dark-table-row-hover: #273145;
+  --dark-overlay-bg: rgba(0, 0, 0, 0.65);
   --border-color: #d2d8e1;
   --muted-text: #4a5468;
   --input-bg: #ffffff;
@@ -36,6 +42,7 @@
 
     /* Transitions for theme switching */
     transition: background-color 0.3s ease, color 0.3s ease;
+
 }
 
 /* Základní reset a společné styly */
@@ -88,7 +95,7 @@ button {
   background-color: var(--primary-color);
   color:  var(--text-secondary);
   border: none;
-  padding: 0.8rem 1rem;
+  padding: 0.5rem 0.7rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
@@ -181,26 +188,30 @@ input:checked + .slider:before {
 /* Layout */
 .main-content {
   flex: 1;
-  padding: 1rem;
   margin-left: 250px;
   min-height: 100vh;
+  padding: 0rem 1.5rem;
   transition: margin-left 0.3s ease;
 }
 
 /* Dark mode class */
 :root.dark-mode {
-    --background-color: #0f131a;
-    --surface-color: #1b2230;
-    --text-primary: #e6ebf5;
-    --text-secondary: #f5f7fb;
-    --border-color: #303b50;
-    --muted-text: #a7b4cd;
-    --input-bg: #151b28;
-    --table-row-alt: #202839;
-    --table-row-hover: #273145;
-    --overlay-bg: rgba(0, 0, 0, 0.65);
+    --background-color: var(--dark-background-color);
+    --background-color-alt: var(--dark-background-color-alt);
+    --surface-color: var(--dark-surface-color);
+    --text-primary: var(--dark-text-primary);
+    --text-secondary: var(--dark-text-secondary);
+    --primary-color: var(--dark-primary-color);
+    --secondary-color: var(--dark-secondary-color);
+    --border-color: var(--dark-border-color);
+    --muted-text: var(--dark-muted-text);
+    --input-bg: var(--dark-input-bg);
+    --table-row-alt: var(--dark-table-row-alt);
+    --table-row-hover: var(--dark-table-row-hover);
+    --overlay-bg: var(--dark-overlay-bg);
     background-color: var(--background-color);
     color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 :root.dark-mode body {
@@ -215,13 +226,13 @@ input:checked + .slider:before {
 :root.dark-mode .no-dashboards-message,
 :root.dark-mode .sensor-subtable,
 :root.dark-mode .sensor-table tr:nth-child(even) {
-    background-color: var(--dark-surface-color);
-    color: var(--dark-text-primary);
+    background-color: var(--surface-color);
+    color: var(--text-primary);
 }
 
 :root.dark-mode .theme-toggle-button {
-    background-color: var(--dark-surface-color);
-    color: var(--dark-text-primary);
+    background-color: var(--surface-color);
+    color: var(--text-primary);
 }
 
 /* Dark mode form elements */
@@ -236,17 +247,17 @@ input:checked + .slider:before {
 :root.dark-mode input:focus,
 :root.dark-mode select:focus,
 :root.dark-mode textarea:focus {
-    border-color: var(--dark-primary-color);
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.1);
 }
 
 :root.dark-mode input::placeholder {
-    color: var(--dark-text-secondary);
+    color: var(--text-secondary);
 }
 
 :root.dark-mode select option {
-    background-color: var(--dark-background-color);
-    color: var(--dark-text-primary);
+    background-color: var(--background-color);
+    color: var(--text-primary);
 }
 
 :root.dark-mode input[type="datetime-local"] {
@@ -254,9 +265,11 @@ input:checked + .slider:before {
 }
 
 /* Responzivní design */
-@media (max-width: 768px) {
+@media screen and (max-width: 968px) {
   .main-content {
     margin-left: 0;
-    padding-top: 4rem;
+    padding:0px;
+    
   }
+
 }

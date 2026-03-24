@@ -61,64 +61,73 @@ const SensorsPage = () => {
     setIsAddModalOpen(false);
   };
 
-  if (loading) return <div>Načítání senzorů...</div>;
-  if (error) return <div className="error-message">{error}</div>;
-
   return (
-    <div className="main-content">
+    <div className="main">
       <UserBar />
-      <h1>Moje senzory</h1>
-      <button onClick={() => setIsAddModalOpen(true)} className="add-sensor-btn">
-        Přidat senzor
-      </button>
-      <table className="sensor-table">
-        <thead>
-          <tr>
-            <th>Název</th>
-            <th>Typ</th>
-            <th>Jednotka</th>
-            <th>Aktivní</th>
-            <th>Akce</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sensors.map(sensor => (
-            <tr key={sensor.sensor_id}>
-              <td>{sensor.name}</td>
-              <td>{sensor.sensor_type}</td>
-              <td>{sensor.unit}</td>
-              <td>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    checked={sensor.is_active}
-                    onChange={() => handleToggleActive(sensor.sensor_id, sensor.is_active)}
-                  />
-                  <span className="slider"></span>
-                </label>
-              </td>
-              <td>
-                <button onClick={() => handleEditSensor(sensor)}>Upravit</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <main className="page-shell">
+        <section className="main-content sensors-page">
+          <h1>Moje senzory</h1>
+          {loading ? (
+            <div>Načítání senzorů...</div>
+          ) : error ? (
+            <div className="error-message">{error}</div>
+          ) : (
+            <>
+              <button onClick={() => setIsAddModalOpen(true)} className="add-sensor-btn">
+                Přidat senzor
+              </button>
+              <table className="sensor-table">
+                <thead>
+                  <tr>
+                    <th>Název</th>
+                    <th>Typ</th>
+                    <th>Jednotka</th>
+                    <th>Aktivní</th>
+                    <th>Akce</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sensors.map(sensor => (
+                    <tr key={sensor.sensor_id}>
+                      <td>{sensor.name}</td>
+                      <td>{sensor.sensor_type}</td>
+                      <td>{sensor.unit}</td>
+                      <td>
+                        <label className="switch">
+                          <input
+                            type="checkbox"
+                            checked={sensor.is_active}
+                            onChange={() => handleToggleActive(sensor.sensor_id, sensor.is_active)}
+                          />
+                          <span className="slider"></span>
+                        </label>
+                      </td>
+                      <td>
+                        <button onClick={() => handleEditSensor(sensor)}>Upravit</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-      {isAddModalOpen && (
-        <AddSensorModal
-          onClose={() => setIsAddModalOpen(false)}
-          onAdd={handleAddSensor}
-        />
-      )}
+              {isAddModalOpen && (
+                <AddSensorModal
+                  onClose={() => setIsAddModalOpen(false)}
+                  onAdd={handleAddSensor}
+                />
+              )}
 
-      {editingSensor && (
-        <SensorForm
-          sensor={editingSensor}
-          onSubmit={handleUpdateSensor}
-          onClose={() => setEditingSensor(null)}
-        />
-      )}
+              {editingSensor && (
+                <SensorForm
+                  sensor={editingSensor}
+                  onSubmit={handleUpdateSensor}
+                  onClose={() => setEditingSensor(null)}
+                />
+              )}
+            </>
+          )}
+        </section>
+      </main>
     </div>
   );
 };
