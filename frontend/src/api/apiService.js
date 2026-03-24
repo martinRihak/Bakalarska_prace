@@ -196,8 +196,11 @@ const api = {
     const data = await response.json();
     return data.results || [];
   },
-  getWeatherForecast: (location) =>
-    apiRequest(`/weather?location=${encodeURIComponent(location)}`, "GET"),
+  getWeatherForecast: (latitude, longitude, locationName = "") =>
+    apiRequest(
+      `/weather?latitude=${encodeURIComponent(latitude)}&longitude=${encodeURIComponent(longitude)}&locationName=${encodeURIComponent(locationName)}`,
+      "GET",
+    ),
   getUser: async () => {
     return apiRequest("/auth/user", "GET");
   },

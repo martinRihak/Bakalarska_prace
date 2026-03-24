@@ -10,6 +10,7 @@ API_BLUEPRINTS = {
     'modbus_api',
     'widget_api',
     'user_api',
+    'weather_api',
     'backUpRoute',
 }
 
@@ -29,6 +30,9 @@ def _unauthorized_response():
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if request.method == 'OPTIONS':
+            return '', 204
+
         # Kontrola JWT tokenu v Authorization hlavičce pro API požadavky
         auth_header = request.headers.get('Authorization')
         if auth_header and auth_header.startswith('Bearer '):

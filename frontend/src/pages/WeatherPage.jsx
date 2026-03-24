@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import ReactApexChart from "react-apexcharts";
 import api from "@/api/apiService";
 import useApi from "@/hooks/useApi";
 import UserBar from "@/components/layout/UserBar";
@@ -100,6 +101,61 @@ const WeatherPage = () => {
     return [];
   }, [weatherData]);
 
+  const resolvedLocation = useMemo(() => {
+    if (!weatherData) return selectedLocation;
+    return weatherData.location?.display_name || selectedLocation;
+  }, [selectedLocation, weatherData]);
+
+  const weatherChartSeries = useMemo(() => {
+    if (!dailyForecast.length) return [];
+
+    const maxSeriesData = dailyForecast
+      .filter((day) => day.date && day.temp_max !== null && day.temp_max !== undefined)
+      .map((day) => ({ x: new Date(day.date).getTime(), y: Number(day.temp_max) }));
+
+    const minSeriesData = dailyForecast
+      .filter((day) => day.date && day.temp_min !== null && day.temp_min !== undefined)
+      .map((day) => ({ x: new Date(day.date).getTime(), y: Number(day.temp_min) }));
+
+    return [
+      { name: "Max °C", data: maxSeriesData },
+      { name: "Min °C", data: minSeriesData },
+    ];
+  }, [dailyForecast]);
+
+  const weatherChartOptions = useMemo(
+    () => ({
+      chart: {
+        type: "line",
+        background: "transparent",
+        toolbar: { show: true },
+        animations: {
+          enabled: true,
+          easing: "easeinout",
+          speed: 350,
+          dynamicAnimation: { enabled: true, speed: 350 },
+        },
+      },
+      stroke: { curve: "smooth", width: 3 },
+      dataLabels: { enabled: false },
+      grid: { borderColor: "#d9d9d9" },
+      xaxis: {
+        type: "datetime",
+        labels: { datetimeFormatter: { day: "dd MMM", month: "MMM" } },
+      },
+      yaxis: {
+        title: { text: "Teplota (°C)" },
+        labels: { formatter: (value) => value.toFixed(1) },
+      },
+      tooltip: {
+        x: { format: "dd.MM.yyyy" },
+      },
+      legend: { position: "top" },
+      colors: ["#0E58D7", "#A81916"],
+    }),
+    [],
+  );
+
   const formatValue = (value, unit = "") => {
     if (value === null || value === undefined || value === "") return "N/A";
     return `${value}${unit}`;
@@ -107,11 +163,28 @@ const WeatherPage = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const location = selectedSuggestion
+    const locationLabel = selectedSuggestion
       ? formatLocationLabel(selectedSuggestion)
       : locationInput.trim();
 
-    if (!location) {
+    let selectedCoordinates = selectedSuggestion;
+
+    if (!selectedCoordinates && locationSuggestions.length > 0) {
+      selectedCoordinates = locationSuggestions[0];
+    }
+
+    if (!selectedCoordinates && locationInput.trim()) {
+      try {
+        const fallbackSuggestions = await api.searchWeatherLocations(locationInput.trim());
+        if (fallbackSuggestions.length > 0) {
+          selectedCoordinates = fallbackSuggestions[0];
+        }
+      } catch {
+        // handled by generic message below when coordinates are missing
+      }
+    }
+
+    if (!selectedCoordinates?.latitude || !selectedCoordinates?.longitude) {
       setError("Zadejte prosím lokalitu.");
       setWeatherData(null);
       return;
@@ -122,9 +195,15 @@ const WeatherPage = () => {
     setError("");
 
     try {
-      const response = await callApi(() => api.getWeatherForecast(location));
+      const response = await callApi(() =>
+        api.getWeatherForecast(
+          selectedCoordinates.latitude,
+          selectedCoordinates.longitude,
+          locationLabel,
+        ),
+      );
       setWeatherData(response);
-      setSelectedLocation(location);
+      setSelectedLocation(response?.location?.display_name || locationLabel);
     } catch (err) {
       setWeatherData(null);
       setError(err.message || "Nepodařilo se načíst data počasí.");
@@ -211,7 +290,13 @@ const WeatherPage = () => {
 
       {weatherData && (
         <section className="weather-results">
-          <h2>Výsledek pro: {selectedLocation}</h2>
+          <h2>Výsledek pro: {resolvedLocation}</h2>
+          {weatherData.location && (
+            <p className="weather-meta">
+              {weatherData.location.latitude}, {weatherData.location.longitude}
+              {weatherData.timezone ? ` | ${weatherData.timezone}` : ""}
+            </p>
+          )}
 
           {currentWeather && (
             <div className="weather-card-grid">
@@ -237,6 +322,16 @@ const WeatherPage = () => {
           {dailyForecast.length > 0 && (
             <div className="weather-forecast">
               <h2>Denní předpověď</h2>
+              {weatherChartSeries.length > 0 && (
+                <div className="weather-chart">
+                  <ReactApexChart
+                    options={weatherChartOptions}
+                    series={weatherChartSeries}
+                    type="line"
+                    height={320}
+                  />
+                </div>
+              )}
               <div className="weather-day-grid">
                 {dailyForecast.slice(0, 7).map((day, index) => (
                   <article className="weather-day-card" key={`${day.date || "day"}-${index}`}>
