@@ -23,6 +23,7 @@
 .user-table td {
   padding: 0.8rem;
   text-align: left;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .user-table th {
@@ -31,7 +32,7 @@
 }
 
 .user-table tr:nth-child(even) {
-  background-color: var(--surface-color);
+  background-color: var(--table-row-alt);
 }
 
 .user-actions {
@@ -45,7 +46,7 @@
 }
 
 .user-row.expanded {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: var(--table-row-hover);
 }
 
 .user-btn {
@@ -65,22 +66,25 @@
 }
 
 .save-btn {
-  background-color: #0a8f47;
+  background-color: var(--success-color);
 }
 
 .cancel-btn {
-  background-color: #6b7280;
+  background-color: var(--muted-text);
 }
 
 .table-input {
   width: 100%;
   padding: 0.35rem 0.45rem;
-  border: 1px solid #c0c0c0;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  background: var(--input-bg);
+  color: var(--text-primary);
   background: var(--surface-color);
 }
 
 .sensor-row-wrapper td {
+  background: var(--table-row-alt);
   background: var(--surface-color);
 }
 
@@ -101,6 +105,7 @@
 }
 
 .sensor-subtable th {
+  background-color: var(--table-row-hover);
   background-color: var(--accent-color);
   color: var(--text-secondary);
 }

@@ -19,6 +19,12 @@
   --dark-surface-color: #1E1E1E;   /* Tmavší povrch pro widgety a karty v tmavém režimu */
   --dark-primary-color: #1017EA;   /* Světle fialová pro primární akcent v tmavém režimu */
   --dark-secondary-color: #CF6679; /* Světle červená pro sekundární akcent v tmavém režimu */ 
+  --border-color: #d2d8e1;
+  --muted-text: #4a5468;
+  --input-bg: #ffffff;
+  --table-row-alt: #f2f5fa;
+  --table-row-hover: #e6ebf3;
+  --overlay-bg: rgba(0, 0, 0, 0.5);
   /* Typografie */
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -103,9 +109,9 @@ button:focus {
 input, select, textarea {
   width: 100%;
   padding: 0.8rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--input-bg);
   color: var(--text-primary);
   font-size: 1rem;
 }
@@ -183,13 +189,23 @@ input:checked + .slider:before {
 
 /* Dark mode class */
 :root.dark-mode {
-    background-color: var(--dark-background-color);
-    color: var(--dark-text-primary);
+    --background-color: #0f131a;
+    --surface-color: #1b2230;
+    --text-primary: #e6ebf5;
+    --text-secondary: #f5f7fb;
+    --border-color: #303b50;
+    --muted-text: #a7b4cd;
+    --input-bg: #151b28;
+    --table-row-alt: #202839;
+    --table-row-hover: #273145;
+    --overlay-bg: rgba(0, 0, 0, 0.65);
+    background-color: var(--background-color);
+    color: var(--text-primary);
 }
 
 :root.dark-mode body {
-    background-color: var(--dark-background-color);
-    color: var(--dark-text-primary);
+    background-color: var(--background-color);
+    color: var(--text-primary);
 }
 
 :root.dark-mode .userName,
@@ -210,12 +226,11 @@ input:checked + .slider:before {
 
 /* Dark mode form elements */
 :root.dark-mode input,
-:root.dark-mode h1,
 :root.dark-mode select,
 :root.dark-mode textarea {
-    background-color: var(--dark-background-color);
-    color: var(--dark-text-primary);
-    border-color: var(--dark-text-secondary);
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border-color: var(--border-color);
 }
 
 :root.dark-mode input:focus,

@@ -57,7 +57,13 @@ def login():
 @auth_api.route('/logout', methods=['POST'])
 def logout():
     session.clear()
-    return jsonify({'status': 'success', 'message': 'Odhlášení proběhlo úspěšně'}), 200
+    response = jsonify({'status': 'success', 'message': 'Odhlášení proběhlo úspěšně'})
+    response.delete_cookie(
+        'refresh_token',
+        path='/auth',
+        domain=current_app.config.get('COOKIE_DOMAIN')
+    )
+    return response, 200
 
 @auth_api.route('/status', methods=['GET'])
 def auth_status():
@@ -129,6 +135,11 @@ def register():
 def refresh_token():
     refresh_token = request.cookies.get('refresh_token')
     if not refresh_token:
+        current_app.logger.warning(
+            "Refresh token missing on /auth/refresh-token (Origin=%s, Cookie header present=%s)",
+            request.headers.get('Origin'),
+            bool(request.headers.get('Cookie'))
+        )
         return jsonify({'status': 'error', 'message': 'Refresh token chybí'}), 401
     
     try:
@@ -138,4 +149,5 @@ def refresh_token():
             'token': access_token
         })
     except ValueError as e:
+        current_app.logger.warning("Refresh token invalid: %s", str(e))
         return jsonify({'status': 'error', 'message': str(e)}), 401

@@ -76,6 +76,7 @@ def _get_env_list(name, default):
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
+
 def setup_logger():
     formatter = logging.Formatter(
         "\033[92m%(asctime)s\033[0m - \033[94m%(name)s\033[0m - \033[93m%(levelname)s\033[0m - %(message)s"
@@ -107,7 +108,7 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or secrets.token_hex(16)
 app.config["JWT_SECRET"] = os.environ.get("JWT_SECRET") or app.config["SECRET_KEY"]
 app.config["COOKIE_SECURE"] = _get_env_bool("COOKIE_SECURE", default=is_production)
 app.config["COOKIE_SAMESITE"] = os.environ.get("COOKIE_SAMESITE") or "Strict"
-app.config["COOKIE_DOMAIN"] = os.environ.get("COOKIE_DOMAIN") or None
+app.config["COOKIE_DOMAIN"] = os.environ.get("COOKIE_DOMAIN")
 app.config["CORS_ORIGINS"] = cors_origins
 
 CORS(
@@ -138,6 +139,10 @@ else:
     logger.warning("No .env files found; relying on shell environment variables only")
 if not os.environ.get("JWT_SECRET"):
     logger.warning("JWT_SECRET is not set; falling back to SECRET_KEY")
+if os.environ.get("COOKIE_DOMAIN") and app.config["COOKIE_DOMAIN"] is None:
+    logger.warning(
+        "COOKIE_DOMAIN resolved to host-only cookie (likely localhost or invalid URL input)"
+    )
 init_db(app)
 
 with app.app_context():

@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-bg);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -21,6 +21,7 @@
 .sensor-table td {
   padding: 0.8rem;
   text-align: left;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .sensor-table th {
@@ -29,10 +30,9 @@
 }
 
 .sensor-table tr:nth-child(even) {
-  background-color: var(--surface-color);
+  background-color: var(--table-row-alt);
 }
 
 .add-sensor-btn {
   margin-bottom: 1rem;
 }
-
