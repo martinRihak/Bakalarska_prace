@@ -11,7 +11,7 @@ from flask_cors import CORS
 from models.models import init_db
 from routes import init_routes
 from utils.auth_utils import login_required
-from utils.modbusManagerNew import ModbusManager
+from utils.modbus_manager_new import ModbusManager
 
 
 def _normalize_app_env(value):

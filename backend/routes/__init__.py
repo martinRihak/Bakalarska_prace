@@ -1,10 +1,10 @@
 
-from .authRoute import auth_api
-from .sensorsRoute import sensors_api
-from .dashBoardRoute import dashboard_api
-from .backUpRoute import backUpRoute
-from .modbusRoute import modbus_api
-from .widgetRoute import widget_api
+from .auth_route import auth_api
+from .sensors_route import sensors_api
+from .dashboard_route import dashboard_api
+from .backup_route import backUpRoute
+from .modbus_route import modbus_api
+from .widget_route import widget_api
 from .user_route import user_api
 
 def init_routes(app):
