@@ -236,7 +236,24 @@ const WeatherPage = () => {
       ? formatLocationLabel(selectedSuggestion)
       : locationInput.trim();
 
-    if (!locationLabel) {
+    let selectedCoordinates = selectedSuggestion;
+
+    if (!selectedCoordinates && locationSuggestions.length > 0) {
+      selectedCoordinates = locationSuggestions[0];
+    }
+
+    if (!selectedCoordinates && locationInput.trim()) {
+      try {
+        const fallbackSuggestions = await api.searchWeatherLocations(locationInput.trim());
+        if (fallbackSuggestions.length > 0) {
+          selectedCoordinates = fallbackSuggestions[0];
+        }
+      } catch {
+        // handled by generic message below when coordinates are missing
+      }
+    }
+
+    if (!selectedCoordinates?.latitude || !selectedCoordinates?.longitude) {
       setError("Zadejte prosím lokalitu.");
       setWeatherData(null);
       return;
@@ -262,7 +279,7 @@ const WeatherPage = () => {
         }),
       );
       setWeatherData(response);
-      setSelectedLocation(locationLabel);
+      setSelectedLocation(response?.location?.display_name || locationLabel);
     } catch (err) {
       setWeatherData(null);
       setError(err.message || "Nepodařilo se načíst data počasí.");
@@ -388,7 +405,13 @@ const WeatherPage = () => {
 
       {weatherData && (
         <section className="weather-results">
-          <h2>Výsledek pro: {selectedLocation}</h2>
+          <h2>Výsledek pro: {resolvedLocation}</h2>
+          {weatherData.location && (
+            <p className="weather-meta">
+              {weatherData.location.latitude}, {weatherData.location.longitude}
+              {weatherData.timezone ? ` | ${weatherData.timezone}` : ""}
+            </p>
+          )}
 
           {currentWeather && (
             <div className="weather-card-grid">
@@ -431,6 +454,16 @@ const WeatherPage = () => {
           {timeRange !== "24h" && dailyForecast.length > 0 && (
             <div className="weather-forecast">
               <h2>Denní předpověď</h2>
+              {weatherChartSeries.length > 0 && (
+                <div className="weather-chart">
+                  <ReactApexChart
+                    options={weatherChartOptions}
+                    series={weatherChartSeries}
+                    type="line"
+                    height={320}
+                  />
+                </div>
+              )}
               <div className="weather-day-grid">
                 {dailyForecast.map((day, index) => (
                   <article className="weather-day-card" key={`${day.date || "day"}-${index}`}>
