@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import api from "@/api/apiService";
 import useApi from "@/hooks/useApi";
 import UserBar from "@/components/layout/UserBar";
@@ -7,10 +7,55 @@ import "@css/WeatherPage.css";
 const WeatherPage = () => {
   const { callApi } = useApi();
   const [locationInput, setLocationInput] = useState("Prague");
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [autocompleteLoading, setAutocompleteLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const formatLocationLabel = (locationItem) => {
+    if (!locationItem) return "";
+    return [locationItem.name, locationItem.admin1, locationItem.country]
+      .filter(Boolean)
+      .join(", ");
+  };
+
+  useEffect(() => {
+    const query = locationInput.trim();
+
+    if (query.length < 2) {
+      setLocationSuggestions([]);
+      setAutocompleteLoading(false);
+      return;
+    }
+
+    let isActive = true;
+    const timeoutId = setTimeout(async () => {
+      setAutocompleteLoading(true);
+      try {
+        const suggestions = await api.searchWeatherLocations(query);
+        if (isActive) {
+          setLocationSuggestions(suggestions);
+        }
+      } catch {
+        if (isActive) {
+          setLocationSuggestions([]);
+        }
+      } finally {
+        if (isActive) {
+          setAutocompleteLoading(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      isActive = false;
+      clearTimeout(timeoutId);
+    };
+  }, [locationInput]);
 
   const currentWeather = useMemo(() => {
     if (!weatherData) return null;
@@ -62,7 +107,9 @@ const WeatherPage = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const location = locationInput.trim();
+    const location = selectedSuggestion
+      ? formatLocationLabel(selectedSuggestion)
+      : locationInput.trim();
 
     if (!location) {
       setError("Zadejte prosím lokalitu.");
@@ -71,6 +118,7 @@ const WeatherPage = () => {
     }
 
     setLoading(true);
+    setShowSuggestions(false);
     setError("");
 
     try {
@@ -85,6 +133,19 @@ const WeatherPage = () => {
     }
   };
 
+  const handleLocationChange = (event) => {
+    setLocationInput(event.target.value);
+    setSelectedSuggestion(null);
+    setShowSuggestions(true);
+  };
+
+  const handleSuggestionSelect = (locationItem) => {
+    setSelectedSuggestion(locationItem);
+    setLocationInput(formatLocationLabel(locationItem));
+    setLocationSuggestions([]);
+    setShowSuggestions(false);
+  };
+
   return (
     <div className="main-content weather-page">
       <UserBar />
@@ -92,17 +153,53 @@ const WeatherPage = () => {
 
       <form className="weather-search-form" onSubmit={handleSubmit}>
         <label htmlFor="weather-location">Lokalita</label>
-        <input
-          id="weather-location"
-          type="text"
-          placeholder="Např. Prague, Brno, Ostrava"
-          value={locationInput}
-          onChange={(event) => setLocationInput(event.target.value)}
-        />
+        <div className="weather-location-field">
+          <input
+            id="weather-location"
+            type="text"
+            placeholder="Např. Prague, Brno, Ostrava"
+            value={locationInput}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            onChange={handleLocationChange}
+            autoComplete="off"
+          />
+          {showSuggestions && (
+            <div className="weather-autocomplete">
+              {autocompleteLoading && (
+                <p className="weather-autocomplete-status">Hledám lokality...</p>
+              )}
+
+              {!autocompleteLoading &&
+                locationInput.trim().length >= 2 &&
+                locationSuggestions.length === 0 && (
+                  <p className="weather-autocomplete-status">Žádné návrhy.</p>
+                )}
+
+              {!autocompleteLoading && locationSuggestions.length > 0 && (
+                <ul>
+                  {locationSuggestions.map((locationItem) => (
+                    <li key={locationItem.id}>
+                      <button
+                        type="button"
+                        onMouseDown={() => handleSuggestionSelect(locationItem)}
+                      >
+                        {formatLocationLabel(locationItem)}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
         <button type="submit" disabled={loading}>
           {loading ? "Načítám..." : "Načíst počasí"}
         </button>
       </form>
+      <p className="weather-autocomplete-hint">
+        Návrhy lokalit jsou načítané z Open-Meteo Geocoding API.
+      </p>
 
       {error && <p className="weather-error">{error}</p>}
 

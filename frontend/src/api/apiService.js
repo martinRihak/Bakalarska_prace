@@ -181,6 +181,21 @@ const api = {
   exportSensorData: async (exportData) => {
     return apiRequest("/sensors/export_data", "POST", exportData);
   },
+  searchWeatherLocations: async (query) => {
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return [];
+
+    const response = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(trimmedQuery)}&count=8&language=cz&format=json`,
+    );
+
+    if (!response.ok) {
+      throw new Error("Nepodařilo se načíst návrhy lokalit.");
+    }
+
+    const data = await response.json();
+    return data.results || [];
+  },
   getWeatherForecast: (location) =>
     apiRequest(`/weather?location=${encodeURIComponent(location)}`, "GET"),
   getUser: async () => {

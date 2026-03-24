@@ -17,6 +17,10 @@
   font-weight: 600;
 }
 
+.weather-location-field {
+  position: relative;
+}
+
 .weather-search-form input {
   width: 100%;
 }
@@ -25,8 +29,80 @@
   white-space: nowrap;
 }
 
+.weather-autocomplete {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.25rem);
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  z-index: 20;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.weather-autocomplete ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.weather-autocomplete li {
+  margin: 0;
+  padding: 0;
+}
+
+.weather-autocomplete li button {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  color: var(--text-primary);
+  padding: 0.65rem 0.85rem;
+  font-size: 0.95rem;
+}
+
+.weather-autocomplete li button:hover {
+  background: #f2f2f2;
+}
+
+.weather-autocomplete-status {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.weather-autocomplete-hint {
+  margin-top: -0.25rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
 .weather-hint {
   color: #444;
+}
+
+:root.dark-mode .weather-autocomplete {
+  background: var(--dark-surface-color);
+  border-color: #3a3a3a;
+}
+
+:root.dark-mode .weather-autocomplete li button {
+  background: var(--dark-surface-color);
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .weather-autocomplete li button:hover {
+  background: #2b2b2b;
+}
+
+:root.dark-mode .weather-autocomplete-status,
+:root.dark-mode .weather-autocomplete-hint {
+  color: var(--dark-text-secondary);
 }
 
 .weather-error {
