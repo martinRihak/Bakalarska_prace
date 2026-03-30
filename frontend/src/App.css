@@ -40,3 +40,34 @@
   min-height: 100%;
   justify-content: center;
 }
+
+
+/*Loading */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--background-color);
+}
+
+.loading-spinner {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.save-message {
+  background-color: var(--success-color, #4caf50);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-align: center;
+  margin: 0.5rem 0;
+}
+
+.password-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #888);
+}

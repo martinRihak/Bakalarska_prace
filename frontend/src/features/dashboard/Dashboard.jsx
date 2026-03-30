@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import Widget from "@/components/widgets/Widget";
-import api from '@/api/apiService';
+import api from "@/api/apiService";
 import DashboardForm from "@/components/forms/DashboardForm";
 import WidgetForm from "@/components/forms/WidgetForm";
 
@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [widgets, setWidgets] = useState([]);
   const [layouts, setLayouts] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [saveMess, setSeveMess] = useState("");
   const [error, setError] = useState(null);
   const [isDashboardFormOpen, setIsDashboardFormOpen] = useState(false);
   const [isWidgetFormOpen, setIsWidgetFormOpen] = useState(false);
@@ -25,17 +26,16 @@ const Dashboard = () => {
   const loadDashboards = async () => {
     try {
       const userDashboards = await api.getDashboards();
-      console.log(userDashboards);
       setDashboards(userDashboards || []);
       if (userDashboards && userDashboards.length > 0) {
         setSelectedDashboard(userDashboards[0].dashboard_id);
       } else {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     } catch (err) {
       console.error("Failed to load dashboards:", err);
       setDashboards([]);
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
 
@@ -43,16 +43,15 @@ const Dashboard = () => {
     try {
       setIsLoading(true);
       const dashboardWidgets = await api.getDashboardWidgets(dashboardId);
-      console.log(dashboardWidgets);
       const newLayouts = {
         lg: dashboardWidgets.map((widget) => ({
           i: widget.widget_id.toString(),
           x: widget.position_x || 0,
           y: widget.position_y || 0,
-          w: widget.width, 
-          h: widget.height, 
-          minW: widget.widget_type === 'value' ? 4 : 6 ,
-          minH: widget.widget_type === 'value' ? 3 : 4 ,
+          w: widget.width,
+          h: widget.height,
+          minW: widget.widget_type === "value" ? 4 : 6,
+          minH: widget.widget_type === "value" ? 4 : 6,
         })),
       };
       setWidgets(dashboardWidgets);
@@ -76,7 +75,7 @@ const Dashboard = () => {
     if (selectedDashboard) {
       loadWidgets(selectedDashboard);
     } else {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   }, [selectedDashboard]);
 
@@ -116,7 +115,7 @@ const Dashboard = () => {
       if (!currentLayout) {
         throw new Error("No layout available");
       }
-      
+
       const widgetPositions = currentLayout.map((layout) => ({
         widget_id: layout.i,
         position_x: layout.x,
@@ -124,7 +123,6 @@ const Dashboard = () => {
         width: layout.w,
         height: layout.h,
       }));
-      console.log("Saving widget positions:", widgetPositions[0]);
       await api.saveWidgetPositions(selectedDashboard, widgetPositions);
       alert("Pozice widgetů byly uloženy");
     } catch (err) {
@@ -135,27 +133,35 @@ const Dashboard = () => {
 
   const DashboardHeader = () => (
     <div className="dashboard-header">
-
-      {(
+      {
         <>
-
-      <button className="dashboard-btn" onClick={handleDashboardCreate}>
-        Vytvořit nový dashboard
-      </button>
-      <button className="dashboard-btn" onClick={handleWidgetCreate}>
-        Vytvořit nový widget
-      </button>
-          <select value={selectedDashboard || ''} onChange={handleDashboardChange}>
+          <button className="dashboard-btn" onClick={handleDashboardCreate}>
+            Vytvořit nový dashboard
+          </button>
+          <button className="dashboard-btn" onClick={handleWidgetCreate}>
+            Vytvořit nový widget
+          </button>
+          <select
+            value={selectedDashboard || ""}
+            onChange={handleDashboardChange}
+          >
             {dashboards.map((dashboard) => (
-              <option key={dashboard.dashboard_id} value={dashboard.dashboard_id}>
+              <option
+                key={dashboard.dashboard_id}
+                value={dashboard.dashboard_id}
+              >
                 {dashboard.name}
               </option>
             ))}
           </select>
-      <button className="dashboard-btn" onClick={handleDeleteDashboard}>Smazat dashboard</button>
-      <button className="dashboard-btn" onClick={handleSaveWidgetPositions}>Uložit pozice widgetů</button>
+          <button className="dashboard-btn" onClick={handleDeleteDashboard}>
+            Smazat dashboard
+          </button>
+          <button className="dashboard-btn" onClick={handleSaveWidgetPositions}>
+            Uložit pozice widgetů
+          </button>
         </>
-      )}
+      }
     </div>
   );
   const handleWidgetDelete = () => {
@@ -192,14 +198,9 @@ const Dashboard = () => {
               useCSSTransforms={true}
               preventCollision={true}
               compactType={null}
-            
             >
               {widgets.map((widget) => (
-                <div
-                  key={widget.widget_id.toString()}
-                  className="widget"
-                >
-  
+                <div key={widget.widget_id.toString()} className="widget">
                   <Widget
                     title={widget.title}
                     widget_id={widget.widget_id}
@@ -244,6 +245,7 @@ const Dashboard = () => {
             <h2>Vytvořit nový widget</h2>
             <WidgetForm
               onClose={() => setIsWidgetFormOpen(false)}
+              dashboardId={selectedDashboard}
               onSuccess={() => {
                 setIsWidgetFormOpen(false);
                 loadWidgets(selectedDashboard);

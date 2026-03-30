@@ -4,8 +4,6 @@ import {
   Routes,
   Route,
   useLocation,
-  RouterProvider,
-  createBrowserRouter,
 } from "react-router-dom";
 
 // Komponenty
@@ -74,6 +72,15 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="insert-user"
+          element={
+            <ProtectedRoute>
+              <UserForm/>
+            </ProtectedRoute>
+          }
+        />
+ 
         <Route
           path="/sensors"
           element={

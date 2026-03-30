@@ -1,6 +1,19 @@
 // apiService.js
 const API_BASE_URL = import.meta.env.VITE_API_URL;
-const apiRequest = async (endpoint, method = "GET", data = null) => {
+
+// Timeout pro fetch požadavky (důležité pro Raspberry Pi)
+const REQUEST_TIMEOUT = 15000; // 15 sekund
+
+const fetchWithTimeout = (url, options, timeout = REQUEST_TIMEOUT) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  return fetch(url, { ...options, signal: controller.signal }).finally(() =>
+    clearTimeout(id)
+  );
+};
+
+const apiRequest = async (endpoint, method = "GET", data = null, options = {}) => {
   const token = localStorage.getItem("token");
   const headers = {
     "Content-Type": "application/json",
@@ -11,7 +24,7 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const options = {
+  const fetchOptions = {
     method,
     headers,
     credentials: "include",
@@ -19,11 +32,14 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
   };
 
   if (data && (method === "POST" || method === "PUT" || method === "PATCH")) {
-    options.body = JSON.stringify(data);
+    fetchOptions.body = JSON.stringify(data);
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}${endpoint}`,
+      fetchOptions
+    );
 
     // Kontrola nového access tokenu v hlavičce
     const newToken = response.headers.get("New-Access-Token");
@@ -31,42 +47,30 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
       localStorage.setItem("token", newToken);
     }
 
+    // --- KONZISTENTNÍ error handling: vždy throw ---
     if (!response.ok && response.status >= 500) {
-      return { data: null, error: "server-error" };
+      throw new Error("server-error");
     }
 
     if (response.status === 401 && !endpoint.includes("/auth/refresh-token")) {
-      try {
-        const refreshResponse = await fetch(
-          `${API_BASE_URL}/auth/refresh-token`,
-          {
-            method: "POST",
-            credentials: "include",
-          },
+      // Pokus o refresh tokenu
+      const refreshed = await tryRefreshToken();
+      if (refreshed) {
+        // Opakování původního požadavku s novým tokenem
+        const retryHeaders = {
+          ...fetchOptions.headers,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        };
+        const retryResponse = await fetchWithTimeout(
+          `${API_BASE_URL}${endpoint}`,
+          { ...fetchOptions, headers: retryHeaders }
         );
-
-        if (refreshResponse.ok) {
-          const refreshData = await refreshResponse.json();
-          localStorage.setItem("token", refreshData.token);
-
-          // Opakování původního požadavku s novým tokenem
-          const newResponse = await fetch(`${API_BASE_URL}${endpoint}`, {
-            ...options,
-            headers: {
-              ...options.headers,
-              Authorization: `Bearer ${refreshData.token}`,
-            },
-          });
-
-          if (newResponse.ok) {
-            return await newResponse.json();
-          }
+        if (retryResponse.ok) {
+          return await retryResponse.json();
         }
-      } catch (error) {
-        console.error("Token refresh failed:", error);
       }
 
-      // Pokud refresh selhal, odhlásíme uživatele
+      // Refresh selhal — odhlášení
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       if (!window.location.pathname.includes("/login")) {
@@ -75,41 +79,52 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
       throw new Error("Neautorizovaný přístup");
     }
 
-    if (endpoint === "/sensors/export_data") {
-      const contentType = response.headers.get("Content-Type");
-
+    // --- Specializovaný response parsing přes options ---
+    if (options.responseType === "text") {
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage =
-          errorData.message || errorData.error || "Chyba při exportu dat";
-        throw new Error(errorMessage);
+        throw new Error(
+          errorData.message || errorData.error || "Chyba při zpracování"
+        );
       }
-
-      if (
-        contentType &&
-        (contentType.includes("application/json") ||
-          contentType.includes("text/csv"))
-      ) {
-        return await response.text();
-      }
+      return await response.text();
     }
 
-    const data = await response.json();
+    const responseData = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || "Chyba při zpracování požadavku");
+      throw new Error(responseData.message || "Chyba při zpracování požadavku");
     }
 
-    return data;
+    return responseData;
   } catch (error) {
-    console.error("Api request error", error);
-
-    // Pokud je chyba typu NetworkError nebo TypeError (nemůžeme se připojit k serveru)
+    // Timeout
+    if (error.name === "AbortError") {
+      throw new Error("Server není dostupný");
+    }
+    // Síťová chyba
     if (error instanceof TypeError || error.name === "NetworkError") {
       throw new Error("Server není dostupný");
     }
-
     throw error;
   }
+};
+
+// Extrahovaná refresh logika
+const tryRefreshToken = async () => {
+  try {
+    const refreshResponse = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/refresh-token`,
+      { method: "POST", credentials: "include" }
+    );
+    if (refreshResponse.ok) {
+      const refreshData = await refreshResponse.json();
+      localStorage.setItem("token", refreshData.token);
+      return true;
+    }
+  } catch {
+    // Refresh selhal
+  }
+  return false;
 };
 
 const api = {
@@ -135,10 +150,13 @@ const api = {
     return apiRequest("/auth/register", "POST", { username, email, password });
   },
 
-  logout: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    return apiRequest("/auth/logout", "POST");
+  logout: async () => {
+    try {
+      await apiRequest("/auth/logout", "POST");
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    }
   },
 
   getCurrentUser: () => {
@@ -150,12 +168,12 @@ const api = {
     return apiRequest("/auth/status");
   },
 
+  // Senzory
   getSensorHistory: (sensorId, timeRange, widget_id) => {
     return apiRequest(
-      `/sensors/getSensorHistory/${sensorId}?timeRange=${timeRange}&widget_id=${widget_id}`,
+      `/sensors/getSensorHistory/${sensorId}?timeRange=${timeRange}&widget_id=${widget_id}`
     );
   },
-
   getLatestSensorData: (sensorId) => {
     return apiRequest(`/sensors/getLatestSensorData/${sensorId}`, "GET");
   },
@@ -222,17 +240,44 @@ const api = {
   toggleSensorActive: (sensorId, isActive) =>
     apiRequest(`/sensors/${sensorId}/toggle-active`, "PATCH", { isActive }),
 
-  // Widgets API
-  deleteWidget: (dashboardId, widgetId) =>
-    apiRequest(`/widget/delete/${dashboardId}/${widgetId}`, "DELETE"),
+  // Export — BEZ hardcoded detekce uvnitř apiRequest
+  exportSensorData: (exportData) => {
+    return apiRequest("/sensors/export_data", "POST", exportData, {
+      responseType: "text",
+    });
+  },
 
-  // Nové funkce
+  // Dashboardy
+  getDashboards: () => apiRequest("/dashboard/userDashBoards", "GET"),
+  getDashboardWidgets: (dashboardId) =>
+    apiRequest(`/dashboard/widgets/${dashboardId}`, "GET"),
+  createDashboard: (dashboardData) =>
+    apiRequest("/dashboard/create", "POST", dashboardData),
+  createWidget: (widgetData) =>
+    apiRequest("/dashboard/widget", "POST", widgetData),
   deleteDashboard: (dashboardId) =>
     apiRequest(`/dashboard/dashboard/${dashboardId}`, "DELETE"),
   saveWidgetPositions: (dashboardId, widgetPositions) =>
     apiRequest(`/dashboard/dashboard/${dashboardId}/save_positions`, "POST", {
       widgetPositions,
     }),
+
+  // Widgety
+  deleteWidget: (dashboardId, widgetId) =>
+    apiRequest(`/widget/delete/${dashboardId}/${widgetId}`, "DELETE"),
+
+  // Uživatelé
+  getUser: () => apiRequest("/auth/user", "GET"),
+  getAllUsers: () => apiRequest("/users", "GET"),
+  getUserById: (userId) => apiRequest(`/users/${userId}`, "GET"),
+  createUser: (userData) => apiRequest("/users", "POST", userData),
+  updateUser: (userId, userData) =>
+    apiRequest(`/users/${userId}`, "PATCH", userData),
+  deleteUser: (userId) => apiRequest(`/users/${userId}`, "DELETE"),
+  getSensorsForUser: (userId) =>
+    apiRequest(`/users/${userId}/sensors`, "GET"),
+  updateSensorForUser: (userId, sensorId, sensorData) =>
+    apiRequest(`/users/${userId}/sensors/${sensorId}`, "PATCH", sensorData),
 };
 
 export default api;

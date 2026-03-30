@@ -77,11 +77,11 @@
   padding: 0.35rem 0.45rem;
   border: 1px solid #c0c0c0;
   border-radius: 4px;
-  background: #fff;
+  background: var(--surface-color);
 }
 
 .sensor-row-wrapper td {
-  background: #f7f7f7;
+  background: var(--surface-color);
 }
 
 .sensor-loading {
@@ -101,5 +101,47 @@
 }
 
 .sensor-subtable th {
-  background-color: #d7dde3;
+  background-color: var(--accent-color);
+  color: var(--text-secondary);
+}
+
+/* Dark mode */
+:root.dark-mode .sensor-row-wrapper td {
+  background-color: var(--dark-background-color);
+}
+
+:root.dark-mode .sensor-subtable th {
+  background-color: var(--dark-primary-color);
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .sensor-subtable td {
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .sensor-subtable tr:nth-child(even) {
+  background-color: var(--dark-surface-color);
+}
+
+:root.dark-mode .sensor-loading {
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .table-input {
+  background-color: var(--dark-background-color);
+  color: var(--dark-text-primary);
+  border-color: var(--dark-text-secondary);
+}
+
+:root.dark-mode .user-table th {
+  background-color: var(--dark-primary-color);
+  color: var(--dark-text-primary);
+}
+
+:root.dark-mode .user-table tr:nth-child(even) {
+  background-color: var(--dark-surface-color);
+}
+
+:root.dark-mode .user-row.expanded {
+  background-color: rgba(255, 255, 255, 0.04);
 }

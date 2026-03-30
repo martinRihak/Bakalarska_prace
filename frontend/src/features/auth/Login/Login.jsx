@@ -1,100 +1,119 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '@/api/apiService';
-import './Login.css';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "@/api/apiService";
+import "./Login.css";
+
+// Minimální požadavky na heslo
+const PASSWORD_MIN_LENGTH = 8;
+
+const validatePassword = (password) => {
+  if (password.length < PASSWORD_MIN_LENGTH) {
+    return `Heslo musí mít alespoň ${PASSWORD_MIN_LENGTH} znaků`;
+  }
+  if (!/[A-Z]/.test(password)) {
+    return "Heslo musí obsahovat alespoň jedno velké písmeno";
+  }
+  if (!/[0-9]/.test(password)) {
+    return "Heslo musí obsahovat alespoň jednu číslici";
+  }
+  return null;
+};
 
 function Login() {
   const navigate = useNavigate();
   const [isLoginForm, setIsLoginForm] = useState(true);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [regUsername, setRegUsername] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regConfirmPassword, setRegConfirmPassword] = useState('');
-  const [loginMessage, setLoginMessage] = useState('');
-  const [registerMessage, setRegisterMessage] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [regUsername, setRegUsername] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [regConfirmPassword, setRegConfirmPassword] = useState("");
+  const [loginMessage, setLoginMessage] = useState("");
+  const [registerMessage, setRegisterMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Kontrola stavu přihlášení při načtení stránky
   useEffect(() => {
-    api.checkAuthStatus()
+    let cancelled = false;
+    api
+      .checkAuthStatus()
       .then((data) => {
-        if (data?.status === 'authenticated') {
-          navigate('/');
+        if (!cancelled && data?.status === "authenticated") {
+          navigate("/");
         }
       })
-      .catch((error) => {
-        console.error('Auth check error:', error);
-        localStorage.removeItem('token');
+      .catch(() => {
+        localStorage.removeItem("token");
       });
+    return () => {
+      cancelled = true;
+    };
   }, [navigate]);
 
-  // Přihlášení
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!username || !password) {
-      setLoginMessage('Vyplňte prosím všechna pole');
+      setLoginMessage("Vyplňte prosím všechna pole");
       return;
     }
 
     setIsLoading(true);
     try {
       const data = await api.login(username, password);
-      setIsLoading(false);
-
-      if (data.status === 'success') {
+      if (data.status === "success") {
         setLoginMessage(data.message);
-        // Give a small delay to show the success message
-        setTimeout(() => {
-          navigate('/');
-        }, 1000);
+        setTimeout(() => navigate("/"), 1000);
       } else {
         setLoginMessage(data.message);
       }
-    } catch (error) {
+    } catch {
+      setLoginMessage("Chyba při přihlašování");
+    } finally {
       setIsLoading(false);
-      setLoginMessage('Chyba při přihlašování');
-      console.error('Login error:', error);
     }
   };
 
-  // Registrace
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!regUsername || !regEmail || !regPassword || !regConfirmPassword) {
-      setRegisterMessage('Vyplňte prosím všechna pole');
+      setRegisterMessage("Vyplňte prosím všechna pole");
       return;
     }
 
     if (regPassword !== regConfirmPassword) {
-      setRegisterMessage('Hesla se neshodují');
+      setRegisterMessage("Hesla se neshodují");
+      return;
+    }
+
+    // Validace síly hesla
+    const passwordError = validatePassword(regPassword);
+    if (passwordError) {
+      setRegisterMessage(passwordError);
       return;
     }
 
     setIsLoading(true);
     try {
       const data = await api.register(regUsername, regEmail, regPassword);
-      setIsLoading(false);
-
-      if (data.status === 'success') {
+      if (data.status === "success") {
         setRegisterMessage(data.message);
-        console.log(data.status);
         setTimeout(() => {
           setIsLoginForm(true);
-          setRegisterMessage('');
-          setLoginMessage('Registrace proběhla úspěšně, nyní se můžete přihlásit');
+          setRegisterMessage("");
+          setLoginMessage(
+            "Registrace proběhla úspěšně, nyní se můžete přihlásit"
+          );
         }, 1000);
       } else {
         setRegisterMessage(data.message);
       }
-    } catch (error) {
+    } catch {
+      setRegisterMessage("Chyba při registraci");
+    } finally {
       setIsLoading(false);
-      setRegisterMessage('Chyba při registraci');
-      console.error('Register error:', error);
     }
   };
 
+  // JSX zůstává stejný, jen bez console.log a console.error
   return (
     <div className="container">
       {isLoginForm ? (
@@ -121,12 +140,8 @@ function Login() {
                 required
               />
             </div>
-            <button 
-              id="login-button" 
-              type="submit" 
-              disabled={isLoading}
-            >
-              {isLoading ? 'Přihlašování...' : 'Přihlásit se'}
+            <button id="login-button" type="submit" disabled={isLoading}>
+              {isLoading ? "Přihlašování..." : "Přihlásit se"}
             </button>
           </form>
           <div className="toggle-form">
@@ -136,8 +151,8 @@ function Login() {
               onClick={(e) => {
                 e.preventDefault();
                 setIsLoginForm(false);
-                setLoginMessage('');
-                setRegisterMessage('');
+                setLoginMessage("");
+                setRegisterMessage("");
               }}
             >
               Nemáte účet? Zaregistrujte se
@@ -146,7 +161,11 @@ function Login() {
           {loginMessage && (
             <div
               id="login-message"
-              className={loginMessage.includes('úspěšné') ? 'success-message' : 'error-message'}
+              className={
+                loginMessage.includes("úspěšné")
+                  ? "success-message"
+                  : "error-message"
+              }
             >
               {loginMessage}
             </div>
@@ -185,6 +204,9 @@ function Login() {
                 onChange={(e) => setRegPassword(e.target.value)}
                 required
               />
+              <small className="password-hint">
+                Min. {PASSWORD_MIN_LENGTH} znaků, velké písmeno, číslice
+              </small>
             </div>
             <div className="form-group">
               <label htmlFor="reg-confirm-password">Potvrzení hesla</label>
@@ -196,12 +218,8 @@ function Login() {
                 required
               />
             </div>
-            <button 
-              id="register-button" 
-              type="submit"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Registrace probíhá...' : 'Zaregistrovat se'}
+            <button id="register-button" type="submit" disabled={isLoading}>
+              {isLoading ? "Registrace probíhá..." : "Zaregistrovat se"}
             </button>
           </form>
           <div className="toggle-form">
@@ -211,8 +229,8 @@ function Login() {
               onClick={(e) => {
                 e.preventDefault();
                 setIsLoginForm(true);
-                setLoginMessage('');
-                setRegisterMessage('');
+                setLoginMessage("");
+                setRegisterMessage("");
               }}
             >
               Máte již účet? Přihlaste se
@@ -221,7 +239,11 @@ function Login() {
           {registerMessage && (
             <div
               id="register-message"
-              className={registerMessage.includes('úspěšně') ? 'success-message' : 'error-message'}
+              className={
+                registerMessage.includes("úspěšně")
+                  ? "success-message"
+                  : "error-message"
+              }
             >
               {registerMessage}
             </div>

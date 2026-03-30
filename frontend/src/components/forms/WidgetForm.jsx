@@ -10,7 +10,7 @@ const CHART_TYPES = [
   { type: "value", icon: Loader, label: "Value" },
 ];
 
-const WidgetForm = ({ onClose, onSuccess }) => {
+const WidgetForm = ({ onClose, onSuccess ,dashboardId}) => {
     const [sensors, setSensors] = useState([]);
     const [selectedSensor, setSelectedSensor] = useState(null);
     const [selectedChartType, setSelectedChartType] = useState(null);
@@ -42,13 +42,13 @@ const WidgetForm = ({ onClose, onSuccess }) => {
 
       try {
         await api.createWidget({
-          dashboard_id: 1, // assuming dashboard_id=1 for now
+          dashboard_id: dashboardId, // assuming dashboard_id=1 for now
           widget_type: selectedChartType,
           title: `${selectedSensor.name} - ${selectedChartType}`,
           position: {
             x: 0,
             y: 0,
-            width: 4,
+            width: 6,
             height: 4
           },
           sensors: [selectedSensor.sensor_id]
