@@ -1,32 +1,58 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import useApi from "@/hooks/useApi";
-import api from '@/api/apiService';
+import api from "@/api/apiService";
 
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("token") !== null;
-  const [isServerAvailable, setIsServerAvailable] = useState(null);
+  const [authState, setAuthState] = useState("loading"); // "loading" | "authenticated" | "unauthenticated" | "server-error"
   const { callApi } = useApi();
 
   useEffect(() => {
-    const checkServer = async () => {
+    let cancelled = false;
+
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setAuthState("unauthenticated");
+        return;
+      }
+
       try {
-        await callApi(() => api.get("/auth/status"));
-        setIsServerAvailable(true);
-      } catch (error) {
-        setIsServerAvailable(false);
+        const data = await callApi(() => api.checkAuthStatus());
+        if (cancelled) return;
+
+        if (data?.status === "authenticated") {
+          setAuthState("authenticated");
+        } else {
+          setAuthState("unauthenticated");
+        }
+      } catch {
+        if (!cancelled) {
+          setAuthState("server-error");
+        }
       }
     };
-    checkServer();
+
+    checkAuth();
+
+    return () => {
+      cancelled = true;
+    };
   }, [callApi]);
-  if (isServerAvailable === null) {
-    return <div>Loading...</div>;
+
+  if (authState === "loading") {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner">Načítání...</div>
+      </div>
+    );
   }
-  if (!isServerAvailable) {
+
+  if (authState === "server-error") {
     return <Navigate to="/server-error" replace />;
   }
-  if (!isAuthenticated && isServerAvailable) {
-    // Redirect them to the login page if not authenticated
+
+  if (authState === "unauthenticated") {
     return <Navigate to="/login" replace />;
   }
 

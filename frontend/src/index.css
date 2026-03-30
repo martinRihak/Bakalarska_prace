@@ -197,6 +197,7 @@ input:checked + .slider:before {
 :root.dark-mode .modal-content,
 :root.dark-mode .no-widgets-message,
 :root.dark-mode .no-dashboards-message,
+:root.dark-mode .sensor-subtable,
 :root.dark-mode .sensor-table tr:nth-child(even) {
     background-color: var(--dark-surface-color);
     color: var(--dark-text-primary);
