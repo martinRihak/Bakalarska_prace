@@ -183,8 +183,8 @@ const api = {
     apiRequest("/sensors/add-to-user", "POST", { sensorId }),
   createSensor: (sensorData) =>
     apiRequest("/sensors/create", "POST", sensorData),
-  updateSensor: (sensorId, sensorData) =>
-    apiRequest(`/sensors/${sensorId}`, "PATCH", sensorData),
+  updateSensor: (sensorData) =>
+    apiRequest(`/sensors/${sensorData.sensor_id}`, "PATCH", sensorData),
   toggleSensorActive: (sensorId, isActive) =>
     apiRequest(`/sensors/${sensorId}/toggle-active`, "PATCH", { isActive }),
 

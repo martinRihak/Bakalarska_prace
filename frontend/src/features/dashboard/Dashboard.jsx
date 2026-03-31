@@ -12,6 +12,19 @@ import "@css/dashBoard.css";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
+const VALUE_WIDGET_MIN_SIZE = {
+  minW: 3,
+  minH: 3,
+};
+
+const GRAPH_WIDGET_MIN_SIZE = {
+  minW: 5,
+  minH: 4,
+};
+
+const getMinWidgetSizeByType = (widgetType) =>
+  widgetType === "value" ? VALUE_WIDGET_MIN_SIZE : GRAPH_WIDGET_MIN_SIZE;
+
 const Dashboard = () => {
   const [dashboards, setDashboards] = useState([]);
   const [selectedDashboard, setSelectedDashboard] = useState(null);
@@ -45,13 +58,12 @@ const Dashboard = () => {
       const dashboardWidgets = await api.getDashboardWidgets(dashboardId);
       const newLayouts = {
         lg: dashboardWidgets.map((widget) => ({
+          ...getMinWidgetSizeByType(widget.widget_type),
           i: widget.widget_id.toString(),
           x: widget.position_x || 0,
           y: widget.position_y || 0,
           w: widget.width,
           h: widget.height,
-          minW: widget.widget_type === "value" ? 4 : 6,
-          minH: widget.widget_type === "value" ? 4 : 6,
         })),
       };
       setWidgets(dashboardWidgets);
@@ -188,9 +200,9 @@ const Dashboard = () => {
               className="layout"
               layouts={layouts}
               breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480 }}
-              cols={{ lg: 12, md: 12, sm: 6, xs: 4 }}
+              cols={{ lg: 12, md: 10, sm: 4, xs: 3 }}
               rowHeight={100}
-              margin={[16, 16]}
+              margin={[8, 8]}
               onLayoutChange={onLayoutChange}
               isDraggable={true}
               isResizable={true}

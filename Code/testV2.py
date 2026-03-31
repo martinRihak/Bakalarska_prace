@@ -1,19 +1,17 @@
 import minimalmodbus
-import serial
+import serial               
+
 import json
 import time
 import os
 from datetime import datetime
-from influxdb import InfluxDBClient
 import logging
-from systemd import journal
+from systemd import j
 import math
 
 # Nastavení loggeru
 logger = logging.getLogger("sensor_data")
 logger.setLevel(logging.INFO)
-journald_handler = journal.JournaldLogHandler()
-journald_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
 logger.addHandler(journald_handler)
 
 # Konfigurace sériového portu
