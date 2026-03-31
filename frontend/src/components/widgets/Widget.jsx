@@ -56,8 +56,6 @@ const Widget = ({
   const fetchData = async () => {
     try {
       let response;
-      console.log(id)
-      console.log(active)
       if (widgetType === "value") {
         response = await api.getLatestSensorData(id);
         if (!response || !response.data) {
@@ -123,7 +121,6 @@ const Widget = ({
   }, [widgetType, sensorData, processedData, sensorName]);
 
   const handleRefresh = () => {
-    console.log("Refreshing data...");
     fetchData();
   };
 
@@ -151,7 +148,6 @@ const Widget = ({
     api
       .deleteWidget(dashboard_id, widget_id)
       .then(() => {
-        console.log("Widget deleted successfully");
         if (onDelete) {
           onDelete();
         }
@@ -195,7 +191,6 @@ const Widget = ({
             <CircleX />
           </button>
           <button onClick={() => {
-              console.log("Button clicked, isLoading:");
               handleRefresh();
             }}>
   <RefreshCw />

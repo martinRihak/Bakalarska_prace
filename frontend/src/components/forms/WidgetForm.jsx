@@ -10,7 +10,12 @@ const CHART_TYPES = [
   { type: "value", icon: Loader, label: "Value" },
 ];
 
-const WidgetForm = ({ onClose, onSuccess }) => {
+const DEFAULT_WIDGET_SIZE = {
+  value: { width: 4, height: 3 },
+  graph: { width: 6, height: 4 },
+};
+
+const WidgetForm = ({ onClose, onSuccess ,dashboardId}) => {
     const [sensors, setSensors] = useState([]);
     const [selectedSensor, setSelectedSensor] = useState(null);
     const [selectedChartType, setSelectedChartType] = useState(null);
@@ -41,15 +46,20 @@ const WidgetForm = ({ onClose, onSuccess }) => {
       }
 
       try {
+        const defaultSize =
+          selectedChartType === "value"
+            ? DEFAULT_WIDGET_SIZE.value
+            : DEFAULT_WIDGET_SIZE.graph;
+
         await api.createWidget({
-          dashboard_id: 1, // assuming dashboard_id=1 for now
+          dashboard_id: dashboardId, // assuming dashboard_id=1 for now
           widget_type: selectedChartType,
           title: `${selectedSensor.name} - ${selectedChartType}`,
           position: {
             x: 0,
             y: 0,
-            width: 4,
-            height: 4
+            width: defaultSize.width,
+            height: defaultSize.height
           },
           sensors: [selectedSensor.sensor_id]
         });

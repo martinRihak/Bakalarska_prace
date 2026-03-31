@@ -128,6 +128,7 @@ class SensorService:
         if modbus:
             try:
                 raw_value = modbus.read_sensor(sensor_id=sensor_id)
+                #raw_value = modbus.get_latest_data(sensor_id=sensor_id)
                 if raw_value is not None:
                     # Vytvoříme strukturu, která imituje DB model
                     result_data = {

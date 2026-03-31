@@ -3,6 +3,7 @@ import '@css/forms.css';
 
 const SensorForm = ({ sensor = null, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
+    sensor_id: sensor ? sensor.sensor_id : null,
     parent_sensor_id: sensor ? sensor.parent_sensor_id : '',
     name: sensor ? sensor.name : '',
     sensor_type: sensor ? sensor.sensor_type : '',
@@ -21,6 +22,7 @@ const SensorForm = ({ sensor = null, onSubmit, onClose }) => {
     if (sensor) {
       setFormData({
         parent_sensor_id: sensor.parent_sensor_id || '',
+        sensor_id: sensor.sensor_id,
         name: sensor.name || '',
         sensor_type: sensor.sensor_type || '',
         address: sensor.address || '',
@@ -184,7 +186,7 @@ const SensorForm = ({ sensor = null, onSubmit, onClose }) => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="sampling_rate" className="form-label">Sampling Rate (sekundy)</label>
+          <label htmlFor="sampling_rate" className="form-label">Sampling Rate (minuty)</label>
           <input
             id="sampling_rate"
             name="sampling_rate"
