@@ -38,6 +38,7 @@
     flex-direction: column;
     position: relative;
     justify-content: center;
+    min-height: 0;
 }
 
 .widget-icon {
@@ -105,13 +106,13 @@
     text-align: center;
 }
 
-
-
 .value-container {
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .icon svg {
@@ -126,6 +127,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .error-message {
@@ -181,7 +183,7 @@
 }
 
 :root.dark-mode .widget-icon,
-.value {
+:root.dark-mode .value {
     color: var(--dark-text-secondary);
 }
 
@@ -196,5 +198,69 @@
 
     to {
         transform: rotate(360deg);
+    }
+}
+
+/* Mobile responsive styles */
+@media (max-width: 600px) {
+    .widget-header h3 {
+        font-size: 1rem;
+        margin-right: 0.5rem;
+        word-break: break-word;
+    }
+
+    .widget-controls {
+        gap: 0.25rem;
+        flex-shrink: 0;
+    }
+
+    .widget-controls button {
+        padding: 0.25rem;
+    }
+
+    .widget-controls button svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .time-range-select {
+        font-size: 0.75rem;
+        padding: 0.15rem 0.3rem;
+        max-width: 80px;
+    }
+
+    .value-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .icon svg {
+        width: 120px;
+        height: 120px;
+        padding: 1rem;
+        margin-right: 0;
+    }
+
+    .value {
+        font-size: 2.5rem;
+        text-align: center;
+    }
+
+    .widget-content {
+        padding: 0.5rem;
+    }
+
+    .widget-content .apexcharts-canvas {
+        min-height: 180px;
+    }
+
+    .error-message {
+        font-size: 1.2rem;
+    }
+
+    .error-message svg {
+        width: 36px;
+        height: 36px;
     }
 }

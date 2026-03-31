@@ -10,6 +10,7 @@ const SensorsPage = () => {
   const [error, setError] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingSensor, setEditingSensor] = useState(null);
+  const [avaliabelSensors,setAvalibleSensors] = useState([]);
 
   useEffect(() => {
     fetchSensors();
@@ -39,7 +40,6 @@ const SensorsPage = () => {
   };
 
   const handleEditSensor = (sensor) => {
-    console.log(sensor);
     setEditingSensor(sensor);
   };
 

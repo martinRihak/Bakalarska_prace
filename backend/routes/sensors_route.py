@@ -129,6 +129,7 @@ def export_sensor_data():
 def get_available_sensors():
     user_id = session.get('user_id')
     available_sensors = SensorService.get_available_sensors(user_id)
+    print(available_sensors)
     return jsonify([{
         'sensor_id': s.sensor_id,
         'name': s.name,
