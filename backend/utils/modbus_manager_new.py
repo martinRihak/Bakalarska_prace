@@ -18,7 +18,7 @@ class ModbusManager:
         app=None,
         baudrate: int = 9600,
         cache_size: int = 1000,
-        flush_interval: int = 60 * 5,       # seconds
+        flush_interval: int = 60 * 3,       # seconds
         check_interval: int = 60        # seconds
     ):
         self.port = os.environ.get("USB_PORT")
@@ -115,7 +115,13 @@ class ModbusManager:
 
     # Sensor loading
     # =========================
-
+    def add_new_sensor(self,sensor: Sensor):
+        if not self.app:
+            return False
+    def delete_sensor(self,sensor_id: int):
+        if not self.app:
+            return False
+         
     def load_all_sensors(self):
         if not self.app:
             return False
@@ -196,7 +202,7 @@ class ModbusManager:
             })
             self.stats["total_cached"] += 1
 
-    def get_latest_data(self, sensor_id, max_age_minutes=5):
+    def get_latest_data(self, sensor_id, max_age_minutes=0.2):
         cutoff = datetime.now() - timedelta(minutes=max_age_minutes)
 
         with self.cache_lock:

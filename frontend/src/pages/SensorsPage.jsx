@@ -39,12 +39,14 @@ const SensorsPage = () => {
   };
 
   const handleEditSensor = (sensor) => {
+    console.log(sensor);
     setEditingSensor(sensor);
   };
 
   const handleUpdateSensor = async (updatedSensor) => {
     try {
-      await api.updateSensor(updatedSensor.sensor_id, updatedSensor);
+      console.log(updatedSensor);
+      await api.updateSensor(updatedSensor);
       setSensors(sensors.map(sensor =>
         sensor.sensor_id === updatedSensor.sensor_id ? updatedSensor : sensor
       ));
