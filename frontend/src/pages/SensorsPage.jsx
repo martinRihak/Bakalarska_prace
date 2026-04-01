@@ -102,8 +102,9 @@ const SensorsPage = () => {
                           <span className="slider"></span>
                         </label>
                       </td>
-                      <td>
+                      <td className='user-action'>
                         <button onClick={() => handleEditSensor(sensor)}>Upravit</button>
+                        <button >Smazat</button>
                       </td>
                     </tr>
                   ))}

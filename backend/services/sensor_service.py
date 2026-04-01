@@ -231,8 +231,10 @@ class SensorService:
 
     @staticmethod
     def create_sensor_json(data):
+        print(data)
         new_sensor = Sensor(
             name=data['name'],
+            parent_sensor_id = data['parent_sensor_id'],
             sensor_type=data['sensor_type'],
             unit=data['unit'],
             address=data['address'],  
