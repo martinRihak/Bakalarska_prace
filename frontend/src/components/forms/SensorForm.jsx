@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '@css/forms.css';
+import '@css/buttons.css';
 
 const SensorForm = ({ sensor = null, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({

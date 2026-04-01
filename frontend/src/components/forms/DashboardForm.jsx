@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import api from '@/api/apiService';
 import '@css/forms.css';
+import '@css/buttons.css';
 
 const DashboardForm = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({

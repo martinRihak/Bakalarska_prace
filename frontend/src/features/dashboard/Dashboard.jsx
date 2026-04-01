@@ -9,6 +9,7 @@ import WidgetForm from "@/components/forms/WidgetForm";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "@css/pageLayout.css";
+import "@css/buttons.css";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 

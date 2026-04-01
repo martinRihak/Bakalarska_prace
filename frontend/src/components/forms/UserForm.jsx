@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import api from '@/api/apiService';
 import '@css/forms.css';
-import '@css/UserPage.css'
+import '@css/UserPage.css';
+import '@css/buttons.css';
 import { useNavigate } from 'react-router-dom';
 
 const UserForm = () => {
