@@ -44,16 +44,6 @@
   }
 }
 
-.dashboard-btn {
-  border-radius: 8px; /* Slightly rounded corners */
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  white-space: nowrap;
-  min-width: fit-content;
-  border: none; /* Clean button look */
-  cursor: pointer;
-}
 
 .modal-overlay {
   position: fixed;

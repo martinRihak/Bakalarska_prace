@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import api from "@/api/apiService";
 import SensorForm from "@/components/forms/SensorForm";
 import "@css/forms.css";
+import "@css/buttons.css";
 
 const AddSensorModal = ({ onClose, onAdd }) => {
   const [mode, setMode] = useState(null); // 'existing' or 'new'

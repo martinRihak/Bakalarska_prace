@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "@/api/apiService";
 import UserBar from "@/components/layout/UserBar";
 import "@css/UserPage.css";
+import "@css/buttons.css";
 
 const UserPage = () => {
   const [users, setUsers] = useState([]);

@@ -24,14 +24,6 @@
   margin-top: 0;
 }
 
-.create-user-btn {
-  border: none;
-  padding: 0.55rem 0.9rem;
-  border-radius: 4px;
-  cursor: pointer;
-  background-color: var(--primary-color);
-  color: var(--text-secondary);
-}
 
 .user-table th,
 .user-table td {
@@ -63,29 +55,6 @@
   background-color: var(--table-row-hover);
 }
 
-.user-btn {
-  border: none;
-  padding: 0.45rem 0.75rem;
-  border-radius: 4px;
-  cursor: pointer;
-  color: var(--text-secondary);
-}
-
-.edit-btn {
-  background-color: var(--primary-color);
-}
-
-.delete-btn {
-  background-color: var(--error-color);
-}
-
-.save-btn {
-  background-color: var(--success-color);
-}
-
-.cancel-btn {
-  background-color: var(--muted-text);
-}
 
 .table-input {
   width: 100%;

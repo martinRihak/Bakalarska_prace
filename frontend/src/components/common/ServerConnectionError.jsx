@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/api/apiService';
 import '@css/ServerConnectionError.css';
+import '@css/buttons.css';
 
 const ServerConnectionError = () => {
     const navigate = useNavigate();
