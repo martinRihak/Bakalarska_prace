@@ -28,9 +28,17 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 90%;
   max-width: 500px;
-  max-height: 80vh; /* Maximální výška 80% výšky viewportu */
-  overflow-y: auto; /* Povolení vertikálního scrollování */
+  max-height: 80vh;
+  /* Maximální výška 80% výšky viewportu */
+  overflow-y: auto;
+  /* Povolení vertikálního scrollování */
   position: relative;
+}
+
+.form-con-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
 }
 
 /* Styling scrollbaru pro WebKit prohlížeče */
@@ -80,6 +88,7 @@
   height: 1.6em;
   align-self: center;
 }
+
 .form-textarea,
 .form-select {
   width: 100%;
@@ -125,9 +134,11 @@
   gap: 1rem;
   margin-top: 1rem;
 }
-.form-footer button{
+
+.form-footer button {
   width: 100%;
 }
+
 /* Cancel button */
 .form-button.cancel {
   background-color: var(--error-color);

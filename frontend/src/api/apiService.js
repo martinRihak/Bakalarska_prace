@@ -242,6 +242,7 @@ const api = {
   updateSensorForUser: (userId, sensorId, sensorData) =>
     apiRequest(`/users/${userId}/sensors/${sensorId}`, "PATCH", sensorData),
   getAvailableSensors: () => apiRequest("/sensors/available"),
+  deleteUserSensors: (sensorId) => apiRequest(`/sensors/delete/${sensorId}`,"DELETE"),
   addSensorToUser: (sensorId) =>
     apiRequest("/sensors/add-to-user", "POST", { sensorId }),
   createSensor: (sensorData) =>
