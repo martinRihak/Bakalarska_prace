@@ -140,7 +140,6 @@
   border: 1px solid var(--border-color);
   border-radius: 16px;
   background: var(--surface-color);
-  backdrop-filter: var(--card-blur);
   cursor: pointer;
   transition: all 0.2s ease;
   color: var(--text-primary);
