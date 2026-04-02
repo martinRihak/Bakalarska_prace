@@ -190,7 +190,7 @@ const api = {
   },
   getUserSensors: () => apiRequest("/sensors/getSensors", "GET"),
   getAvailableSensors: () => apiRequest("/sensors/available"),
-  deleteUserSensors: (sensorId) => apiRequest(`/sensors/delete/${sensorId}`,"DELETE"),
+  deleteUserSensor: (sensorId) => apiRequest(`/sensors/delete/${sensorId}`,"DELETE"),
   addSensorToUser: (sensorId) =>
     apiRequest("/sensors/add-to-user", "POST", { sensorId }),
   createSensor: (sensorData) =>

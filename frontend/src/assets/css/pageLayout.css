@@ -30,7 +30,8 @@
 }
 
 @media screen and (max-width: 968px) {
-  .dashboard-header {
+  .dashboard-header,
+  .dashboard-header-controls {
     flex-direction: column;
     align-items: stretch;
   }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { RefreshCw, ImageOff, CircleX, ChartNoAxesColumnIcon } from "lucide-react";
+import { RefreshCw, ImageOff, CircleX } from "lucide-react";
 import ReactApexChart from "react-apexcharts";
 import api from "@/api/apiService";
 import {
@@ -12,6 +12,15 @@ import {
 } from "./chartUtils";
 import ValueWidget from "./ValueWidget";
 import "./Widget.css";
+
+const getThemeMode = () => {
+  if (typeof document === "undefined") {
+    return "light";
+  }
+  return document.documentElement.classList.contains("dark-mode")
+    ? "dark"
+    : "light";
+};
 
 const Widget = ({
   title,
@@ -26,10 +35,10 @@ const Widget = ({
 }) => {
   const [sensorData, setSensorData] = useState(null);
   const [error, setError] = useState(null);
-  const [sensor, setSensor] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [timeRange, setTimeRange] = useState(time);
   const [localActive, setLocalActive] = useState(active); // lokální stav pro switch
+  const [themeMode, setThemeMode] = useState(getThemeMode);
 
   const processedData = useMemo(() => {
     if (widgetType === "value") {
@@ -54,6 +63,20 @@ const Widget = ({
   useEffect(() => {
     setLocalActive(active); // Synchronizace s prop při změně z nadřazené komponenty
   }, [active]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return undefined;
+    }
+
+    const root = document.documentElement;
+    const observer = new MutationObserver(() => {
+      setThemeMode(getThemeMode());
+    });
+
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -83,7 +106,7 @@ const Widget = ({
   };
 
   const chartOptions = useMemo(() => {
-    const baseOptions = {
+    const runtimeChartOptions = {
       chart: {
         animations: {
           enabled:
@@ -98,15 +121,27 @@ const Widget = ({
       },
     };
 
+    let themedOptions;
     switch (widgetType) {
       case "area":
-        return { ...getAreaChartOptions(sensorName), ...baseOptions };
+        themedOptions = getAreaChartOptions(sensorName, themeMode);
+        break;
       case "bar":
-        return { ...getBarChartOptions(sensorName), ...baseOptions };
+        themedOptions = getBarChartOptions(sensorName, themeMode);
+        break;
       default:
-        return { ...getLineChartOptions(sensorName), ...baseOptions };
+        themedOptions = getLineChartOptions(sensorName, themeMode);
+        break;
     }
-  }, [widgetType, sensorName, sensorData]);
+
+    return {
+      ...themedOptions,
+      chart: {
+        ...themedOptions.chart,
+        ...runtimeChartOptions.chart,
+      },
+    };
+  }, [widgetType, sensorName, sensorData, themeMode]);
 
   const chartSeries = useMemo(() => {
     if (widgetType === "value") {
@@ -215,6 +250,7 @@ const Widget = ({
               </div>
             ) : (
               <ReactApexChart
+                key={`${widget_id}-${widgetType}-${themeMode}`}
                 options={chartOptions}
                 series={chartSeries}
                 type={widgetType}

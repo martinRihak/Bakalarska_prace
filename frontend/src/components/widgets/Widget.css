@@ -152,7 +152,6 @@
 
 .value {
     font-size: 4.0rem;
-    font-weight: 200;
     color: var(--text-primary);
     /* letter-spacing: -0.03em; */
     line-height: 1;
@@ -190,6 +189,33 @@
 
 :root.dark-mode .icon svg {
   background-color: transparent;
+}
+
+/* ApexCharts theme polish */
+.widget .apexcharts-tooltip,
+.widget .apexcharts-xaxistooltip,
+.widget .apexcharts-yaxistooltip {
+  border-radius: 10px;
+}
+
+:root.dark-mode .widget .apexcharts-tooltip,
+:root.dark-mode .widget .apexcharts-xaxistooltip,
+:root.dark-mode .widget .apexcharts-yaxistooltip,
+:root.dark-mode .widget .apexcharts-menu {
+  background: #0f172a !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
+}
+
+:root.dark-mode .widget .apexcharts-tooltip-title {
+  background: rgba(148, 163, 184, 0.12) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+:root.dark-mode .widget .apexcharts-menu-item:hover {
+  background: rgba(59, 130, 246, 0.16) !important;
 }
 
 @keyframes rotate {

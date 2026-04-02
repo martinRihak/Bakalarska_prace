@@ -20,7 +20,7 @@ const VALUE_WIDGET_MIN_SIZE = {
 
 const GRAPH_WIDGET_MIN_SIZE = {
   minW: 5,
-  minH: 4,
+  minH: 3,
 };
 
 const getMinWidgetSizeByType = (widgetType) =>
