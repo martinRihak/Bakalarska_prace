@@ -1,25 +1,30 @@
-const isDarkMode = () => document.documentElement.classList.contains('dark-mode');
+const isDarkMode = (themeMode) => {
+  if (themeMode) {
+    return themeMode === "dark";
+  }
+  return document.documentElement.classList.contains("dark-mode");
+};
 
-export const getBaseChartOptions = (sensorName) => {
-  const dark = isDarkMode();
+export const getBaseChartOptions = (sensorName, themeMode) => {
+  const dark = isDarkMode(themeMode);
   return {
     chart: {
       zoom: {
         enabled: true,
         autoScaleYaxis: true,
         zoomedArea: {
-          fill: { color: '#3b82f6', opacity: 0.15 },
-          stroke: { color: '#3b82f6', opacity: 0.3, width: 1 }
-        }
+          fill: { color: "#3b82f6", opacity: 0.15 },
+          stroke: { color: "#3b82f6", opacity: 0.3, width: 1 },
+        },
       },
       animations: {
         enabled: true,
-        easing: 'easeinout',
+        easing: "easeinout",
         speed: 350,
         animateGradually: { enabled: true, delay: 150 },
-        dynamicAnimation: { enabled: true, speed: 350 }
+        dynamicAnimation: { enabled: true, speed: 350 },
       },
-      background: 'transparent',
+      background: "transparent",
       toolbar: {
         show: true,
         tools: {
@@ -32,44 +37,53 @@ export const getBaseChartOptions = (sensorName) => {
           reset: true,
         },
       },
-      fontFamily: 'Inter, system-ui, sans-serif',
+      foreColor: dark ? "rgba(241,245,249,0.72)" : "rgba(15,23,42,0.65)",
+      fontFamily: "Inter, system-ui, sans-serif",
+    },
+    theme: {
+      mode: dark ? "dark" : "light",
     },
     tooltip: {
       x: { format: "dd.MM.yyyy HH:mm" },
-      theme: dark ? 'dark' : 'light',
+      theme: dark ? "dark" : "light",
       shared: true,
       intersect: false,
       followCursor: true,
-      style: { fontSize: '12px' },
+      style: { fontSize: "12px" },
       y: {
-        formatter: (val) => val !== undefined ? val.toFixed(1) : ''
-      }
+        formatter: (val) => (val !== undefined ? val.toFixed(1) : ""),
+      },
     },
     stroke: {
-      curve: 'smooth',
+      curve: "smooth",
       width: 2.5,
-      lineCap: 'round'
+      lineCap: "round",
     },
     grid: {
-      borderColor: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+      borderColor: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
       strokeDashArray: 4,
       padding: { left: 10, right: 10 },
       xaxis: { lines: { show: false } },
-      yaxis: { lines: { show: true } }
+      yaxis: { lines: { show: true } },
     },
     markers: {
       size: 0,
       strokeWidth: 0,
-      hover: { size: 5, sizeOffset: 3 }
+      hover: { size: 5, sizeOffset: 3 },
+    },
+    legend: {
+      labels: {
+        colors: dark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,1)",
+      },
     },
     yaxis: {
       title: {
         text: sensorName,
         style: {
-          fontSize: '12px',
+          fontSize: "12px",
           fontWeight: 500,
-          color: dark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)'
-        }
+          color: dark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,1)",
+        },
       },
       tickAmount: 5,
       forceNiceScale: true,
@@ -77,21 +91,21 @@ export const getBaseChartOptions = (sensorName) => {
       labels: {
         formatter: (val) => val.toFixed(1),
         style: {
-          fontSize: '11px',
-          colors: dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-        }
-      }
-    }
+          fontSize: "11px",
+          colors: dark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,)",
+        },
+      },
+    },
   };
 };
 
-export const getAreaChartOptions = (sensorName) => {
-  const dark = isDarkMode();
-  const base = getBaseChartOptions(sensorName);
+export const getAreaChartOptions = (sensorName, themeMode) => {
+  const dark = isDarkMode(themeMode);
+  const base = getBaseChartOptions(sensorName, themeMode);
   return {
     ...base,
     chart: { ...base.chart, type: "area" },
-    colors: ['#3b82f6'],
+    colors: ["#3b82f6"],
     dataLabels: { enabled: false },
     xaxis: {
       type: "datetime",
@@ -100,19 +114,19 @@ export const getAreaChartOptions = (sensorName) => {
           year: "yyyy",
           month: "MMM",
           day: "dd MMM",
-          hour: "HH:mm"
+          hour: "HH:mm",
         },
         rotate: -45,
         rotateAlways: false,
         hideOverlappingLabels: true,
         style: {
-          fontSize: '11px',
-          colors: dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-        }
+          fontSize: "11px",
+          colors: dark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,1)",
+        },
       },
       tickAmount: 6,
       axisBorder: { show: false },
-      axisTicks: { show: false }
+      axisTicks: { show: false },
     },
     fill: {
       type: "gradient",
@@ -121,27 +135,30 @@ export const getAreaChartOptions = (sensorName) => {
         opacityFrom: 0.35,
         opacityTo: 0.03,
         stops: [0, 100],
-        colorStops: [{
-          offset: 0,
-          color: '#3b82f6',
-          opacity: 0.3
-        }, {
-          offset: 100,
-          color: '#3b82f6',
-          opacity: 0.02
-        }]
-      }
-    }
+        colorStops: [
+          {
+            offset: 0,
+            color: "#3b82f6",
+            opacity: 0.3,
+          },
+          {
+            offset: 100,
+            color: "#3b82f6",
+            opacity: 0.02,
+          },
+        ],
+      },
+    },
   };
 };
 
-export const getLineChartOptions = (sensorName) => {
-  const dark = isDarkMode();
-  const base = getBaseChartOptions(sensorName);
+export const getLineChartOptions = (sensorName, themeMode) => {
+  const dark = isDarkMode(themeMode);
+  const base = getBaseChartOptions(sensorName, themeMode);
   return {
     ...base,
     chart: { ...base.chart, type: "line" },
-    colors: ['#3b82f6'],
+    colors: ["#3b82f6"],
     xaxis: {
       type: "datetime",
       labels: {
@@ -149,44 +166,44 @@ export const getLineChartOptions = (sensorName) => {
           year: "yyyy",
           month: "MMM",
           day: "dd MMM",
-          hour: "HH:mm"
+          hour: "HH:mm",
         },
         rotate: -45,
         rotateAlways: false,
         hideOverlappingLabels: true,
         style: {
-          fontSize: '11px',
-          colors: dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-        }
+          fontSize: "11px",
+          colors: dark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,1)",
+        },
       },
       tickAmount: 6,
       axisBorder: { show: false },
-      axisTicks: { show: false }
+      axisTicks: { show: false },
     },
     stroke: {
-      curve: 'smooth',
-      width: 2.5
-    }
+      curve: "smooth",
+      width: 2.5,
+    },
   };
 };
 
-export const getBarChartOptions = (sensorName) => {
-  const dark = isDarkMode();
-  const base = getBaseChartOptions(sensorName);
+export const getBarChartOptions = (sensorName, themeMode) => {
+  const dark = isDarkMode(themeMode);
+  const base = getBaseChartOptions(sensorName, themeMode);
   return {
     ...base,
     chart: {
       ...base.chart,
       type: "bar",
     },
-    colors: ['#3b82f6'],
+    colors: ["#3b82f6"],
     plotOptions: {
       bar: {
         borderRadius: 6,
-        borderRadiusApplication: 'end',
-        columnWidth: '60%',
+        borderRadiusApplication: "end",
+        columnWidth: "60%",
         distributed: false,
-      }
+      },
     },
     dataLabels: { enabled: false },
     xaxis: {
@@ -196,63 +213,69 @@ export const getBarChartOptions = (sensorName) => {
           year: "yyyy",
           month: "MMM",
           day: "dd MMM",
-          hour: "HH:mm"
+          hour: "HH:mm",
         },
         rotate: -45,
         rotateAlways: false,
         hideOverlappingLabels: true,
         style: {
-          fontSize: '11px',
-          colors: dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-        }
+          fontSize: "11px",
+          colors: dark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,1)",
+        },
       },
       tickAmount: 6,
       axisBorder: { show: false },
-      axisTicks: { show: false }
+      axisTicks: { show: false },
     },
     fill: {
-      type: 'gradient',
+      type: "gradient",
       gradient: {
-        shade: dark ? 'dark' : 'light',
-        type: 'vertical',
+        shade: dark ? "dark" : "light",
+        type: "vertical",
         shadeIntensity: 0.3,
         opacityFrom: 0.85,
         opacityTo: 0.55,
-        stops: [0, 100]
-      }
+        stops: [0, 100],
+      },
     },
     stroke: {
-      width: 0
-    }
+      width: 0,
+    },
   };
 };
 
-export const getAreaChartSeries = (data, sensorName) => [{
-  name: sensorName || "Hodnota",
-  data: data
-    .filter(d => d.timestamp)
-    .map(d => ({
-      x: new Date(d.timestamp).getTime(),
-      y: parseFloat(d.value.toFixed(1))
-    }))
-}];
+export const getAreaChartSeries = (data, sensorName) => [
+  {
+    name: sensorName || "Hodnota",
+    data: data
+      .filter((d) => d.timestamp)
+      .map((d) => ({
+        x: new Date(d.timestamp).getTime(),
+        y: parseFloat(d.value.toFixed(1)),
+      })),
+  },
+];
 
-export const getLineChartSeries = (data, sensorName) => [{
-  name: sensorName || "Hodnota",
-  data: data
-    .filter(d => d.timestamp)
-    .map(d => ({
-      x: new Date(d.timestamp).getTime(),
-      y: parseFloat(d.value.toFixed(1))
-    }))
-}];
+export const getLineChartSeries = (data, sensorName) => [
+  {
+    name: sensorName || "Hodnota",
+    data: data
+      .filter((d) => d.timestamp)
+      .map((d) => ({
+        x: new Date(d.timestamp).getTime(),
+        y: parseFloat(d.value.toFixed(1)),
+      })),
+  },
+];
 
-export const getBarChartSeries = (data, sensorName) => [{
-  name: sensorName || "Hodnota",
-  data: data
-    .filter(d => d.timestamp)
-    .map(d => ({
-      x: new Date(d.timestamp).getTime(),
-      y: parseFloat(d.value.toFixed(1))
-    }))
-}];
+export const getBarChartSeries = (data, sensorName) => [
+  {
+    name: sensorName || "Hodnota",
+    data: data
+      .filter((d) => d.timestamp)
+      .map((d) => ({
+        x: new Date(d.timestamp).getTime(),
+        y: parseFloat(d.value.toFixed(1)),
+      })),
+  },
+];

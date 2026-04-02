@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import api from '@/api/apiService';
-import AddSensorModal from '@/components/forms/AddSensorModal';
-import '@css/SensorsPage.css';
-import SensorForm from '@/components/forms/SensorForm';
+import React, { useState, useEffect } from "react";
+import api from "@/api/apiService";
+import AddSensorModal from "@/components/forms/AddSensorModal";
+import "@css/SensorsPage.css";
+import SensorForm from "@/components/forms/SensorForm";
 import UserBar from "@/components/layout/UserBar";
 const SensorsPage = () => {
   const [sensors, setSensors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingSensor, setEditingSensor] = useState(null);
-  const [avaliabelSensors,setAvalibleSensors] = useState([]);
 
   useEffect(() => {
     fetchSensors();
@@ -22,7 +21,7 @@ const SensorsPage = () => {
       setSensors(response);
       setLoading(false);
     } catch (err) {
-      setError('Nepodařilo se načíst senzory');
+      setError("Nepodařilo se načíst senzory");
       setLoading(false);
     }
   };
@@ -31,28 +30,44 @@ const SensorsPage = () => {
     try {
       const newStatus = !currentStatus;
       await api.toggleSensorActive(sensorId, newStatus);
-      setSensors(sensors.map(sensor =>
-        sensor.sensor_id === sensorId ? { ...sensor, is_active: newStatus } : sensor
-      ));
+      setSensors(
+        sensors.map((sensor) =>
+          sensor.sensor_id === sensorId
+            ? { ...sensor, is_active: newStatus }
+            : sensor,
+        ),
+      );
     } catch (err) {
-      setError('Nepodařilo se změnit stav senzoru');
+      setError("Nepodařilo se změnit stav senzoru");
     }
   };
 
   const handleEditSensor = (sensor) => {
     setEditingSensor(sensor);
   };
-
+  const handleDeleteSensor = async (sensorId) => {
+    if (window.confirm("Opravdu chcete smazat tento senzor?")) {
+      try {
+        await api.deleteUserSensor(sensorId);
+        setSensors((prevSensors) =>
+          prevSensors.filter((sensor) => sensor.sensor_id !== sensorId),
+        );
+      } catch (err) {
+        setError("Nepodařilo se smazat senzor");
+      }
+    }
+  };
   const handleUpdateSensor = async (updatedSensor) => {
     try {
-      console.log(updatedSensor);
       await api.updateSensor(updatedSensor);
-      setSensors(sensors.map(sensor =>
-        sensor.sensor_id === updatedSensor.sensor_id ? updatedSensor : sensor
-      ));
+      setSensors(
+        sensors.map((sensor) =>
+          sensor.sensor_id === updatedSensor.sensor_id ? updatedSensor : sensor,
+        ),
+      );
       setEditingSensor(null);
     } catch (err) {
-      setError('Nepodařilo se aktualizovat senzor');
+      setError("Nepodařilo se aktualizovat senzor");
     }
   };
 
@@ -73,7 +88,10 @@ const SensorsPage = () => {
             <div className="error-message">{error}</div>
           ) : (
             <>
-              <button onClick={() => setIsAddModalOpen(true)} className="add-sensor-btn">
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="add-sensor-btn"
+              >
                 Přidat senzor
               </button>
               <table className="sensor-table">
@@ -87,7 +105,7 @@ const SensorsPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {sensors.map(sensor => (
+                  {sensors.map((sensor) => (
                     <tr key={sensor.sensor_id}>
                       <td>{sensor.name}</td>
                       <td>{sensor.sensor_type}</td>
@@ -97,14 +115,26 @@ const SensorsPage = () => {
                           <input
                             type="checkbox"
                             checked={sensor.is_active}
-                            onChange={() => handleToggleActive(sensor.sensor_id, sensor.is_active)}
+                            onChange={() =>
+                              handleToggleActive(
+                                sensor.sensor_id,
+                                sensor.is_active,
+                              )
+                            }
                           />
                           <span className="slider"></span>
                         </label>
                       </td>
-                      <td className='user-action'>
-                        <button onClick={() => handleEditSensor(sensor)}>Upravit</button>
-                        <button className='delete-btn'>Smazat</button>
+                      <td className="user-action">
+                        <button onClick={() => handleEditSensor(sensor)}>
+                          Upravit
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDeleteSensor(sensor.sensor_id)}
+                        >
+                          Smazat
+                        </button>
                       </td>
                     </tr>
                   ))}
