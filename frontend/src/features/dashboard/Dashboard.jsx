@@ -4,7 +4,7 @@ import Widget from "@/components/widgets/Widget";
 import api from "@/api/apiService";
 import DashboardForm from "@/components/forms/DashboardForm";
 import WidgetForm from "@/components/forms/WidgetForm";
-
+import UserBar from "@/components/layout/UserBar";
 // CSS
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -132,7 +132,6 @@ const Dashboard = () => {
         throw new Error("No layout available");
       }
 
-
       const widgetPositions = currentLayout.map((layout) => ({
         widget_id: layout.i,
         position_x: layout.x,
@@ -148,10 +147,10 @@ const Dashboard = () => {
     }
   };
 
- const DashboardHeader = () => (
-    <div className="dashboard-header">
-      {
-        <>
+  const DashboardHeader = () => (
+    <>
+      <div className="dashboard-header">
+        <div className="dashboard-header-controls">
           <button className="dashboard-btn" onClick={handleDashboardCreate}>
             Vytvořit nový dashboard
           </button>
@@ -177,9 +176,12 @@ const Dashboard = () => {
           <button className="dashboard-btn" onClick={handleSaveWidgetPositions}>
             Uložit pozice widgetů
           </button>
-        </>
-      }
-    </div>
+        </div>
+        <div className="user-bar">
+          <UserBar />
+        </div>
+      </div>
+    </>
   );
   const handleWidgetDelete = () => {
     loadWidgets(selectedDashboard);
@@ -276,4 +278,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

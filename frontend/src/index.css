@@ -14,7 +14,7 @@
 
   /* Borders & UI */
   --border-color: rgba(0, 0, 0, 0.08);
-  --muted-text: rgba(0, 0, 0, 0.45);
+  --muted-text: rgba(0, 0, 0, 1);
   --input-bg: rgba(255, 255, 255, 0.8);
   --table-row-alt: rgba(248, 250, 252, 0.8);
   --table-row-hover: rgba(241, 245, 249, 0.9);
@@ -176,8 +176,8 @@ input:focus, select:focus, textarea:focus {
   content: "";
   height: 18px;
   width: 18px;
-  left: 3px;
-  bottom: 3px;
+  left: 8px;
+  bottom: 5px;
   background-color: white;
   transition: 0.3s;
   border-radius: 50%;
