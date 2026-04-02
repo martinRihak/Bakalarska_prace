@@ -6,8 +6,6 @@
   margin: 2.5rem auto;
   padding: 2rem;
   background: var(--surface-color);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
   border-radius: var(--card-radius);
@@ -148,8 +146,7 @@
 
 /* Dark mode */
 :root.dark-mode .form-container {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(24px);
+  background: var(--surface-color);
   border-color: var(--border-color);
 }
 

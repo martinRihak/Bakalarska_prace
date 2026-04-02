@@ -15,8 +15,6 @@
   display: flex;
   flex-direction: column;
   background: var(--surface-color);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
   padding: 1.5rem;
@@ -97,7 +95,6 @@
 /* Dark mode */
 :root.dark-mode .export-form {
   background: var(--surface-color);
-  backdrop-filter: blur(24px);
   border-color: var(--border-color);
 }
 

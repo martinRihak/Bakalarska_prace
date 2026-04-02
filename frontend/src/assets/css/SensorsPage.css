@@ -30,8 +30,6 @@
   border-spacing: 0;
   margin-top: 0;
   background: var(--surface-color);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
   border-radius: var(--card-radius);

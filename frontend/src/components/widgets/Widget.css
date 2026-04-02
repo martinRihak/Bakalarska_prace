@@ -7,15 +7,8 @@
   overflow: hidden;
   border-radius: var(--card-radius);
   background: var(--surface-color);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
-}
-
-.widget:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 /* Widget header */
@@ -175,10 +168,6 @@
 :root.dark-mode .widget {
   background-color: var(--surface-color);
   color: var(--text-primary);
-}
-
-:root.dark-mode .widget:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 :root.dark-mode .widget-header h3 {
