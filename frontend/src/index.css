@@ -1,38 +1,51 @@
 :root {
-  /* Barvy */
-  --primary-color: #1017EA;        /* Tmavě modrá */
-  --secondary-color: #A81916;      /* Tmavě červená */
-  --background-color: #EBEBEB;     /* Světle šedá jako pozadí hlavních sekcí */
-  --background-color-alt: #000000; /* Bílá pro alternativní pozadí */
-  --surface-color: #FAFAFA;        /* Velmi světlá šedá pro widgety a karty */
-  --text-primary: #000000;         /* Černá pro základní text */
-  --text-secondary: #FAFAFA;       /* Ponecháno pro sekundární text */
-  --accent-color: #0E58D7;         /* Světle modrá pro sekundární akcenty */
-  --highlight-color: #E12E20;      /* Jasně červená pro důležité akce */
-  --error-color: #A81916;          /* Tmavě červená pro chybové stavy */
-  --success-color: #4CAF50;        /* Ponecháno pro úspěšné stavy */
- /* Dark mode */
-  --dark-background-color: #121212; /* Tmavé pozadí pro tmavý režim */
-  --dark-background-color-alt: #000000; /* Tmavé alternativní pozadí pro tmavý režim */
-  --dark-text-primary: #E0E0E0;    /* Světlejší text pro tmavý režim */
-  --dark-text-secondary: #B0B0B0;  /* Ještě světlejší text pro tmavý režim */
-  --dark-surface-color: #1E1E1E;   /* Tmavší povrch pro widgety a karty v tmavém režimu */
-  --dark-primary-color: #1017EA;   /* Světle fialová pro primární akcent v tmavém režimu */
-  --dark-secondary-color: #CF6679; /* Světle červená pro sekundární akcent v tmavém režimu */ 
-  --dark-border-color: #303b50;
-  --dark-muted-text: #a7b4cd;
-  --dark-input-bg: #151b28;
-  --dark-table-row-alt: #202839;
-  --dark-table-row-hover: #273145;
-  --dark-overlay-bg: rgba(0, 0, 0, 0.65);
-  --border-color: #d2d8e1;
-  --muted-text: #4a5468;
-  --input-bg: #ffffff;
-  --table-row-alt: #f2f5fa;
-  --table-row-hover: #e6ebf3;
-  --overlay-bg: rgba(0, 0, 0, 0.5);
-  /* Typografie */
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* ── Soft Depth palette ── */
+  --primary-color: #3b82f6;
+  --secondary-color: #2563eb;
+  --background-color: #f0f2f5;
+  --background-color-alt: #111827;
+  --surface-color: rgba(255, 255, 255, 0.65);
+  --text-primary: #0f172a;
+  --text-secondary: #f8fafc;
+  --accent-color: #3b82f6;
+  --highlight-color: #ef4444;
+  --error-color: #dc2626;
+  --success-color: #22c55e;
+
+  /* Borders & UI */
+  --border-color: rgba(0, 0, 0, 0.08);
+  --muted-text: rgba(0, 0, 0, 0.45);
+  --input-bg: rgba(255, 255, 255, 0.8);
+  --table-row-alt: rgba(248, 250, 252, 0.8);
+  --table-row-hover: rgba(241, 245, 249, 0.9);
+  --overlay-bg: rgba(0, 0, 0, 0.4);
+
+  /* Dark mode tokens */
+  --dark-background-color: #0f1117;
+  --dark-background-color-alt: #0a0d14;
+  --dark-text-primary: #f1f5f9;
+  --dark-text-secondary: rgba(255, 255, 255, 0.5);
+  --dark-surface-color: rgba(255, 255, 255, 0.035);
+  --dark-primary-color: #3b82f6;
+  --dark-secondary-color: #60a5fa;
+  --dark-border-color: rgba(255, 255, 255, 0.06);
+  --dark-muted-text: rgba(255, 255, 255, 0.5);
+  --dark-input-bg: rgba(255, 255, 255, 0.04);
+  --dark-table-row-alt: rgba(255, 255, 255, 0.02);
+  --dark-table-row-hover: rgba(255, 255, 255, 0.05);
+  --dark-overlay-bg: rgba(0, 0, 0, 0.6);
+
+  /* Soft Depth shared tokens */
+  --card-radius: 20px;
+  --card-blur: blur(16px);
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --card-border: 1px solid rgba(255, 255, 255, 0.9);
+  --pill-bg: rgba(0, 0, 0, 0.04);
+  --icon-btn-bg: rgba(0, 0, 0, 0.03);
+  --icon-btn-border: 1px solid rgba(0, 0, 0, 0.04);
+
+  /* Typography */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   font-synthesis: none;
@@ -40,12 +53,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-    /* Transitions for theme switching */
-    transition: background-color 0.3s ease, color 0.3s ease;
-
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Základní reset a společné styly */
+/* Reset */
 * {
   margin: 0;
   padding: 0;
@@ -64,22 +75,21 @@ body {
   min-height: 100vh;
 }
 
-/* Společné styly pro texty */
+/* Typography */
 h1 {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 600;
-  font-family: Open-Sans, Roboto;
+  letter-spacing: -0.02em;
   margin-bottom: 1rem;
 }
 
 h2 {
-  font-size: 1.5rem;
-  font-family: Open-Sans, Roboto;
+  font-size: 1.35rem;
   font-weight: 500;
+  letter-spacing: -0.01em;
   margin-bottom: 0.75rem;
 }
 
-/* Společné styly pro odkazy */
 a {
   color: var(--primary-color);
   text-decoration: none;
@@ -90,46 +100,47 @@ a:hover {
   color: var(--secondary-color);
 }
 
-/* Společné styly pro tlačítka */
+/* Buttons */
 button {
   background-color: var(--primary-color);
-  color:  var(--text-secondary);
+  color: var(--text-secondary);
   border: none;
   padding: 0.5rem 0.7rem;
-  border-radius: 4px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 1rem;
-  font-family: Open-Sans, Roboto;
-  transition: background-color 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 button:hover {
   background-color: var(--secondary-color);
+  transform: translateY(-1px);
 }
 
 button:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(16, 23, 234, 0.3);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
-/* Společné styly pro formulářové prvky */
+/* Form elements */
 input, select, textarea {
   width: 100%;
-  padding: 0.8rem;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 12px;
   background-color: var(--input-bg);
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(16, 23, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
-/* Společné utility třídy */
 .text-center {
   text-align: center;
 }
@@ -138,8 +149,8 @@ input:focus, select:focus, textarea:focus {
 .switch {
   position: relative;
   display: inline-block;
-  width: 60px;
-  height: 34px;
+  width: 44px;
+  height: 24px;
 }
 
 .switch input {
@@ -155,21 +166,22 @@ input:focus, select:focus, textarea:focus {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 34px;
+  background-color: rgba(128, 128, 128, 0.3);
+  transition: 0.3s;
+  border-radius: 24px;
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
   background-color: white;
-  transition: 0.4s;
+  transition: 0.3s;
   border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 input:checked + .slider {
@@ -177,7 +189,7 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(26px);
+  transform: translateX(20px);
 }
 
 .success-message {
@@ -194,29 +206,36 @@ input:checked + .slider:before {
   transition: margin-left 0.3s ease;
 }
 
-/* Dark mode class */
+/* ── Dark mode ── */
 :root.dark-mode {
-    --background-color: var(--dark-background-color);
-    --background-color-alt: var(--dark-background-color-alt);
-    --surface-color: var(--dark-surface-color);
-    --text-primary: var(--dark-text-primary);
-    --text-secondary: var(--dark-text-secondary);
-    --primary-color: var(--dark-primary-color);
-    --secondary-color: var(--dark-secondary-color);
-    --border-color: var(--dark-border-color);
-    --muted-text: var(--dark-muted-text);
-    --input-bg: var(--dark-input-bg);
-    --table-row-alt: var(--dark-table-row-alt);
-    --table-row-hover: var(--dark-table-row-hover);
-    --overlay-bg: var(--dark-overlay-bg);
-    background-color: var(--background-color);
-    color: var(--text-primary);
-    transition: background-color 0.3s ease, color 0.3s ease;
+  --background-color: var(--dark-background-color);
+  --background-color-alt: var(--dark-background-color-alt);
+  --surface-color: var(--dark-surface-color);
+  --text-primary: var(--dark-text-primary);
+  --text-secondary: var(--dark-text-secondary);
+  --primary-color: var(--dark-primary-color);
+  --secondary-color: var(--dark-secondary-color);
+  --border-color: var(--dark-border-color);
+  --muted-text: var(--dark-muted-text);
+  --input-bg: var(--dark-input-bg);
+  --table-row-alt: var(--dark-table-row-alt);
+  --table-row-hover: var(--dark-table-row-hover);
+  --overlay-bg: var(--dark-overlay-bg);
+
+  --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --card-border: 1px solid rgba(255, 255, 255, 0.06);
+  --pill-bg: rgba(255, 255, 255, 0.06);
+  --icon-btn-bg: rgba(255, 255, 255, 0.05);
+  --icon-btn-border: 1px solid rgba(255, 255, 255, 0.04);
+
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 :root.dark-mode body {
-    background-color: var(--background-color);
-    color: var(--text-primary);
+  background-color: var(--background-color);
+  color: var(--text-primary);
 }
 
 :root.dark-mode .userName,
@@ -226,50 +245,47 @@ input:checked + .slider:before {
 :root.dark-mode .no-dashboards-message,
 :root.dark-mode .sensor-subtable,
 :root.dark-mode .sensor-table tr:nth-child(even) {
-    background-color: var(--surface-color);
-    color: var(--text-primary);
+  background-color: var(--surface-color);
+  color: var(--text-primary);
 }
 
 :root.dark-mode .theme-toggle-button {
-    background-color: var(--surface-color);
-    color: var(--text-primary);
+  background-color: var(--surface-color);
+  color: var(--text-primary);
 }
 
-/* Dark mode form elements */
 :root.dark-mode input,
 :root.dark-mode select,
 :root.dark-mode textarea {
-    background-color: var(--input-bg);
-    color: var(--text-primary);
-    border-color: var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
 
 :root.dark-mode input:focus,
 :root.dark-mode select:focus,
 :root.dark-mode textarea:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 :root.dark-mode input::placeholder {
-    color: var(--text-secondary);
+  color: var(--muted-text);
 }
 
 :root.dark-mode select option {
-    background-color: var(--background-color);
-    color: var(--text-primary);
+  background-color: var(--dark-background-color);
+  color: var(--dark-text-primary);
 }
 
 :root.dark-mode input[type="datetime-local"] {
-    color-scheme: dark;
+  color-scheme: dark;
 }
 
-/* Responzivní design */
+/* Responsive */
 @media screen and (max-width: 968px) {
   .main-content {
     margin-left: 0;
-    padding:0px;
-    
+    padding: 0px;
   }
-
 }

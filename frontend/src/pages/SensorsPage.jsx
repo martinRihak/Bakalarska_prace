@@ -104,7 +104,7 @@ const SensorsPage = () => {
                       </td>
                       <td className='user-action'>
                         <button onClick={() => handleEditSensor(sensor)}>Upravit</button>
-                        <button >Smazat</button>
+                        <button className='delete-btn'>Smazat</button>
                       </td>
                     </tr>
                   ))}

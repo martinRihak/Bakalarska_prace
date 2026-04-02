@@ -1,11 +1,19 @@
-/* Form container */
+/* ── Soft Depth Forms ── */
+
 .form-container {
-  max-width: 28rem;
+  max-width: 500px;
+  width: 90%;
   margin: 2.5rem auto;
-  padding: 1.5rem;
-  background-color: var(--surface-color);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  background: var(--surface-color);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--card-radius);
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
 }
 
 .modal-overlay {
@@ -14,25 +22,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-bg);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-}
-
-.form-container {
-  background: var(--surface-color);
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
-  /* Maximální výška 80% výšky viewportu */
-  overflow-y: auto;
-  /* Povolení vertikálního scrollování */
-  position: relative;
 }
 
 .form-con-buttons {
@@ -41,43 +36,46 @@
   gap: 1rem;
 }
 
-/* Styling scrollbaru pro WebKit prohlížeče */
+/* Scrollbar */
 .form-container::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .form-container::-webkit-scrollbar-track {
-  background: var(--background-color);
-  border-radius: 4px;
+  background: transparent;
+  border-radius: 6px;
 }
 
 .form-container::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 4px;
+  background: var(--border-color);
+  border-radius: 6px;
 }
 
 .form-container::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary-color);
+  background: var(--muted-text);
 }
 
 .form-heading {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 600;
   margin-bottom: 1.5rem;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 /* Form groups */
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .form-label {
   display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted-text);
   margin-bottom: 0.5rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* Form controls */
@@ -92,13 +90,14 @@
 .form-textarea,
 .form-select {
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.375rem;
-  font-size: 1rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 0.95rem;
   line-height: 1.5;
-  background-color: var(--surface-color);
+  background-color: var(--input-bg);
   color: var(--text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .form-input:focus,
@@ -106,7 +105,7 @@
 .form-select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(16, 23, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
 /* Form footer */
@@ -114,7 +113,7 @@
   display: flex;
   justify-content: space-evenly;
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
 .form-footer button {
@@ -125,68 +124,75 @@
 .chart-type-selector {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  gap: 0.75rem;
+}
+
+/* Form error */
+.form-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  color: #ef4444;
+  font-size: 0.875rem;
 }
 
 /* Responsive */
 @media (max-width: 640px) {
   .form-container {
     margin: 1rem;
-    padding: 1rem;
+    padding: 1.5rem;
   }
 }
 
-/* Dark mode styles */
+/* Dark mode */
 :root.dark-mode .form-container {
-  background-color: var(--dark-surface-color);
-  color: var(--dark-text-primary);
-  border: 1px solid var(--dark-text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(24px);
+  border-color: var(--border-color);
 }
 
 :root.dark-mode .form-heading {
-  color: var(--dark-text-primary);
+  color: var(--text-primary);
 }
 
 :root.dark-mode .form-label {
-  color: var(--dark-text-primary);
+  color: var(--muted-text);
 }
 
 :root.dark-mode .form-input,
 :root.dark-mode .form-textarea,
 :root.dark-mode .form-select {
-  background-color: var(--dark-background-color);
-  color: var(--dark-text-primary);
-  border-color: var(--dark-text-secondary);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
 
 :root.dark-mode .form-input:focus,
 :root.dark-mode .form-textarea:focus,
 :root.dark-mode .form-select:focus {
-  border-color: var(--dark-primary-color);
-  box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 :root.dark-mode .form-input::placeholder {
-  color: var(--dark-text-secondary);
+  color: var(--muted-text);
 }
 
 :root.dark-mode .form-select option {
-  background-color: var(--dark-background-color);
-  color: var(--dark-text-primary);
+  background-color: #1a1f2e;
+  color: var(--text-primary);
 }
 
 :root.dark-mode .modal-overlay {
-  background: rgba(0, 0, 0, 0.7);
-}
-
-:root.dark-mode .form-container::-webkit-scrollbar-track {
-  background: var(--dark-background-color);
+  background: rgba(0, 0, 0, 0.6);
 }
 
 :root.dark-mode .form-container::-webkit-scrollbar-thumb {
-  background: var(--dark-primary-color);
+  background: var(--border-color);
 }
 
 :root.dark-mode .form-container::-webkit-scrollbar-thumb:hover {
-  background: var(--dark-secondary-color);
+  background: var(--muted-text);
 }

@@ -1,3 +1,4 @@
+/* ── Soft Depth Sensors Page ── */
 .sensors-page {
   display: flex;
   flex-direction: column;
@@ -16,6 +17,7 @@
   right: 0;
   bottom: 0;
   background: var(--overlay-bg);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -24,27 +26,44 @@
 
 .sensor-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin-top: 0;
-  background-color: var(--surface-color);
-  border-radius: 10px;
+  background: var(--surface-color);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--card-radius);
   overflow: hidden;
 }
 
 .sensor-table th,
 .sensor-table td {
-  padding: 0.8rem;
+  padding: 0.85rem 1rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
 }
 
 .sensor-table th {
-  background-color: var(--primary-color);
-  color: var(--text-secondary);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .sensor-table tr:nth-child(even) {
   background-color: var(--table-row-alt);
+}
+
+.sensor-table tr:hover {
+  background-color: var(--table-row-hover);
+}
+
+.sensor-table tr:last-child td {
+  border-bottom: none;
 }
 
 .add-sensor-btn {
