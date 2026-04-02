@@ -6,21 +6,27 @@
   gap: 6px;
 }
 
-/* Dashboard header */
 .dashboard-header {
+  display: flex;
+  box-shadow: var(--card-shadow);
+  border-radius: var(--card-radius);
+  background: var(--surface-color);
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 1rem;
+}
+
+/* Dashboard header */
+.dashboard-header-controls {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   margin: 1rem;
   position: sticky;
-  padding: 1rem 1.25rem;
   top: 0;
   z-index: 100;
-  background: var(--surface-color);
   border: var(--card-border);
-  box-shadow: var(--card-shadow);
   gap: 10px;
-  border-radius: var(--card-radius);
 }
 
 @media screen and (max-width: 968px) {
@@ -104,6 +110,11 @@
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
