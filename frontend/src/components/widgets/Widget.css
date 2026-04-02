@@ -1,266 +1,276 @@
+/* ── Soft Depth Widget Card ── */
 .widget {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: var(--surface-color);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--card-radius);
+  background: var(--surface-color);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.widget:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 /* Widget header */
 .widget-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  align-items: center;
 }
 
 .widget-header h3 {
-    margin: 0;
-    font-size: 1.3rem;
-    font-weight: 500;
-    color: #000000;
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-text);
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--pill-bg);
+  display: inline-block;
 }
 
 .widget-controls {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.widget-controls button {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--icon-btn-bg);
+  border: var(--icon-btn-border);
+  cursor: pointer;
+  color: var(--muted-text);
+  padding: 0;
+  transition: all 0.2s ease;
+  transform: none;
+}
+
+.widget-controls button:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: none;
+}
+
+.widget-controls button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .widget-content {
-    flex: 1;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    justify-content: center;
-    min-height: 0;
+  flex: 1;
+  padding: 0.5rem 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  justify-content: center;
+  min-height: 0;
 }
 
 .widget-icon {
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  color: var(--muted-text);
 }
 
 .widget-icon:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
-}
-
-.widget.radialBar {
-    background: var(--primary-color);
-}
-
-.refresh-button {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-secondary);
-    transition: all 0.2s ease;
-}
-
-.refresh-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
-}
-
-.refresh-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.refresh-button .spinning {
-    animation: rotate 1s linear infinite;
+  background-color: var(--pill-bg);
+  color: var(--text-primary);
 }
 
 .time-range-select {
-    background: transparent;
-    border: 1px solid var(--text-secondary);
-    color: var(--text-primary);
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.875rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  width: auto;
 }
 
 .time-range-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(16, 23, 234, 0.1);
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
 }
 
 .widget-footer {
-    font-size: 0.75rem;
-    color: #666666;
-    text-align: center;
+  font-size: 0.7rem;
+  color: var(--muted-text);
+  text-align: left;
+  padding: 0 1.25rem 0.75rem;
 }
 
+/* Value widget */
 .value-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .icon svg {
-    margin-right: 1.5rem;
-    padding: 1.5rem;
-    background: #FFFFFF;
-    border-radius: 30px;
-    box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1);
-    border: none;
-    width: 250px;
-    height: 250px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
 }
 
 .error-message {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    font-size: 2rem;
-    font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--muted-text);
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .error-message svg {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 1rem;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
 }
 
 .error-message p {
-    margin: 0;
+  margin: 0;
 }
 
 .value {
-    font-size: 3.5rem;
-    font-weight: bold;
-    color: #000000;
+  font-size: 2.75rem;
+  font-weight: 200;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
 .timestamp {
-    font-size: 0.8rem;
-    color: #666666;
-    text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted-text);
+  text-align: center;
 }
 
+/* ── Dark mode ── */
 :root.dark-mode .widget {
-    background-color: var(--dark-surface-color);
-    color: var(--dark-text-primary);
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+}
+
+:root.dark-mode .widget:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 :root.dark-mode .widget-header h3 {
-    color: var(--dark-text-primary);
+  color: var(--muted-text);
 }
 
 :root.dark-mode .time-range-select:focus {
-    background-color: var(--dark-surface-color);
-    color: var(--dark-text-secondary);
+  background-color: transparent;
 }
 
 :root.dark-mode .time-range-select {
-    background: transparent;
-    border: 1px solid var(--dark-text-secondary);
-    color: var(--dark-text-primary);
+  background: transparent;
+  border-color: var(--border-color);
+  color: var(--text-primary);
 }
 
 :root.dark-mode .widget-icon,
 :root.dark-mode .value {
-    color: var(--dark-text-secondary);
+  color: var(--text-primary);
 }
 
 :root.dark-mode .icon svg {
-    background-color: var(--dark-surface-color);
+  background-color: transparent;
 }
 
 @keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Mobile responsive styles */
+.refresh-button .spinning {
+  animation: rotate 1s linear infinite;
+}
+
+/* ── Mobile ── */
 @media (max-width: 600px) {
-    .widget-header h3 {
-        font-size: 1rem;
-        margin-right: 0.5rem;
-        word-break: break-word;
-    }
+  .widget-header h3 {
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+  }
 
-    .widget-controls {
-        gap: 0.25rem;
-        flex-shrink: 0;
-    }
+  .widget-controls {
+    gap: 4px;
+    flex-shrink: 0;
+  }
 
-    .widget-controls button {
-        padding: 0.25rem;
-    }
+  .widget-controls button {
+    width: 26px;
+    height: 26px;
+  }
 
-    .widget-controls button svg {
-        width: 18px;
-        height: 18px;
-    }
+  .widget-controls button svg {
+    width: 14px;
+    height: 14px;
+  }
 
-    .time-range-select {
-        font-size: 0.75rem;
-        padding: 0.15rem 0.3rem;
-        max-width: 80px;
-    }
+  .time-range-select {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    max-width: 70px;
+  }
 
-    .value-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 0.75rem;
-    }
+  .value-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
 
-    .icon svg {
-        width: 120px;
-        height: 120px;
-        padding: 1rem;
-        margin-right: 0;
-    }
+  .icon svg {
+    width: 48px;
+    height: 48px;
+  }
 
-    .value {
-        font-size: 2.5rem;
-        text-align: center;
-    }
+  .value {
+    font-size: 2rem;
+    text-align: center;
+  }
 
-    .widget-content {
-        padding: 0.5rem;
-    }
+  .widget-content {
+    padding: 0.5rem;
+  }
 
-    .widget-content .apexcharts-canvas {
-        min-height: 180px;
-    }
+  .widget-content .apexcharts-canvas {
+    min-height: 180px;
+  }
 
-    .error-message {
-        font-size: 1.2rem;
-    }
+  .error-message {
+    font-size: 0.85rem;
+  }
 
-    .error-message svg {
-        width: 36px;
-        height: 36px;
-    }
+  .error-message svg {
+    width: 32px;
+    height: 32px;
+  }
 }

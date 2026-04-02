@@ -1,34 +1,28 @@
-/* Pro radialBar widget nastavíme bílý text */
-.widget.radialBar .widget-header h3 {
-  color: var(--text-secondary); /* #FAFAFA */
-}
+/* ── Soft Depth Page Layout ── */
 
 /* Widget controls */
 .widget-controls {
   display: flex;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
-
-/* Pro radialBar widget nastavíme bílé tlačítka */
-.widget.radialBar .widget-controls button {
-  color: var(--text-secondary); /* #FAFAFA */
-}
-
-/* Ostatní styly zůstávají beze změny */
+/* Dashboard header */
 .dashboard-header {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   margin: 1rem;
   position: sticky;
-  padding: 1rem;
+  padding: 1rem 1.25rem;
   top: 0;
   z-index: 100;
-  background-color: var(--surface-color);
+  background: var(--surface-color);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
   gap: 10px;
-  border-radius: 15px;
-  
+  border-radius: var(--card-radius);
 }
 
 @media screen and (max-width: 968px) {
@@ -40,11 +34,11 @@
   .dashboard-header select,
   .dashboard-header button {
     width: 100%;
-    margin: 5px 0;
+    margin: 4px 0;
   }
 }
 
-
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -52,6 +46,8 @@
   right: 0;
   bottom: 0;
   background-color: var(--overlay-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -59,10 +55,13 @@
 }
 
 .modal-content {
-  background-color: var(--surface-color);
+  background: var(--surface-color);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: var(--card-border);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
   padding: 2rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: var(--card-radius);
   max-width: 50%;
   max-height: 90%;
   overflow: auto;
@@ -75,30 +74,35 @@
   margin-bottom: 1rem;
 }
 
+/* Empty state messages */
 .no-widgets-message,
 .no-dashboards-message {
   text-align: center;
-  padding: 2rem;
-  color: var(--text-primary);
-  font-size: 1.1rem;
-  background-color: var(--surface-color);
-  border-radius: 0.5rem;
+  padding: 2.5rem;
+  color: var(--muted-text);
+  font-size: 1rem;
+  font-weight: 400;
+  background: var(--surface-color);
+  backdrop-filter: var(--card-blur);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--card-radius);
   margin: 2rem auto;
   max-width: 600px;
 }
 
+/* Grid items */
 .react-grid-item {
   transition: all 200ms ease;
   transition-property: left, top, width, height;
-  border-radius: 15px; /* Matching widget rounded corners */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Matching widget shadow */
-
+  border-radius: var(--card-radius);
 }
 
 .react-grid-item.react-grid-placeholder {
-  background: color-mix(in srgb, var(--table-row-hover) 65%, transparent);
-  border: 2px dashed var(--border-color);
-  opacity: 0.5;
+  background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+  border: 2px dashed var(--primary-color);
+  opacity: 0.4;
+  border-radius: var(--card-radius);
   z-index: 2;
   transition-duration: 100ms;
   user-select: none;

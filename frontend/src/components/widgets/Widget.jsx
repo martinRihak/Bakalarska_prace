@@ -5,8 +5,10 @@ import api from "@/api/apiService";
 import {
   getAreaChartOptions,
   getLineChartOptions,
+  getBarChartOptions,
   getAreaChartSeries,
   getLineChartSeries,
+  getBarChartSeries,
 } from "./chartUtils";
 import ValueWidget from "./ValueWidget";
 import "./Widget.css";
@@ -99,24 +101,26 @@ const Widget = ({
     switch (widgetType) {
       case "area":
         return { ...getAreaChartOptions(sensorName), ...baseOptions };
-      // case "radialBar":
-      //   return { ...getRadialBarOptions(sensorName), ...baseOptions };
+      case "bar":
+        return { ...getBarChartOptions(sensorName), ...baseOptions };
       default:
         return { ...getLineChartOptions(sensorName), ...baseOptions };
     }
   }, [widgetType, sensorName, sensorData]);
 
   const chartSeries = useMemo(() => {
-    // if (widgetType === "radialBar") {
-    //   return getRadialBarSeries(processedData);
-    // } else 
     if (widgetType === "value") {
       return [];
     } else {
       if (!processedData || processedData.length === 0) return [];
-      return widgetType === "area"
-        ? getAreaChartSeries(processedData, sensorName)
-        : getLineChartSeries(processedData, sensorName);
+      switch (widgetType) {
+        case "area":
+          return getAreaChartSeries(processedData, sensorName);
+        case "bar":
+          return getBarChartSeries(processedData, sensorName);
+        default:
+          return getLineChartSeries(processedData, sensorName);
+      }
     }
   }, [widgetType, sensorData, processedData, sensorName]);
 
@@ -213,7 +217,7 @@ const Widget = ({
               <ReactApexChart
                 options={chartOptions}
                 series={chartSeries}
-                type={widgetType === "radialBar" ? "radialBar" : widgetType}
+                type={widgetType}
                 height="100%"
                 width="100%"
               />
