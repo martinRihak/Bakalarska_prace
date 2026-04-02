@@ -26,3 +26,4 @@ dist-ssr
 .cache*
 docker-compose.yml
 imageBuilds/
+backend/.cache.sqlite

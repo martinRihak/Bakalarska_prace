@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import api from "@/api/apiService";
-import useApi from "@/hooks/useApi";
 import UserBar from "@/components/layout/UserBar";
 import { getLineChartOptions } from "@/components/widgets/chartUtils";
 import "@css/WeatherPage.css";
@@ -13,7 +12,6 @@ const TIME_RANGES = [
 ];
 
 const WeatherPage = () => {
-  const { callApi } = useApi();
   const [locationInput, setLocationInput] = useState("");
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
@@ -42,7 +40,7 @@ const WeatherPage = () => {
   useEffect(() => {
     const fetchSensors = async () => {
       try {
-        const sensors = await callApi(() => api.getUserSensors());
+        const sensors = await api.getUserSensors();
         setUserSensors(sensors || []);
       } catch {
         setUserSensors([]);
@@ -98,9 +96,8 @@ const WeatherPage = () => {
       try {
         const sensorTimeRange =
           timeRange === "24h" ? "24h" : timeRange === "30d" ? "30d" : "7d";
-        const result = await callApi(() =>
-          api.getSensorHistory(selectedSensorId, sensorTimeRange),
-        );
+        const result = await 
+          api.getSensorHistory(selectedSensorId, sensorTimeRange);
         setSensorHistory(result);
       } catch {
         setSensorHistory(null);
@@ -169,6 +166,39 @@ const WeatherPage = () => {
   }, [weatherData]);
 
   // Chart data — porovnání API teploty se senzorem
+  const weatherChartOptions = useMemo(() => {
+    const base = getLineChartOptions("Teplota (°C)");
+    return {
+      ...base,
+      colors: ["#ef4444", "#3b82f6"],
+      legend: { ...base.legend, show: true, position: "top" },
+    };
+  }, []);
+
+  const weatherChartSeries = useMemo(() => {
+    if (dailyForecast.length === 0) return [];
+    return [
+      {
+        name: "Max. teplota (°C)",
+        data: dailyForecast
+          .filter((d) => d.temp_max !== null)
+          .map((d) => ({
+            x: new Date(d.date).getTime(),
+            y: parseFloat(Number(d.temp_max).toFixed(1)),
+          })),
+      },
+      {
+        name: "Min. teplota (°C)",
+        data: dailyForecast
+          .filter((d) => d.temp_min !== null)
+          .map((d) => ({
+            x: new Date(d.date).getTime(),
+            y: parseFloat(Number(d.temp_min).toFixed(1)),
+          })),
+      },
+    ];
+  }, [dailyForecast]);
+
   const comparisonChartOptions = useMemo(() => {
     const base = getLineChartOptions("Teplota (°C)");
     return {
@@ -270,14 +300,12 @@ const WeatherPage = () => {
     setError("");
 
     try {
-      const response = await callApi(() =>
-        api.getWeatherForecast({
+      const response = await api.getWeatherForecast({
           latitude: selectedSuggestion.latitude,
           longitude: selectedSuggestion.longitude,
           locationName: locationLabel,
           timeRange,
-        }),
-      );
+        });
       setWeatherData(response);
       setSelectedLocation(response?.location?.display_name || locationLabel);
     } catch (err) {
@@ -297,14 +325,12 @@ const WeatherPage = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await callApi(() =>
-        api.getWeatherForecast({
+      const response = await api.getWeatherForecast({
           latitude: selectedSuggestion.latitude,
           longitude: selectedSuggestion.longitude,
           locationName: formatLocationLabel(selectedSuggestion),
           timeRange: newRange,
-        }),
-      );
+        });
       setWeatherData(response);
     } catch (err) {
       setError(err.message || "Nepodařilo se načíst data počasí.");
@@ -405,7 +431,7 @@ const WeatherPage = () => {
 
       {weatherData && (
         <section className="weather-results">
-          <h2>Výsledek pro: {resolvedLocation}</h2>
+          <h2>Výsledek pro: {selectedLocation}</h2>
           {weatherData.location && (
             <p className="weather-meta">
               {weatherData.location.latitude}, {weatherData.location.longitude}

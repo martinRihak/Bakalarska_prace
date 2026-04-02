@@ -157,7 +157,6 @@ class ModbusManager:
     def read_sensor(self, sensor_id: int):
         if not self.modbus_connected:
             return None
-
         sensor = self.sensor_map.get(sensor_id)
         if not sensor or not sensor["is_active"]:
             return None
@@ -202,9 +201,9 @@ class ModbusManager:
             })
             self.stats["total_cached"] += 1
 
-    def get_latest_data(self, sensor_id, max_age_minutes=0.2):
+    def get_latest_data(self, sensor_id, max_age_minutes=5):
         cutoff = datetime.now() - timedelta(minutes=max_age_minutes)
-
+        print(f"CutOff: {cutoff}")
         with self.cache_lock:
             for dp in reversed(self.memory_cache):
                 if dp["sensor_id"] == sensor_id and dp["timestamp"] >= cutoff:

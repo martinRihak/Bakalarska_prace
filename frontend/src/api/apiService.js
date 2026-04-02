@@ -186,26 +186,6 @@ const api = {
   checkAuthStatus: () => {
     return apiRequest("/auth/status");
   },
-  searchWeatherLocations: async (query) => {
-    const trimmedQuery = query.trim();
-    if (!trimmedQuery) return [];
-
-    const response = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(trimmedQuery)}&count=8&language=cz&format=json`,
-    );
-
-    if (!response.ok) {
-      throw new Error("Nepodařilo se načíst návrhy lokalit.");
-    }
-
-    const data = await response.json();
-    return data.results || [];
-  },
-  getWeatherForecast: ({ latitude, longitude, locationName, timeRange = "7d" }) =>
-    apiRequest(
-      `/weather?latitude=${encodeURIComponent(latitude)}&longitude=${encodeURIComponent(longitude)}&locationName=${encodeURIComponent(locationName || "")}&timeRange=${encodeURIComponent(timeRange)}`,
-      "GET",
-    ),
 
   // Senzory
   getSensorHistory: (sensorId, timeRange, widget_id) => {
@@ -253,22 +233,11 @@ const api = {
     const data = await response.json();
     return data.results || [];
   },
-  getWeatherForecast: (latitude, longitude, locationName = "") =>
+  getWeatherForecast: ({ latitude, longitude, locationName = "", timeRange = "7d" }) =>
     apiRequest(
-      `/weather?latitude=${encodeURIComponent(latitude)}&longitude=${encodeURIComponent(longitude)}&locationName=${encodeURIComponent(locationName)}`,
+      `/weather?latitude=${encodeURIComponent(latitude)}&longitude=${encodeURIComponent(longitude)}&locationName=${encodeURIComponent(locationName)}&timeRange=${encodeURIComponent(timeRange)}`,
       "GET",
     ),
-  getUser: async () => {
-    return apiRequest("/auth/user", "GET");
-  },
-  getAllUsers: () => apiRequest("/users", "GET"),
-  getUserById: (userId) => apiRequest(`/users/${userId}`, "GET"),
-  createUser: (userData) => apiRequest("/users", "POST", userData),
-  updateUser: (userId, userData) => apiRequest(`/users/${userId}`, "PATCH", userData),
-  deleteUser: (userId) => apiRequest(`/users/${userId}`, "DELETE"),
-  getSensorsForUser: (userId) => apiRequest(`/users/${userId}/sensors`, "GET"),
-  updateSensorForUser: (userId, sensorId, sensorData) =>
-    apiRequest(`/users/${userId}/sensors/${sensorId}`, "PATCH", sensorData),
   getAvailableSensors: () => apiRequest("/sensors/available"),
   deleteUserSensor: (sensorId) =>
     apiRequest(`/sensors/delete/${sensorId}`, "DELETE"),
