@@ -213,13 +213,13 @@ class SensorService:
 
     @staticmethod
     def get_available_sensors(user_id):
-        user_sensors = [us.sensor_id for us in UserSensor.query.filter_by(user_id=user_id).all()]
+        #user_sensors = [us.sensor_id for us in UserSensor.query.filter_by(user_id=user_id).all()]
         # Logic from original: filter sensors that are in user_sensors list?
-        # "available_sensors = Sensor.query.filter(Sensor.sensor_id.in_(user_sensors)).all()"
+        #available_sensors = Sensor.query.filter(Sensor.sensor_id.in_(user_sensors)).all()"
         # This returns sensors that the user ALREADY HAS.
         # The route name "available" usually implies "available to add", but the code gets "user_sensors".
         # I will stick to the code.
-        return Sensor.query.filter(Sensor.sensor_id.in_(user_sensors)).all()
+        return Sensor.query.all()
 
     @staticmethod
     def add_sensor_to_user(user_id, sensor_id):
@@ -231,8 +231,10 @@ class SensorService:
 
     @staticmethod
     def create_sensor_json(data):
+        print(data)
         new_sensor = Sensor(
             name=data['name'],
+            parent_sensor_id = data['parent_sensor_id'],
             sensor_type=data['sensor_type'],
             unit=data['unit'],
             address=data['address'],  

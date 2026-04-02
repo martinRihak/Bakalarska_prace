@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import api from "@/api/apiService";
 import "@css/NavBar.css";
+import "@css/buttons.css";
 
 function NavBar() {
   const navigate = useNavigate();

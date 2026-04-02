@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import '@css/forms.css';
+import '@css/buttons.css';
 
 const SensorForm = ({ sensor = null, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
     sensor_id: sensor ? sensor.sensor_id : null,
-    parent_sensor_id: sensor ? sensor.parent_sensor_id : '',
+    parent_sensor_id: sensor ? sensor.parent_sensor_id  : null,
     name: sensor ? sensor.name : '',
     sensor_type: sensor ? sensor.sensor_type : '',
     address: sensor ? sensor.address : '',
@@ -21,7 +22,7 @@ const SensorForm = ({ sensor = null, onSubmit, onClose }) => {
   useEffect(() => {
     if (sensor) {
       setFormData({
-        parent_sensor_id: sensor.parent_sensor_id || '',
+        parent_sensor_id: sensor.parent_sensor_id,
         sensor_id: sensor.sensor_id,
         name: sensor.name || '',
         sensor_type: sensor.sensor_type || '',
@@ -37,7 +38,6 @@ const SensorForm = ({ sensor = null, onSubmit, onClose }) => {
       });
     } else {
       setFormData({
-        parent_sensor_id: '',
         name: '',
         sensor_type: '',
         address: '',
@@ -68,19 +68,9 @@ const SensorForm = ({ sensor = null, onSubmit, onClose }) => {
 
   return (
     <div className="form-container">
-      <h2 className="form-heading">{sensor ? 'Upravit senzor' : 'Vytvořit senzor'}</h2>
+      <h2 className="form-heading">{sensor?.sensor_id ? 'Upravit senzor' : 'Vytvořit senzor'}</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="parent_sensor_id" className="form-label">ID nadřazeného senzoru</label>
-          <input
-            id="parent_sensor_id"
-            name="parent_sensor_id"
-            type="number"
-            value={formData.parent_sensor_id}
-            onChange={handleChange}
-            className="form-input"
-          />
-        </div>
+
         <div className="form-group">
           <label htmlFor="name" className="form-label">Název</label>
           <input

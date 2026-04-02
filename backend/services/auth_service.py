@@ -6,7 +6,7 @@ from models.models import User, db
 import os
 
 class AuthService:
-    ACCESS_TOKEN_EXPIRATION = 1 * 60  # 15 minutes
+    ACCESS_TOKEN_EXPIRATION = 60 * 60  # 60 minutes
     REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60  # 7 days
 
     @staticmethod

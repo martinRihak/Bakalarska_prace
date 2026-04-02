@@ -70,7 +70,18 @@ const apiRequest = async (endpoint, method = "GET", data = null, options = {}) =
         }
       }
 
-      // Refresh selhal — odhlášení
+      // Pokud refresh selhal, odhlásíme uživatele i na backendu (session/cookies),
+      // aby frontend a backend neměly rozdílný auth stav.
+      try {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch (logoutError) {
+        console.error("Backend logout after refresh failure failed:", logoutError);
+      }
+
+      // Lokální cleanup
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       if (!window.location.pathname.includes("/login")) {
@@ -179,6 +190,7 @@ const api = {
   },
   getUserSensors: () => apiRequest("/sensors/getSensors", "GET"),
   getAvailableSensors: () => apiRequest("/sensors/available"),
+  deleteUserSensor: (sensorId) => apiRequest(`/sensors/delete/${sensorId}`,"DELETE"),
   addSensorToUser: (sensorId) =>
     apiRequest("/sensors/add-to-user", "POST", { sensorId }),
   createSensor: (sensorData) =>

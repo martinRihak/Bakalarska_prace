@@ -76,62 +76,67 @@ const DataExport = () => {
   };
 
   return (
-    <div className="main-content">
-        <UserBar />
-      <h1>Export dat</h1>
-      <div className="export-form">
-        <div className="form-group">
-          <label>Datum od:</label>
-          <input
-            type="datetime-local"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-        </div>
-        <div className="form-group">
-          <label>Datum do:</label>
-          <input
-            type="datetime-local"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
-        <div className="form-group">
-          <label>Vyberte senzory:</label>
-          <div className="sensor-list">
-            {sensors.map(sensor => (
-              <label key={sensor.sensor_id} className="sensor-item">
-                <input
-                  type="checkbox"
-                  checked={selectedSensors.includes(sensor.sensor_id)}
-                  onChange={() => handleSensorToggle(sensor.sensor_id)}
-                />
-                {sensor.name} ({sensor.unit})
-              </label>
-            ))}
+    <div className="main">
+      <UserBar />
+      <main className="page-shell">
+        <section className="main-content data-export-page">
+          <h1>Export dat</h1>
+          {error && <div className="error-message">{error}</div>}
+          <div className="export-form">
+            <div className="form-group">
+              <label>Datum od:</label>
+              <input
+                type="datetime-local"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label>Datum do:</label>
+              <input
+                type="datetime-local"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label>Vyberte senzory:</label>
+              <div className="sensor-list">
+                {sensors.map(sensor => (
+                  <label key={sensor.sensor_id} className="sensor-item">
+                    <input
+                      type="checkbox"
+                      checked={selectedSensors.includes(sensor.sensor_id)}
+                      onChange={() => handleSensorToggle(sensor.sensor_id)}
+                    />
+                    {sensor.name} ({sensor.unit})
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Název souboru (nepovinné):</label>
+              <input
+                type="text"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+                placeholder="Pokud nevyplníte, použije se výchozí název"
+              />
+            </div>
+            <div className="form-group">
+              <label>Formát exportu:</label>
+              <select value={format} onChange={(e) => setFormat(e.target.value)}>
+                <option value="json">JSON</option>
+                <option value="csv">CSV</option>
+              </select>
+            </div>
+            <button onClick={handleExport} disabled={loading}>
+              {loading ? 'Exportuji...' : 'Exportovat data'}
+            </button>
           </div>
-        </div>
-        <div className="form-group">
-          <label>Název souboru (nepovinné):</label>
-          <input
-            type="text"
-            value={fileName}
-            onChange={(e) => setFileName(e.target.value)}
-            placeholder="Pokud nevyplníte, použije se výchozí název"
-          />
-        </div>
-        <div className="form-group">
-          <label>Formát exportu:</label>
-          <select value={format} onChange={(e) => setFormat(e.target.value)}>
-            <option value="json">JSON</option>
-            <option value="csv">CSV</option>
-          </select>
-        </div>
-        <button onClick={handleExport} disabled={loading}>
-          {loading ? 'Exportuji...' : 'Exportovat data'}
-        </button>
+        </section>
+      </main>
       </div>
-    </div>
   );
 };
 

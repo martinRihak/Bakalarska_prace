@@ -4,11 +4,12 @@ import Widget from "@/components/widgets/Widget";
 import api from "@/api/apiService";
 import DashboardForm from "@/components/forms/DashboardForm";
 import WidgetForm from "@/components/forms/WidgetForm";
-
+import UserBar from "@/components/layout/UserBar";
 // CSS
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import "@css/dashBoard.css";
+import "@css/pageLayout.css";
+import "@css/buttons.css";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -19,7 +20,7 @@ const VALUE_WIDGET_MIN_SIZE = {
 
 const GRAPH_WIDGET_MIN_SIZE = {
   minW: 5,
-  minH: 4,
+  minH: 3,
 };
 
 const getMinWidgetSizeByType = (widgetType) =>
@@ -44,10 +45,12 @@ const Dashboard = () => {
         setSelectedDashboard(userDashboards[0].dashboard_id);
       } else {
         setIsLoading(false);
+        setIsLoading(false);
       }
     } catch (err) {
       console.error("Failed to load dashboards:", err);
       setDashboards([]);
+      setIsLoading(false);
       setIsLoading(false);
     }
   };
@@ -87,6 +90,7 @@ const Dashboard = () => {
     if (selectedDashboard) {
       loadWidgets(selectedDashboard);
     } else {
+      setIsLoading(false);
       setIsLoading(false);
     }
   }, [selectedDashboard]);
@@ -144,9 +148,9 @@ const Dashboard = () => {
   };
 
   const DashboardHeader = () => (
-    <div className="dashboard-header">
-      {
-        <>
+    <>
+      <div className="dashboard-header">
+        <div className="dashboard-header-controls">
           <button className="dashboard-btn" onClick={handleDashboardCreate}>
             Vytvořit nový dashboard
           </button>
@@ -172,9 +176,12 @@ const Dashboard = () => {
           <button className="dashboard-btn" onClick={handleSaveWidgetPositions}>
             Uložit pozice widgetů
           </button>
-        </>
-      }
-    </div>
+        </div>
+        <div className="user-bar">
+          <UserBar />
+        </div>
+      </div>
+    </>
   );
   const handleWidgetDelete = () => {
     loadWidgets(selectedDashboard);
@@ -200,9 +207,9 @@ const Dashboard = () => {
               className="layout"
               layouts={layouts}
               breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480 }}
-              cols={{ lg: 12, md: 10, sm: 4, xs: 3 }}
+              cols={{ lg: 12, md: 10, sm: 6, xs: 4 }}
               rowHeight={100}
-              margin={[8, 8]}
+              margin={[16, 16]}
               onLayoutChange={onLayoutChange}
               isDraggable={true}
               isResizable={true}

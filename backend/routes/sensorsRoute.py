@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, url_for, flash, jsonify, session, current_app, make_response
+from flask import Blueprint, request, jsonify, session, current_app, make_response
 from utils.auth_utils import login_required
 from services.sensor_service import SensorService
 from datetime import datetime
@@ -29,24 +29,20 @@ def get_sensor_history(sensor_id):
 def add_sensor():
     try:
         SensorService.create_sensor_from_form(request.form)
-        flash('Senzor byl úspěšně přidán!', 'success')
+        return jsonify({'message': 'Senzor byl úspěšně přidán!'}), 201
     except Exception as e:
-        flash(f'Chyba při přidávání senzoru: {str(e)}', 'danger')
-    
-    return redirect(url_for('sensors.list_sensors'))
+        return jsonify({'error': f'Chyba při přidávání senzoru: {str(e)}'}), 400
 
-@sensors_api.route('/delete/<int:sensor_id>', methods=['POST'])
+@sensors_api.route('/delete/<int:sensor_id>', methods=['DELETE'])
 @login_required
 def delete_sensor(sensor_id):
     try:
         SensorService.delete_sensor(sensor_id, session.get('user_id'))
-        flash('Senzor byl úspěšně smazán!', 'success')
+        return jsonify({'message': 'Senzor byl úspěšně smazán!'}), 200
     except PermissionError:
-        flash('Přístup odepřen', 'danger')
+        return jsonify({'error': 'Přístup odepřen'}), 403
     except Exception as e:
-        flash(f'Chyba při mazání senzoru: {str(e)}', 'danger')
-    
-    return redirect(url_for('sensors.list_sensors'))
+        return jsonify({'error': f'Chyba při mazání senzoru: {str(e)}'}), 400
 
 @sensors_api.route('/getSensors', methods=['GET'])
 @login_required
@@ -129,6 +125,7 @@ def export_sensor_data():
 def get_available_sensors():
     user_id = session.get('user_id')
     available_sensors = SensorService.get_available_sensors(user_id)
+    print(available_sensors)
     return jsonify([{
         'sensor_id': s.sensor_id,
         'name': s.name,
