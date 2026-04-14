@@ -193,6 +193,10 @@ const api = {
       `/sensors/getSensorHistory/${sensorId}?timeRange=${timeRange}`,
     );
   },
+  getSensorHistoryHourly: (sensorId, startDate, endDate) =>
+    apiRequest(
+      `/sensors/getSensorHistoryHourly/${sensorId}?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`,
+    ),
   getLatestSensorData: (sensorId) => {
     return apiRequest(`/sensors/getLatestSensorData/${sensorId}`, "GET");
   },
@@ -240,7 +244,10 @@ const api = {
     ),
   getAvailableSensors: () => apiRequest("/sensors/available"),
   deleteUserSensor: (sensorId) =>
+    apiRequest(`/sensors/remove-from-user/${sensorId}`, "DELETE"),
+  deleteSensor: (sensorId) =>
     apiRequest(`/sensors/delete/${sensorId}`, "DELETE"),
+  getAllSensors: () => apiRequest("/sensors/all", "GET"),
   addSensorToUser: (sensorId) =>
     apiRequest("/sensors/add-to-user", "POST", { sensorId }),
   createSensor: (sensorData) =>

@@ -47,7 +47,15 @@ const UserPage = () => {
   const [existingSensorId, setExistingSensorId] = useState("");
   const [allSensors, setAllSensors] = useState([]);
   const [addingSensor, setAddingSensor] = useState(false);
+  const [allSystemSensors, setAllSystemSensors] = useState([]);
+  const [systemSensorsLoading, setSystemSensorsLoading] = useState(false);
+  const [systemSensorsError, setSystemSensorsError] = useState("");
+  const [editingSystemSensorId, setEditingSystemSensorId] = useState(null);
+  const [systemSensorEditForm, setSystemSensorEditForm] = useState({});
+  const [savingSystemSensorId, setSavingSystemSensorId] = useState(null);
   const navigate = useNavigate();
+
+  const currentUser = api.getCurrentUser();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -62,6 +70,14 @@ const UserPage = () => {
     };
 
     fetchUsers();
+
+    if (currentUser?.role === "admin") {
+      setSystemSensorsLoading(true);
+      api.getAllSensors()
+        .then(setAllSystemSensors)
+        .catch((err) => setSystemSensorsError(err.message || "Nepodařilo se načíst senzory"))
+        .finally(() => setSystemSensorsLoading(false));
+    }
   }, []);
 
   const startEdit = (user) => {
@@ -275,6 +291,64 @@ const UserPage = () => {
       setActionError(err.message || "Nepodařilo se přidat senzor");
     } finally {
       setAddingSensor(false);
+    }
+  };
+
+  const startSystemSensorEdit = (sensor) => {
+    setSystemSensorsError("");
+    setEditingSystemSensorId(sensor.sensor_id);
+    setSystemSensorEditForm({
+      name: sensor.name || "",
+      sensor_type: sensor.sensor_type || "",
+      unit: sensor.unit || "",
+      address: sensor.address ?? 0,
+      functioncode: sensor.functioncode ?? 0,
+      bit: sensor.bit ?? 16,
+      scaling: sensor.scaling ?? 1,
+      sampling_rate: sensor.sampling_rate ?? 60,
+      min_value: sensor.min_value ?? "",
+      max_value: sensor.max_value ?? "",
+      is_active: Boolean(sensor.is_active),
+    });
+  };
+
+  const cancelSystemSensorEdit = () => {
+    setEditingSystemSensorId(null);
+    setSystemSensorEditForm({});
+  };
+
+  const handleSystemSensorEditChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setSystemSensorEditForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : type === "number" ? (value === "" ? "" : Number(value)) : value,
+    }));
+  };
+
+  const saveSystemSensor = async (sensorId) => {
+    setSavingSystemSensorId(sensorId);
+    setSystemSensorsError("");
+    try {
+      await api.updateSensor({ sensor_id: sensorId, ...systemSensorEditForm });
+      setAllSystemSensors((prev) =>
+        prev.map((s) => s.sensor_id === sensorId ? { ...s, ...systemSensorEditForm } : s)
+      );
+      cancelSystemSensorEdit();
+    } catch (err) {
+      setSystemSensorsError(err.message || "Nepodařilo se upravit senzor");
+    } finally {
+      setSavingSystemSensorId(null);
+    }
+  };
+
+  const deleteSystemSensor = async (sensorId) => {
+    if (!window.confirm("Opravdu chcete trvale smazat tento senzor? Tato akce nelze vrátit.")) return;
+    setSystemSensorsError("");
+    try {
+      await api.deleteSensor(sensorId);
+      setAllSystemSensors((prev) => prev.filter((s) => s.sensor_id !== sensorId));
+    } catch (err) {
+      setSystemSensorsError(err.message || "Nepodařilo se smazat senzor");
     }
   };
 
@@ -781,6 +855,97 @@ const UserPage = () => {
                 </tbody>
               </table>
             </>
+          )}
+          {currentUser?.role === "admin" && (
+            <section style={{ marginTop: "2rem" }}>
+              <h2>Všechny senzory v systému</h2>
+              {systemSensorsError && (
+                <div className="error-message">{systemSensorsError}</div>
+              )}
+              {systemSensorsLoading ? (
+                <div>Načítání senzorů...</div>
+              ) : (
+                <table className="sensor-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Název</th>
+                      <th>Typ</th>
+                      <th>Jednotka</th>
+                      <th>Adresa</th>
+                      <th>Sampling</th>
+                      <th>Aktivní</th>
+                      <th>Akce</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allSystemSensors.map((sensor) => {
+                      const isEditing = editingSystemSensorId === sensor.sensor_id;
+                      return (
+                        <tr key={sensor.sensor_id}>
+                          <td>{sensor.sensor_id}</td>
+                          <td>
+                            {isEditing ? (
+                              <input className="table-input" name="name" value={systemSensorEditForm.name} onChange={handleSystemSensorEditChange} />
+                            ) : sensor.name}
+                          </td>
+                          <td>
+                            {isEditing ? (
+                              <input className="table-input" name="sensor_type" value={systemSensorEditForm.sensor_type} onChange={handleSystemSensorEditChange} />
+                            ) : sensor.sensor_type}
+                          </td>
+                          <td>
+                            {isEditing ? (
+                              <input className="table-input" name="unit" value={systemSensorEditForm.unit} onChange={handleSystemSensorEditChange} />
+                            ) : sensor.unit}
+                          </td>
+                          <td>
+                            {isEditing ? (
+                              <input className="table-input" name="address" type="number" value={systemSensorEditForm.address} onChange={handleSystemSensorEditChange} />
+                            ) : sensor.address}
+                          </td>
+                          <td>
+                            {isEditing ? (
+                              <input className="table-input" name="sampling_rate" type="number" value={systemSensorEditForm.sampling_rate} onChange={handleSystemSensorEditChange} />
+                            ) : sensor.sampling_rate}
+                          </td>
+                          <td>
+                            {isEditing ? (
+                              <input type="checkbox" name="is_active" checked={systemSensorEditForm.is_active} onChange={handleSystemSensorEditChange} />
+                            ) : sensor.is_active ? "Ano" : "Ne"}
+                          </td>
+                          <td className="user-actions">
+                            {isEditing ? (
+                              <>
+                                <button
+                                  className="user-btn save-btn"
+                                  onClick={() => saveSystemSensor(sensor.sensor_id)}
+                                  disabled={savingSystemSensorId === sensor.sensor_id}
+                                >
+                                  Uložit
+                                </button>
+                                <button className="user-btn cancel-btn" onClick={cancelSystemSensorEdit}>
+                                  Zrušit
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button className="user-btn edit-btn" onClick={() => startSystemSensorEdit(sensor)}>
+                                  Upravit
+                                </button>
+                                <button className="user-btn delete-btn" onClick={() => deleteSystemSensor(sensor.sensor_id)}>
+                                  Smazat
+                                </button>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </section>
           )}
         </section>
       </main>

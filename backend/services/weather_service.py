@@ -20,10 +20,6 @@ class WeatherService:
         return round(float(value), decimals)
 
     @staticmethod
-    def _to_int(value):
-        return int(round(float(value)))
-
-    @staticmethod
     def _to_text(value):
         if isinstance(value, (bytes, bytearray)):
             return value.decode("utf-8", errors="replace")
@@ -32,14 +28,8 @@ class WeatherService:
         return str(value)
 
     @staticmethod
-    def _numpy_to_number_list(values, decimals=1, as_int=False):
-        result = []
-        for item in values:
-            if as_int:
-                result.append(int(round(float(item))))
-            else:
-                result.append(round(float(item), decimals))
-        return result
+    def _numpy_to_number_list(values, decimals=1):
+        return [round(float(item), decimals) for item in values]
 
     @staticmethod
     def _parse_date(value, field):
@@ -58,36 +48,24 @@ class WeatherService:
         if end < start:
             raise ValueError("endDate must be on or after startDate.")
 
-        span_days = (end - start).days + 1
-        use_hourly = span_days <= 3
-
         today = date.today()
         use_archive = end < today
 
         params = {
             "latitude": latitude,
             "longitude": longitude,
+            "daily": [
+                "sunrise",
+                "sunset",
+                "temperature_2m_max",
+                "daylight_duration",
+                "temperature_2m_min",
+            ],
+            "hourly": ["relative_humidity_2m", "temperature_2m"],
             "start_date": start.isoformat(),
             "end_date": end.isoformat(),
-            "daily": [
-                "weather_code",
-                "temperature_2m_max",
-                "temperature_2m_min",
-                "precipitation_sum",
-            ],
             "timezone": "auto",
         }
-
-        if use_hourly:
-            params["hourly"] = ["temperature_2m", "precipitation", "weather_code"]
-
-        if not use_archive:
-            params["current"] = [
-                "temperature_2m",
-                "wind_speed_10m",
-                "wind_direction_10m",
-                "weather_code",
-            ]
 
         url = cls._archive_url if use_archive else cls._forecast_url
 
@@ -100,7 +78,26 @@ class WeatherService:
             raise RuntimeError("Open-Meteo nevrátil žádná data.")
 
         response = responses[0]
+
+        # Hourly data. The order of variables needs to be the same as requested.
+        hourly = response.Hourly()
+        hourly_relative_humidity_2m = hourly.Variables(0).ValuesAsNumpy()
+        hourly_temperature_2m = hourly.Variables(1).ValuesAsNumpy()
+
+        hourly_dates = pd.date_range(
+            start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
+            end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
+            freq=pd.Timedelta(seconds=hourly.Interval()),
+            inclusive="left",
+        ).strftime("%Y-%m-%dT%H:%M").tolist()
+
+        # Daily data. The order of variables needs to be the same as requested.
         daily = response.Daily()
+        daily_sunrise = daily.Variables(0).ValuesInt64AsNumpy()
+        daily_sunset = daily.Variables(1).ValuesInt64AsNumpy()
+        daily_temperature_2m_max = daily.Variables(2).ValuesAsNumpy()
+        daily_daylight_duration = daily.Variables(3).ValuesAsNumpy()
+        daily_temperature_2m_min = daily.Variables(4).ValuesAsNumpy()
 
         daily_dates = pd.date_range(
             start=pd.to_datetime(daily.Time(), unit="s", utc=True),
@@ -109,21 +106,14 @@ class WeatherService:
             inclusive="left",
         ).strftime("%Y-%m-%d").tolist()
 
-        current = None
-        current_weather = None
-        if not use_archive:
-            current = response.Current()
-            current_time_iso = datetime.fromtimestamp(
-                current.Time(),
-                tz=timezone.utc,
-            ).isoformat()
-            current_weather = {
-                "time": current_time_iso,
-                "temperature": cls._to_float(current.Variables(0).Value()),
-                "windspeed": cls._to_float(current.Variables(1).Value()),
-                "winddirection": cls._to_float(current.Variables(2).Value()),
-                "weathercode": cls._to_int(current.Variables(3).Value()),
-            }
+        sunrise_iso = [
+            datetime.fromtimestamp(int(ts), tz=timezone.utc).isoformat()
+            for ts in daily_sunrise
+        ]
+        sunset_iso = [
+            datetime.fromtimestamp(int(ts), tz=timezone.utc).isoformat()
+            for ts in daily_sunset
+        ]
 
         result = {
             "location": {
@@ -140,46 +130,19 @@ class WeatherService:
             "utc_offset_seconds": response.UtcOffsetSeconds(),
             "start_date": start.isoformat(),
             "end_date": end.isoformat(),
-            "current_weather": current_weather,
             "daily": {
                 "time": daily_dates,
-                "weathercode": cls._numpy_to_number_list(
-                    daily.Variables(0).ValuesAsNumpy(),
-                    as_int=True,
-                ),
-                "temperature_2m_max": cls._numpy_to_number_list(
-                    daily.Variables(1).ValuesAsNumpy()
-                ),
-                "temperature_2m_min": cls._numpy_to_number_list(
-                    daily.Variables(2).ValuesAsNumpy()
-                ),
-                "precipitation_sum": cls._numpy_to_number_list(
-                    daily.Variables(3).ValuesAsNumpy()
-                ),
+                "sunrise": sunrise_iso,
+                "sunset": sunset_iso,
+                "temperature_2m_max": cls._numpy_to_number_list(daily_temperature_2m_max),
+                "daylight_duration": cls._numpy_to_number_list(daily_daylight_duration),
+                "temperature_2m_min": cls._numpy_to_number_list(daily_temperature_2m_min),
+            },
+            "hourly": {
+                "time": hourly_dates,
+                "relative_humidity_2m": cls._numpy_to_number_list(hourly_relative_humidity_2m),
+                "temperature_2m": cls._numpy_to_number_list(hourly_temperature_2m),
             },
         }
-
-        if use_hourly:
-            hourly = response.Hourly()
-            hourly_dates = pd.date_range(
-                start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
-                end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
-                freq=pd.Timedelta(seconds=hourly.Interval()),
-                inclusive="left",
-            ).strftime("%Y-%m-%dT%H:%M").tolist()
-
-            result["hourly"] = {
-                "time": hourly_dates,
-                "temperature_2m": cls._numpy_to_number_list(
-                    hourly.Variables(0).ValuesAsNumpy()
-                ),
-                "precipitation": cls._numpy_to_number_list(
-                    hourly.Variables(1).ValuesAsNumpy()
-                ),
-                "weather_code": cls._numpy_to_number_list(
-                    hourly.Variables(2).ValuesAsNumpy(),
-                    as_int=True,
-                ),
-            }
-#        print(result)
+        
         return result

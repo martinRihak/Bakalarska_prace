@@ -130,7 +130,7 @@ def add_widget():
         return jsonify({'error': 'Dashboard not found'}), 404
         
     data = request.get_json()
-    if not data or not all(k in data for k in ['widget_type', 'title', 'position']):
+    if not data or not all(k in data for k in ['widget_type', 'title', 'position', 'sensor_id']):
         return jsonify({'error': 'Missing required fields'}), 400
         
     result = DashboardService.add_widget(user_id, dashboard_id, data)

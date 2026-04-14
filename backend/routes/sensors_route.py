@@ -24,6 +24,30 @@ def get_sensor_history(sensor_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@sensors_api.route('/getSensorHistoryHourly/<int:sensor_id>', methods=['GET'])
+@login_required
+def get_sensor_history_hourly(sensor_id):
+    try:
+        start_date_raw = request.args.get('startDate')
+        end_date_raw = request.args.get('endDate')
+        user_id = session.get('user_id')
+
+        start_date = datetime.fromisoformat(start_date_raw) if start_date_raw else None
+        end_date = datetime.fromisoformat(end_date_raw) if end_date_raw else None
+
+        result = SensorService.get_sensor_history_hourly(sensor_id, start_date, end_date, user_id)
+        if not result:
+            return jsonify({'error': 'Sensor not found'}), 404
+
+        return jsonify(result)
+
+    except PermissionError:
+        return jsonify({'error': 'Access denied'}), 403
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @sensors_api.route('/add', methods=['POST'])
 @login_required
 def add_sensor():
@@ -41,8 +65,45 @@ def delete_sensor(sensor_id):
         return jsonify({'message': 'Senzor byl úspěšně smazán!'}), 200
     except PermissionError:
         return jsonify({'error': 'Přístup odepřen'}), 403
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         return jsonify({'error': f'Chyba při mazání senzoru: {str(e)}'}), 400
+
+@sensors_api.route('/remove-from-user/<int:sensor_id>', methods=['DELETE'])
+@login_required
+def remove_sensor_from_user(sensor_id):
+    try:
+        SensorService.delete_user_sensor(session.get('user_id'), sensor_id)
+        return jsonify({'message': 'Senzor byl odebrán z účtu'}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@sensors_api.route('/all', methods=['GET'])
+@login_required
+def get_all_sensors():
+    try:
+        sensors = SensorService.get_all_sensors(session.get('user_id'))
+        return jsonify([{
+            'sensor_id': s.sensor_id,
+            'name': s.name,
+            'sensor_type': s.sensor_type,
+            'address': s.address,
+            'functioncode': s.functioncode,
+            'bit': s.bit,
+            'scaling': s.scaling,
+            'min_value': s.min_value,
+            'max_value': s.max_value,
+            'sampling_rate': s.sampling_rate,
+            'unit': s.unit,
+            'is_active': s.is_active,
+        } for s in sensors]), 200
+    except PermissionError:
+        return jsonify({'error': 'Přístup odepřen'}), 403
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @sensors_api.route('/getSensors', methods=['GET'])
 @login_required

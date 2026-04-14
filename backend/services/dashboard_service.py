@@ -40,23 +40,22 @@ class DashboardService:
         else:
             start_time = now - timedelta(hours=24)
             
-        response_data = []
-        for sensor in widget.sensors:
-            aggregated_data = DashboardService.aggregate_sensor_data(sensor.sensor_id, widget.widget_type, start_time)
-            
-            data = [{
-                'timestamp': row.timestamp.isoformat(),
-                'value': float(row.value)
-            } for row in aggregated_data]
-                
-            sensor_data = {
-                'sensor_id': sensor.sensor_id,
-                'name': sensor.name,
-                'unit': sensor.unit,
-                'data': data
-            }
-            response_data.append(sensor_data)
-        return response_data
+        sensor = Sensor.query.get(widget.sensor_id)
+        if not sensor:
+            return []
+
+        aggregated_data = DashboardService.aggregate_sensor_data(sensor.sensor_id, widget.widget_type, start_time)
+        data = [{
+            'timestamp': row.timestamp.isoformat(),
+            'value': float(row.value)
+        } for row in aggregated_data]
+
+        return [{
+            'sensor_id': sensor.sensor_id,
+            'name': sensor.name,
+            'unit': sensor.unit,
+            'data': data
+        }]
 
     @staticmethod
     def get_user_dashboards(user_id):
@@ -89,28 +88,27 @@ class DashboardService:
                 'position_y': dw.position_y,
                 'width': dw.width,
                 'height': dw.height,
-                'sensors' :  [],
+                'sensors': [],
                 'has_data': False
             }
-            
-            for sensor in widget.sensors:
+
+            sensor = Sensor.query.get(widget.sensor_id)
+            if sensor:
                 has_sensor_data = SensorData.query.filter_by(sensor_id=sensor.sensor_id).first() is not None
-                
-                sensor_data = {
+                widget_data['sensors'] = [{
                     'sensor_id': sensor.sensor_id,
                     'is_active': sensor.is_active,
                     'name': sensor.name,
                     'sensor_type': sensor.sensor_type,
-                    'unit': sensor.unit,    
+                    'unit': sensor.unit,
                     'min_value': sensor.min_value,
                     'max_value': sensor.max_value,
                     'sampling_rate': sensor.sampling_rate,
                     'has_data': has_sensor_data
-                }
-                widget_data['sensors'].append(sensor_data)
+                }]
                 if has_sensor_data:
                     widget_data['has_data'] = True
-                
+
             if not widget_data['has_data']:
                 widget_data['error_message'] = "Pro tento widget nejsou k dispozici žádná data ze senzorů."
                 
@@ -197,11 +195,12 @@ class DashboardService:
         
         new_widget = Widget(
             widget_type=widget_data['widget_type'],
-            title=widget_data['title']
+            title=widget_data['title'],
+            sensor_id=widget_data['sensor_id']
         )
         db.session.add(new_widget)
         db.session.flush()
-        
+
         default_width = 4 if widget_data['widget_type'] == 'value' else 6
         default_height = 3 if widget_data['widget_type'] == 'value' else 4
 
@@ -213,12 +212,6 @@ class DashboardService:
             width=default_width,
             height=default_height
         )
-        
-        if 'sensors' in widget_data:
-            for sensor_id in widget_data['sensors']:
-                sensor = Sensor.query.get(sensor_id)
-                if sensor:
-                    new_widget.sensors.append(sensor)
         
         db.session.add(dashboard_widget)
         db.session.commit()
@@ -259,12 +252,8 @@ class DashboardService:
         if 'widget_type' in data:
             widget.widget_type = data['widget_type']
             
-        if 'sensors' in data:
-            widget.sensors = []
-            for sensor_id in data['sensors']:
-                sensor = Sensor.query.get(sensor_id)
-                if sensor:
-                    widget.sensors.append(sensor)
+        if 'sensor_id' in data:
+            widget.sensor_id = data['sensor_id']
         
         db.session.commit()
         

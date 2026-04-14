@@ -33,6 +33,7 @@ const WeatherPage = () => {
   const [selectedSensorId, setSelectedSensorId] = useState("");
   const [sensorHistory, setSensorHistory] = useState(null);
   const [sensorLoading, setSensorLoading] = useState(false);
+  const [comparisonMetric, setComparisonMetric] = useState("temperature");
 
   const formatLocationLabel = (locationItem) => {
     if (!locationItem) return "";
@@ -99,11 +100,11 @@ const WeatherPage = () => {
     const fetchSensorHistory = async () => {
       setSensorLoading(true);
       try {
-        const spanDays =
-          (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24);
-        const sensorTimeRange =
-          spanDays <= 1 ? "24h" : spanDays <= 7 ? "7d" : "30d";
-        const result = await api.getSensorHistory(selectedSensorId, sensorTimeRange);
+        const result = await api.getSensorHistoryHourly(
+          selectedSensorId,
+          startDate,
+          endDate,
+        );
         setSensorHistory(result);
       } catch {
         setSensorHistory(null);
@@ -125,36 +126,18 @@ const WeatherPage = () => {
   }, [weatherData]);
 
   const dailyForecast = useMemo(() => {
-    if (!weatherData) return [];
+    if (!weatherData?.daily) return [];
+    const source = weatherData.daily;
+    if (!Array.isArray(source.time)) return [];
 
-    const source =
-      weatherData.daily_forecast || weatherData.dailyForecast || weatherData.daily;
-
-    if (!source) return [];
-    if (Array.isArray(source)) return source;
-
-    if (Array.isArray(source.time)) {
-      return source.time.map((date, index) => ({
-        date,
-        temp_max:
-          source.temperature_2m_max?.[index] ??
-          source.temp_max?.[index] ??
-          source.max?.[index] ??
-          null,
-        temp_min:
-          source.temperature_2m_min?.[index] ??
-          source.temp_min?.[index] ??
-          source.min?.[index] ??
-          null,
-        precipitation:
-          source.precipitation_sum?.[index] ??
-          source.precipitation?.[index] ??
-          null,
-        weather_code: source.weathercode?.[index] ?? source.weather_code?.[index] ?? null,
-      }));
-    }
-
-    return [];
+    return source.time.map((date, index) => ({
+      date,
+      temp_max: source.temperature_2m_max?.[index] ?? null,
+      temp_min: source.temperature_2m_min?.[index] ?? null,
+      sunrise: source.sunrise?.[index] ?? null,
+      sunset: source.sunset?.[index] ?? null,
+      daylight_duration: source.daylight_duration?.[index] ?? null,
+    }));
   }, [weatherData]);
 
   // Hodinová data pro 24h
@@ -166,8 +149,7 @@ const WeatherPage = () => {
     return h.time.map((time, index) => ({
       time,
       temperature: h.temperature_2m?.[index] ?? null,
-      precipitation: h.precipitation?.[index] ?? null,
-      weather_code: h.weather_code?.[index] ?? null,
+      humidity: h.relative_humidity_2m?.[index] ?? null,
     }));
   }, [weatherData]);
 
@@ -206,7 +188,8 @@ const WeatherPage = () => {
   }, [dailyForecast]);
 
   const comparisonChartOptions = useMemo(() => {
-    const base = getLineChartOptions("Teplota (°C)");
+    const isHumidity = comparisonMetric === "humidity";
+    const base = getLineChartOptions(isHumidity ? "Vlhkost (%)" : "Teplota (°C)");
     return {
       ...base,
       colors: ["#3b82f6", "#f59e0b"],
@@ -216,35 +199,26 @@ const WeatherPage = () => {
         position: "top",
       },
     };
-  }, []);
+  }, [comparisonMetric]);
 
   const comparisonChartSeries = useMemo(() => {
     const series = [];
+    const isHumidity = comparisonMetric === "humidity";
 
-    // API data série
     if (hourlyForecast.length > 0) {
       series.push({
-        name: "API teplota (hodinová)",
+        name: isHumidity ? "API vlhkost (%)" : "API teplota (°C)",
         data: hourlyForecast
-          .filter((h) => h.temperature !== null)
+          .filter((h) => (isHumidity ? h.humidity : h.temperature) !== null)
           .map((h) => ({
             x: new Date(h.time).getTime(),
-            y: parseFloat(h.temperature.toFixed(1)),
-          })),
-      });
-    } else if (dailyForecast.length > 0) {
-      series.push({
-        name: "API teplota (max)",
-        data: dailyForecast
-          .filter((d) => d.temp_max !== null)
-          .map((d) => ({
-            x: new Date(d.date).getTime(),
-            y: parseFloat(Number(d.temp_max).toFixed(1)),
+            y: parseFloat(
+              Number(isHumidity ? h.humidity : h.temperature).toFixed(1),
+            ),
           })),
       });
     }
 
-    // Sensor data série
     if (sensorHistory?.data?.length > 0) {
       series.push({
         name: `${sensorHistory.sensor?.name || "Senzor"} (${sensorHistory.sensor?.unit || ""})`,
@@ -256,11 +230,26 @@ const WeatherPage = () => {
     }
 
     return series;
-  }, [hourlyForecast, dailyForecast, sensorHistory]);
+  }, [hourlyForecast, sensorHistory, comparisonMetric]);
 
   const formatValue = (value, unit = "") => {
     if (value === null || value === undefined || value === "") return "N/A";
     return `${value}${unit}`;
+  };
+
+  const formatTime = (iso) => {
+    if (!iso) return "N/A";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "N/A";
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const formatDaylight = (seconds) => {
+    if (seconds === null || seconds === undefined) return "N/A";
+    const total = Math.round(Number(seconds));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    return `${h}h ${m}m`;
   };
 
   const handleSubmit = async (event) => {
@@ -474,7 +463,7 @@ const WeatherPage = () => {
                   <article className="weather-day-card" key={`${hour.time}-${index}`}>
                     <h3>{hour.time?.split("T")[1] || `${index}:00`}</h3>
                     <p>Teplota: {formatValue(hour.temperature, " °C")}</p>
-                    <p>Srážky: {formatValue(hour.precipitation, " mm")}</p>
+                    <p>Vlhkost: {formatValue(hour.humidity, " %")}</p>
                   </article>
                 ))}
               </div>
@@ -501,8 +490,9 @@ const WeatherPage = () => {
                     <h3>{day.date || `Den ${index + 1}`}</h3>
                     <p>Max: {formatValue(day.temp_max, " °C")}</p>
                     <p>Min: {formatValue(day.temp_min, " °C")}</p>
-                    <p>Srážky: {formatValue(day.precipitation, " mm")}</p>
-                    <p>Kód: {formatValue(day.weather_code)}</p>
+                    <p>Východ slunce: {formatTime(day.sunrise)}</p>
+                    <p>Západ slunce: {formatTime(day.sunset)}</p>
+                    <p>Délka dne: {formatDaylight(day.daylight_duration)}</p>
                   </article>
                 ))}
               </div>
@@ -525,6 +515,15 @@ const WeatherPage = () => {
                     {sensor.name} ({sensor.unit})
                   </option>
                 ))}
+              </select>
+              <label htmlFor="comparison-metric">Veličina</label>
+              <select
+                id="comparison-metric"
+                value={comparisonMetric}
+                onChange={(e) => setComparisonMetric(e.target.value)}
+              >
+                <option value="temperature">Teplota</option>
+                <option value="humidity">Vlhkost</option>
               </select>
             </div>
 
