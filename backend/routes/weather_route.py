@@ -15,7 +15,7 @@ def get_weather():
     end_date = request.args.get("endDate", "").strip()
 
     if not start_date or not end_date:
-        return jsonify({"error": "startDate and endDate are required (YYYY-MM-DD)."}), 400
+        return jsonify({"message": "startDate and endDate are required (YYYY-MM-DD)."}), 400
 
     try:
         weather_data = WeatherService.get_weather(
@@ -23,9 +23,9 @@ def get_weather():
         )
         return jsonify(weather_data), 200
     except ValueError as error:
-        return jsonify({"error": f"Invalid parameters: {error}"}), 400
+        return jsonify({"message": f"Invalid parameters: {error}"}), 400
     except RuntimeError as error:
-        return jsonify({"error": str(error)}), 502
+        return jsonify({"message": str(error)}), 502
     except Exception as error:
         current_app.logger.error(f"Weather endpoint failed: {error}")
-        return jsonify({"error": "Nepodařilo se načíst data počasí"}), 500
+        return jsonify({"message": "Nepodařilo se načíst data počasí"}), 500

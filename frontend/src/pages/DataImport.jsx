@@ -18,7 +18,7 @@ const DataImport = () => {
   useEffect(() => {
     api.getUserSensors()
       .then(setSensors)
-      .catch(() => setError('Nepodařilo se načíst senzory'));
+      .catch((err) => setError(err.message || 'Nepodařilo se načíst senzory'));
   }, []);
 
   const parseJSON = (content) => {

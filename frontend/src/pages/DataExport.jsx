@@ -18,7 +18,7 @@ const DataExport = () => {
         const sensorData = await api.getUserSensors();
         setSensors(sensorData);
       } catch (err) {
-        setError('Nepodařilo se načíst senzory');
+        setError(err.message || 'Nepodařilo se načíst senzory');
       }
     };
     fetchSensors();

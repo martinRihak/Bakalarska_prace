@@ -111,7 +111,7 @@ const apiRequest = async (
 
     const responseData = await response.json();
     if (!response.ok) {
-      throw new Error(responseData.message );
+      throw new Error(responseData.message || responseData.error || 'Neznámá chyba');
     }
 
     return responseData;
@@ -244,7 +244,7 @@ const api = {
     ),
   getAvailableSensors: () => apiRequest("/sensors/available"),
   deleteUserSensor: (sensorId) =>
-    apiRequest(`/sensors/remove-from-user/${sensorId}`, "DELETE"),
+    apiRequest(`/sensors/remove-from-user/${sensorId}/`, "DELETE"),
   deleteSensor: (sensorId) =>
     apiRequest(`/sensors/delete/${sensorId}`, "DELETE"),
   getAllSensors: () => apiRequest("/sensors/all", "GET"),

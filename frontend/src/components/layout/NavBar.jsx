@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import api from "@/api/apiService";
 import "@css/NavBar.css";
@@ -60,23 +60,19 @@ function NavBar() {
             onClick={() => setIsOpen(false)}
             className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
           >
-           Předpověď
+            Předpověď
           </NavLink>
           <NavLink
             to="/data-export"
             onClick={() => setIsOpen(false)}
-            className={({ isActive }) =>
-              `nav-link ${isActive ? "active" : ""}`
-            }
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
           >
             Data Export{" "}
           </NavLink>
           <NavLink
             to="/data-import"
             onClick={() => setIsOpen(false)}
-            className={({ isActive }) =>
-              `nav-link ${isActive ? "active" : ""}`
-            }
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
           >
             Data Import{" "}
           </NavLink>
@@ -88,7 +84,7 @@ function NavBar() {
                 `nav-link ${isActive ? "active" : ""}`
               }
             >
-              Uživatelé
+              Správa systému
             </NavLink>
           )}
         </div>
