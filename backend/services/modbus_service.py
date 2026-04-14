@@ -9,7 +9,7 @@ class ModbusService:
             raise Exception("Modbus manager not initialized")
             
         # Čtení aktuální hodnoty
-        value = modbus_manager.read_sensor(sensor_id)
+        value = modbus_manager.get_latest_data(sensor_id)
         
         return {
             'current_value': value,

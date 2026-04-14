@@ -21,7 +21,7 @@ const SensorsPage = () => {
       setSensors(response);
       setLoading(false);
     } catch (err) {
-      setError("Nepodařilo se načíst senzory");
+      setError(err.message || "Nepodařilo se načíst senzory");
       setLoading(false);
     }
   };
@@ -38,7 +38,7 @@ const SensorsPage = () => {
         ),
       );
     } catch (err) {
-      setError("Nepodařilo se změnit stav senzoru");
+      setError(err.message || "Nepodařilo se změnit stav senzoru");
     }
   };
 
@@ -53,7 +53,7 @@ const SensorsPage = () => {
           prevSensors.filter((sensor) => sensor.sensor_id !== sensorId),
         );
       } catch (err) {
-        setError("Nepodařilo se smazat senzor");
+        setError(err.message || "Nepodařilo se smazat senzor");
       }
     }
   };
@@ -67,7 +67,7 @@ const SensorsPage = () => {
       );
       setEditingSensor(null);
     } catch (err) {
-      setError("Nepodařilo se aktualizovat senzor");
+      setError(err.message || "Nepodařilo se aktualizovat senzor");
     }
   };
 

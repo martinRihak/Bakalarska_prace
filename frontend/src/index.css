@@ -5,8 +5,8 @@
   --background-color: #f0f2f5;
   --background-color-alt: #111827;
   --surface-color: #ffffffa8;
-  --text-primary: #0f172a;
-  --text-secondary: #f8fafc;
+  --text-primary: #030408;
+  --text-secondary: #ffffff;
   --accent-color: #3b82f6;
   --highlight-color: #ef4444;
   --error-color: #dc2626;
@@ -24,7 +24,7 @@
   --dark-background-color: #0f1117;
   --dark-background-color-alt: #0a0d14;
   --dark-text-primary: #f1f5f9;
-  --dark-text-secondary: rgba(255, 255, 255, 0.5);
+  --dark-text-secondary: rgba(255, 255, 255, 1);
   --dark-surface-color: #181c25;
   --dark-primary-color: #3b82f6;
   --dark-secondary-color: #60a5fa;

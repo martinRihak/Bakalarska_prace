@@ -79,7 +79,7 @@ p {
 }
 
 input:checked + .slider-dark {
-  background: linear-gradient(135deg, #1e293b, #334155);
+  background: #f1c40f;
 }
 
 input:checked + .slider-dark:before {

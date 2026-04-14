@@ -18,8 +18,8 @@ class ModbusManager:
         app=None,
         baudrate: int = 9600,
         cache_size: int = 1000,
-        flush_interval: int = 60 * 3,       # seconds
-        check_interval: int = 60        # seconds
+        flush_interval: int = 60 * 60,       # seconds
+        check_interval: int = 60 * 10    # seconds
     ):
         self.port = os.environ.get("USB_PORT")
         self.device_address = 1
@@ -157,7 +157,6 @@ class ModbusManager:
     def read_sensor(self, sensor_id: int):
         if not self.modbus_connected:
             return None
-
         sensor = self.sensor_map.get(sensor_id)
         if not sensor or not sensor["is_active"]:
             return None
@@ -204,7 +203,7 @@ class ModbusManager:
 
     def get_latest_data(self, sensor_id, max_age_minutes=0.2):
         cutoff = datetime.now() - timedelta(minutes=max_age_minutes)
-
+        print(f"CutOff: {cutoff}")
         with self.cache_lock:
             for dp in reversed(self.memory_cache):
                 if dp["sensor_id"] == sensor_id and dp["timestamp"] >= cutoff:

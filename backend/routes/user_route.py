@@ -98,3 +98,53 @@ def update_user_sensor(user_id, sensor_id):
         return jsonify({"status": "error", "message": str(exc)}), 403
     except (ValueError, TypeError) as exc:
         return jsonify({"status": "error", "message": str(exc)}), 400
+
+
+@user_api.route("/<int:user_id>/sensors", methods=["POST"])
+@login_required
+def create_sensor_for_user(user_id):
+    if not _admin_only():
+        return jsonify({"status": "error", "message": "Access denied"}), 403
+    data = request.get_json() or {}
+    try:
+        sensor = UserService.create_sensor_for_user(user_id, data)
+        if sensor is None:
+            return jsonify({"status": "error", "message": "User not found"}), 404
+        return jsonify({"status": "success", "sensor": sensor}), 201
+    except ValueError as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 400
+
+
+@user_api.route("/me/location", methods=["GET"])
+@login_required
+def get_my_location():
+    user_id = session.get("user_id")
+    location = UserService.get_user_location(user_id)
+    if location is None:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+    return jsonify(location), 200
+
+
+@user_api.route("/me/location", methods=["PATCH"])
+@login_required
+def update_my_location():
+    user_id = session.get("user_id")
+    data = request.get_json() or {}
+    result = UserService.update_user_location(user_id, data)
+    if result is None:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+    return jsonify({"status": "success", "location": result}), 200
+
+
+@user_api.route("/<int:user_id>/sensors/<int:sensor_id>", methods=["POST"])
+@login_required
+def add_existing_sensor_to_user(user_id, sensor_id):
+    if not _admin_only():
+        return jsonify({"status": "error", "message": "Access denied"}), 403
+    try:
+        sensor = UserService.add_existing_sensor_to_user(user_id, sensor_id)
+        if sensor is None:
+            return jsonify({"status": "error", "message": "User not found"}), 404
+        return jsonify({"status": "success", "sensor": sensor}), 200
+    except ValueError as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 400

@@ -11,7 +11,7 @@ const ValueWidget = ({ sensorData }) => {
   // Function to select an appropriate icon based on the unit
   const getIcon = (unit) => {
     switch (unit) {
-      case '°C':
+      case 'C':
         return <Thermometer  color="var(--highlight-color)" />;
       case '%':
         return <Droplet  color="var(--accent-color)" />;

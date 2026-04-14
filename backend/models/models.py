@@ -32,7 +32,12 @@ class User(db.Model):
     role = db.Column(db.String(20), default='user')
     created_at = db.Column(db.DateTime, default=func.now())
     last_login = db.Column(db.DateTime)
+   
     
+    location_name = db.Column(db.String(200), nullable=True)
+    location_latitude = db.Column(db.Float, nullable=True)
+    location_longitude = db.Column(db.Float, nullable=True)
+
     dashboards = db.relationship('Dashboard', backref='user', lazy=True, cascade="all, delete-orphan")
     sensors = db.relationship('Sensor', secondary='user_sensors',
                             backref=db.backref('users', lazy=True),
@@ -81,12 +86,14 @@ class Widget(db.Model):
     
     widget_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     widget_type = db.Column(db.String(50), nullable=False)
+    sensor_id = db.Column(db.Integer,db.ForeignKey('sensors.sensor_id',ondelete='CASCADE'),nullable=False)
     title = db.Column(db.String(100))
     time = db.Column(db.String(4), nullable=True)
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
     
-    dashboards = db.relationship('Dashboard', secondary='dashboard_widgets', 
+    sensor = db.relationship('Sensor', backref=db.backref('widgets', lazy=True), lazy=True)
+    dashboards = db.relationship('Dashboard', secondary='dashboard_widgets',
                                backref=db.backref('widgets', lazy=True),
                                lazy=True)
                                
@@ -116,26 +123,16 @@ class Sensor(db.Model):
                                      backref=db.backref('parent_sensor', remote_side=[sensor_id]),
                                      lazy=True)
     sensor_data = db.relationship('SensorData', backref='sensor', lazy=True, cascade="all, delete-orphan")
-    widgets = db.relationship('Widget', secondary='widget_sensors',
-                            backref=db.backref('sensors', lazy=True),
-                            lazy=True)
     def __repr__(self):
         return f'<Sensor {self.name} ({self.sensor_type})>'
 
-class WidgetSensor(db.Model):
-    __tablename__ = 'widget_sensors'
-    
-    widget_id = db.Column(db.Integer, db.ForeignKey('widgets.widget_id', ondelete='CASCADE'), primary_key=True)
-    sensor_id = db.Column(db.Integer, db.ForeignKey('sensors.sensor_id', ondelete='CASCADE'), primary_key=True)
-    
-    def __repr__(self):
-        return f'<WidgetSensor {self.widget_id}:{self.sensor_id}>'
+
 
 class SensorData(db.Model):
     __tablename__ = 'sensor_data'
     
     data_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    sensor_id = db.Column(db.Integer, db.ForeignKey('sensors.sensor_id', ondelete='CASCADE'), nullable=False)
+    sensor_id = db.Column(db.Integer, db.ForeignKey('sensors.sensor_id', ondelete='RESTRICT'), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, index=True)
     value = db.Column(db.Float, nullable=False)
     

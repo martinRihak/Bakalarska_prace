@@ -1,4 +1,4 @@
-from models.models import db, Sensor, SensorData, UserSensor, Widget, DashboardWidget, Dashboard
+from models.models import db, Sensor, SensorData, UserSensor, Widget, DashboardWidget, Dashboard, User
 from datetime import datetime, timedelta
 import csv
 import io
@@ -73,6 +73,43 @@ class SensorService:
         }
 
     @staticmethod
+    def get_sensor_history_hourly(sensor_id, start_date, end_date, user_id):
+        sensor = Sensor.query.get(sensor_id)
+        if not sensor:
+            return None
+
+        SensorService._ensure_user_owns_sensor(user_id, sensor_id)
+
+        query = SensorData.query.filter_by(sensor_id=sensor_id)
+        if start_date is not None:
+            query = query.filter(SensorData.timestamp >= start_date)
+        if end_date is not None:
+            query = query.filter(SensorData.timestamp <= end_date)
+        sensor_data = query.order_by(SensorData.timestamp).all()
+
+        seen_hours = set()
+        hourly_samples = []
+        for record in sensor_data:
+            hour_key = record.timestamp.replace(minute=0, second=0, microsecond=0)
+            if hour_key in seen_hours:
+                continue
+            seen_hours.add(hour_key)
+            hourly_samples.append({
+                'timestamp': hour_key.isoformat(),
+                'value': record.value,
+            })
+
+        return {
+            'sensor': {
+                'id': sensor.sensor_id,
+                'name': sensor.name,
+                'unit': sensor.unit,
+                'type': sensor.sensor_type,
+            },
+            'data': hourly_samples,
+        }
+
+    @staticmethod
     def create_sensor_from_form(data):
         address = int(data['address']) if data.get('address') else None
         register = int(data['register']) if data.get('register') else None
@@ -99,19 +136,55 @@ class SensorService:
         db.session.add(new_sensor)
         db.session.commit()
         return new_sensor
-
+#-------- Deleting sensors ------------------------------------------------------------
     @staticmethod
     def delete_sensor(sensor_id, user_id):
+        user = User.query.get(user_id)
+        if not user or user.role != 'admin':
+            raise PermissionError("Only admins can delete sensors")
+
         sensor = Sensor.query.get(sensor_id)
         if not sensor:
             raise ValueError("Sensor not found")
-        SensorService._ensure_user_owns_sensor(user_id, sensor_id)
-        db.session.delete(sensor)
-        db.session.commit()
 
+        has_data = SensorData.query.filter_by(sensor_id=sensor_id).first() is not None
+        if has_data:
+            raise ValueError("Sensor obsahuje data. Před smazáním je nejprve smažte nebo exportujte.")
+        
+        try:
+            widget_ids = [
+                ws.widget_id
+                for ws in Widget.query.filter_by(sensor_id=sensor_id).all()
+            ]
+            if widget_ids:
+                DashboardWidget.query.filter(
+                    DashboardWidget.widget_id.in_(widget_ids)
+                ).delete(synchronize_session=False)
+            UserSensor.query.filter_by(sensor_id=sensor_id).delete()
+            db.session.delete(sensor)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
+    @staticmethod
+    def delete_user_sensor(user_id, sensor_id):
+        user_sensor = UserSensor.query.filter_by(user_id=user_id, sensor_id=sensor_id).first()
+        if not user_sensor:
+            raise ValueError("Sensor není přiřazen tomuto uživateli")
+        db.session.delete(user_sensor)
+        db.session.commit()
+    
     @staticmethod
     def get_sensors_for_user(user_id):
         return Sensor.query.join(UserSensor).filter(UserSensor.user_id == user_id).all()
+
+    @staticmethod
+    def get_all_sensors(user_id):
+        user = User.query.get(user_id)
+        if not user or user.role != 'admin':
+            raise PermissionError("Only admins can list all sensors")
+        return Sensor.query.all()
 
     @staticmethod
     def get_latest_data(sensor_id, user_id):
@@ -127,8 +200,8 @@ class SensorService:
         # 1. Pokus o čtení z Modbusu
         if modbus:
             try:
-                raw_value = modbus.read_sensor(sensor_id=sensor_id)
-                #raw_value = modbus.get_latest_data(sensor_id=sensor_id)
+               # raw_value = modbus.read_sensor(sensor_id=sensor_id)
+                raw_value = modbus.get_latest_data(sensor_id=sensor_id)
                 if raw_value is not None:
                     # Vytvoříme strukturu, která imituje DB model
                     result_data = {
@@ -147,7 +220,6 @@ class SensorService:
                     'timestamp': db_data.timestamp,
                     'value': db_data.value
                 }
-
         # 3. Pokud nemáme data odnikud
         if not result_data:
             return None
@@ -165,7 +237,19 @@ class SensorService:
                 'value': result_data['value']
             }
         }
+        
+    @staticmethod
+    def import_data(sensor_id, records, user_id):
+        SensorService._ensure_user_owns_sensor(user_id, sensor_id)
 
+        for record in records:
+            timestamp = datetime.fromisoformat(record['timestamp'])
+            value = float(record['value'])
+            db.session.add(SensorData(sensor_id=sensor_id, timestamp=timestamp, value=value))
+
+        db.session.commit()
+        return len(records)
+    
     @staticmethod
     def export_data(start_date, end_date, sensor_ids, export_format, user_id):
         if start_date > end_date:
@@ -193,7 +277,7 @@ class SensorService:
             for record in data:
                 sensor_data.append({
                     'sensor_name': sensor.name,
-                    'sensor_type': sensor.sensor_type,
+                    'sensor_id': sensor.sensor_id,
                     'unit': sensor.unit,
                     'timestamp': record.timestamp.isoformat(),
                     'value': record.value
@@ -204,7 +288,7 @@ class SensorService:
 
         if export_format == 'csv':
             output = io.StringIO()
-            writer = csv.DictWriter(output, fieldnames=['sensor_name', 'sensor_type', 'unit', 'timestamp', 'value'])
+            writer = csv.DictWriter(output, fieldnames=['sensor_name', 'sensor_id', 'unit', 'timestamp', 'value'])
             writer.writeheader()
             writer.writerows(sensor_data)
             return output.getvalue()

@@ -3,7 +3,6 @@ import { useNavigate, NavLink } from "react-router-dom";
 import api from "@/api/apiService";
 import "@css/NavBar.css";
 import "@css/buttons.css";
-
 function NavBar() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -45,29 +44,39 @@ function NavBar() {
             to="/"
             end
             onClick={() => setIsOpen(false)}
-            className={({ isActive }) =>
-              `nav-link ${isActive ? "active" : ""}`
-            }
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
           >
             Domů
           </NavLink>
           <NavLink
             to="/sensors"
             onClick={() => setIsOpen(false)}
-            className={({ isActive }) =>
-              `nav-link ${isActive ? "active" : ""}`
-            }
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
           >
             Senzory
           </NavLink>
           <NavLink
+            to="/weather"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+          >
+            Předpověď
+          </NavLink>
+          <NavLink
             to="/data-export"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+          >
+            Data Export{" "}
+          </NavLink>
+          <NavLink
+            to="/data-import"
             onClick={() => setIsOpen(false)}
             className={({ isActive }) =>
               `nav-link ${isActive ? "active" : ""}`
             }
           >
-            Data Export
+            Data Import{" "}
           </NavLink>
           {userRole === "admin" && (
             <NavLink
@@ -77,7 +86,7 @@ function NavBar() {
                 `nav-link ${isActive ? "active" : ""}`
               }
             >
-              Uživatelé
+              Správa systému
             </NavLink>
           )}
         </div>

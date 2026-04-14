@@ -13,8 +13,8 @@ const CHART_TYPES = [
 ];
 
 const DEFAULT_WIDGET_SIZE = {
-  value: { width: 4, height: 3 },
-  graph: { width: 6, height: 4 },
+  value: { width: 3, height: 3 },
+  graph: { width: 5, height: 3 },
 };
 
 const WidgetForm = ({ onClose, onSuccess ,dashboardId}) => {
@@ -54,16 +54,16 @@ const WidgetForm = ({ onClose, onSuccess ,dashboardId}) => {
             : DEFAULT_WIDGET_SIZE.graph;
 
         await api.createWidget({
-          dashboard_id: dashboardId, // assuming dashboard_id=1 for now
+          dashboard_id: dashboardId,
           widget_type: selectedChartType,
-          title: `${selectedSensor.name} - ${selectedChartType}`,
+          title: `${selectedSensor.name} - ${selectedSensor.sensor_type}`,
           position: {
             x: 0,
             y: 0,
             width: defaultSize.width,
             height: defaultSize.height
           },
-          sensors: [selectedSensor.sensor_id]
+          sensor_id: selectedSensor.sensor_id
         });
 
         // Success: refresh widgets and close modal
@@ -116,7 +116,7 @@ const WidgetForm = ({ onClose, onSuccess ,dashboardId}) => {
                 <option value="">Vyberte senzor</option>
                 {sensors.map((sensor) => (
                   <option key={sensor.sensor_id} value={sensor.sensor_id}>
-                    {sensor.sensor_id}-{sensor.name}
+                    {sensor.sensor_id}-{sensor.name}-{sensor.sensor_type}
                   </option>
                 ))}
               </select>

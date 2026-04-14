@@ -24,7 +24,7 @@
 
 .users-toolbar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-top: 0;
 }
 

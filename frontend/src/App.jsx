@@ -15,9 +15,10 @@ import ServerConnectionError from "@/components/common/ServerConnectionError";
 import Home from "@/pages/Home";
 import DataExport from "@/pages/DataExport";
 import SensorsPage from "@/pages/SensorsPage";
-import UserPage from "@/pages/UserPage";
+import AdminPage from "@/pages/AdminPage";
+import WeatherPage from "@/pages/WeatherPage";
 import Login from "@/features/auth/Login/Login";
-
+import DataImport from "./pages/DataImport";
 // Formuláře
 import UserForm from "@/components/forms/UserForm";
 import DashboardForm from "@/components/forms/DashboardForm";
@@ -72,6 +73,14 @@ function AppContent() {
           }
         />
         <Route
+          path="/data-import"
+          element={
+            <ProtectedRoute>
+              <DataImport/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="insert-user"
           element={
             <ProtectedRoute>
@@ -92,7 +101,15 @@ function AppContent() {
           path="/users"
           element={
             <ProtectedRoute>
-              <UserPage />
+              <AdminPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/weather"
+          element={
+            <ProtectedRoute>
+              <WeatherPage/>
             </ProtectedRoute>
           }
         />
