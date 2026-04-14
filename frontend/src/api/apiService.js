@@ -301,6 +301,10 @@ const api = {
     apiRequest(`/users/${userId}/sensors`, "POST", sensorData),
   addExistingSensorToUser: (userId, sensorId) =>
     apiRequest(`/users/${userId}/sensors/${sensorId}`, "POST"),
+
+  getUserLocation: () => apiRequest("/users/me/location", "GET"),
+  saveUserLocation: (locationData) =>
+    apiRequest("/users/me/location", "PATCH", locationData),
 };
 
 export default api;

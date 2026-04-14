@@ -200,6 +200,32 @@ class UserService:
         return UserService.serialize_sensor(new_sensor)
 
     @staticmethod
+    def get_user_location(user_id):
+        user = User.query.get(user_id)
+        if not user:
+            return None
+        return {
+            "name": user.location_name,
+            "latitude": user.location_latitude,
+            "longitude": user.location_longitude,
+        }
+
+    @staticmethod
+    def update_user_location(user_id, data):
+        user = User.query.get(user_id)
+        if not user:
+            return None
+        user.location_name = data.get("name")
+        user.location_latitude = data.get("latitude")
+        user.location_longitude = data.get("longitude")
+        db.session.commit()
+        return {
+            "name": user.location_name,
+            "latitude": user.location_latitude,
+            "longitude": user.location_longitude,
+        }
+
+    @staticmethod
     def add_existing_sensor_to_user(user_id, sensor_id):
         user = User.query.get(user_id)
         if not user:

@@ -357,6 +357,56 @@
   border-color: #3a3a3a;
 }
 
+/* Uložení výchozí polohy */
+.weather-save-location {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  max-width: 700px;
+  margin-top: 0.25rem;
+}
+
+.weather-save-location-btn {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  background: transparent;
+  color: #3b82f6;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.weather-save-location-btn:hover:not(:disabled) {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.weather-save-location-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.weather-saved-label {
+  font-size: 0.88rem;
+  color: #555;
+}
+
+.weather-save-msg {
+  font-size: 0.88rem;
+  color: var(--success-color, #16a34a);
+  font-weight: 600;
+}
+
+:root.dark-mode .weather-saved-label {
+  color: var(--dark-text-secondary);
+}
+
+:root.dark-mode .weather-save-msg {
+  color: #4ade80;
+}
+
 @media (max-width: 700px) {
   .weather-search-form {
     grid-template-columns: 1fr;

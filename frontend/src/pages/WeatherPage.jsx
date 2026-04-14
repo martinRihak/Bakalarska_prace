@@ -28,6 +28,11 @@ const WeatherPage = () => {
   const [startDate, setStartDate] = useState(defaultRange.start);
   const [endDate, setEndDate] = useState(defaultRange.end);
 
+  // Uložená poloha uživatele
+  const [savedLocation, setSavedLocation] = useState(null);
+  const [locationSaveLoading, setLocationSaveLoading] = useState(false);
+  const [locationSaveMessage, setLocationSaveMessage] = useState("");
+
   // Sensor comparison
   const [userSensors, setUserSensors] = useState([]);
   const [selectedSensorId, setSelectedSensorId] = useState("");
@@ -41,6 +46,46 @@ const WeatherPage = () => {
       .filter(Boolean)
       .join(", ");
   };
+
+  // Načtení uložené polohy a automatické načtení počasí
+  useEffect(() => {
+    let cancelled = false;
+    const loadSavedLocation = async () => {
+      try {
+        const loc = await api.getUserLocation();
+        if (cancelled || !loc?.latitude || !loc?.longitude) return;
+
+        const label = loc.name || "";
+        setSavedLocation(loc);
+        setLocationInput(label);
+        setSelectedSuggestion({ latitude: loc.latitude, longitude: loc.longitude, name: loc.name });
+
+        setLoading(true);
+        setError("");
+        try {
+          const response = await api.getWeatherForecast({
+            latitude: loc.latitude,
+            longitude: loc.longitude,
+            locationName: label,
+            startDate: defaultRange.start,
+            endDate: defaultRange.end,
+          });
+          if (!cancelled) {
+            setWeatherData(response);
+            setSelectedLocation(response?.location?.display_name || label);
+          }
+        } catch (err) {
+          if (!cancelled) setError(err.message || "Nepodařilo se načíst data počasí.");
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      } catch {
+        // žádná uložená poloha — nic se neděje
+      }
+    };
+    loadSavedLocation();
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Načtení uživatelských senzorů
   useEffect(() => {
@@ -158,34 +203,25 @@ const WeatherPage = () => {
     const base = getLineChartOptions("Teplota (°C)");
     return {
       ...base,
-      colors: ["#ef4444", "#3b82f6"],
-      legend: { ...base.legend, show: true, position: "top" },
+      colors: ["#ef4444"],
+      legend: { ...base.legend, show: false },
     };
   }, []);
 
   const weatherChartSeries = useMemo(() => {
-    if (dailyForecast.length === 0) return [];
+    if (hourlyForecast.length === 0) return [];
     return [
       {
-        name: "Max. teplota (°C)",
-        data: dailyForecast
-          .filter((d) => d.temp_max !== null)
-          .map((d) => ({
-            x: new Date(d.date).getTime(),
-            y: parseFloat(Number(d.temp_max).toFixed(1)),
-          })),
-      },
-      {
-        name: "Min. teplota (°C)",
-        data: dailyForecast
-          .filter((d) => d.temp_min !== null)
-          .map((d) => ({
-            x: new Date(d.date).getTime(),
-            y: parseFloat(Number(d.temp_min).toFixed(1)),
+        name: "Teplota (°C)",
+        data: hourlyForecast
+          .filter((h) => h.temperature !== null)
+          .map((h) => ({
+            x: new Date(h.time).getTime(),
+            y: parseFloat(Number(h.temperature).toFixed(1)),
           })),
       },
     ];
-  }, [dailyForecast]);
+  }, [hourlyForecast]);
 
   const comparisonChartOptions = useMemo(() => {
     const isHumidity = comparisonMetric === "humidity";
@@ -341,6 +377,30 @@ const WeatherPage = () => {
     setShowSuggestions(false);
   };
 
+  const handleSaveLocation = async () => {
+    if (!selectedSuggestion?.latitude || !selectedSuggestion?.longitude) return;
+    setLocationSaveLoading(true);
+    setLocationSaveMessage("");
+    try {
+      await api.saveUserLocation({
+        name: formatLocationLabel(selectedSuggestion),
+        latitude: selectedSuggestion.latitude,
+        longitude: selectedSuggestion.longitude,
+      });
+      setSavedLocation({
+        name: formatLocationLabel(selectedSuggestion),
+        latitude: selectedSuggestion.latitude,
+        longitude: selectedSuggestion.longitude,
+      });
+      setLocationSaveMessage("Poloha uložena.");
+    } catch {
+      setLocationSaveMessage("Uložení selhalo.");
+    } finally {
+      setLocationSaveLoading(false);
+      setTimeout(() => setLocationSaveMessage(""), 3000);
+    }
+  };
+
   return (
     <div className="main">
       <UserBar />
@@ -403,6 +463,28 @@ const WeatherPage = () => {
                 {loading ? "Načítám..." : "Načíst počasí"}
               </button>
             </form>
+
+            {selectedSuggestion?.latitude && (
+              <div className="weather-save-location">
+                <button
+                  type="button"
+                  className="weather-save-location-btn"
+                  onClick={handleSaveLocation}
+                  disabled={locationSaveLoading}
+                >
+                  {locationSaveLoading ? "Ukládám..." : "Uložit jako výchozí polohu"}
+                </button>
+                {savedLocation?.name && (
+                  <span className="weather-saved-label">
+                    Výchozí: {savedLocation.name}
+                  </span>
+                )}
+                {locationSaveMessage && (
+                  <span className="weather-save-msg">{locationSaveMessage}</span>
+                )}
+              </div>
+            )}
+
             <p className="weather-autocomplete-hint">
               Návrhy lokalit jsou načítané z Open-Meteo Geocoding API.
             </p>

@@ -34,6 +34,10 @@ class User(db.Model):
     last_login = db.Column(db.DateTime)
    
     
+    location_name = db.Column(db.String(200), nullable=True)
+    location_latitude = db.Column(db.Float, nullable=True)
+    location_longitude = db.Column(db.Float, nullable=True)
+
     dashboards = db.relationship('Dashboard', backref='user', lazy=True, cascade="all, delete-orphan")
     sensors = db.relationship('Sensor', secondary='user_sensors',
                             backref=db.backref('users', lazy=True),
