@@ -5,7 +5,7 @@ import UserBar from "@/components/layout/UserBar";
 import "@css/UserPage.css";
 import "@css/buttons.css";
 
-const UserPage = () => {
+const AdminPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -953,4 +953,4 @@ const UserPage = () => {
   );
 };
 
-export default UserPage;
+export default AdminPage;

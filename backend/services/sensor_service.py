@@ -150,20 +150,16 @@ class SensorService:
         has_data = SensorData.query.filter_by(sensor_id=sensor_id).first() is not None
         if has_data:
             raise ValueError("Sensor obsahuje data. Před smazáním je nejprve smažte nebo exportujte.")
-
+        
         try:
             widget_ids = [
-                w.widget_id
-                for w in Widget.query.filter_by(sensor_id=sensor_id).all()
+                ws.widget_id
+                for ws in Widget.query.filter_by(sensor_id=sensor_id).all()
             ]
             if widget_ids:
                 DashboardWidget.query.filter(
                     DashboardWidget.widget_id.in_(widget_ids)
                 ).delete(synchronize_session=False)
-                Widget.query.filter(
-                    Widget.widget_id.in_(widget_ids)
-                ).delete(synchronize_session=False)
-
             UserSensor.query.filter_by(sensor_id=sensor_id).delete()
             db.session.delete(sensor)
             db.session.commit()
@@ -224,7 +220,6 @@ class SensorService:
                     'timestamp': db_data.timestamp,
                     'value': db_data.value
                 }
-
         # 3. Pokud nemáme data odnikud
         if not result_data:
             return None

@@ -111,7 +111,7 @@ const apiRequest = async (
 
     const responseData = await response.json();
     if (!response.ok) {
-      throw new Error(responseData.message || "Chyba při zpracování požadavku");
+      throw new Error(responseData.message );
     }
 
     return responseData;

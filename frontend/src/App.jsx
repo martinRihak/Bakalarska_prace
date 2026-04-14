@@ -15,7 +15,7 @@ import ServerConnectionError from "@/components/common/ServerConnectionError";
 import Home from "@/pages/Home";
 import DataExport from "@/pages/DataExport";
 import SensorsPage from "@/pages/SensorsPage";
-import UserPage from "@/pages/UserPage";
+import AdminPage from "@/pages/AdminPage";
 import WeatherPage from "@/pages/WeatherPage";
 import Login from "@/features/auth/Login/Login";
 import DataImport from "./pages/DataImport";
@@ -101,7 +101,7 @@ function AppContent() {
           path="/users"
           element={
             <ProtectedRoute>
-              <UserPage />
+              <AdminPage />
             </ProtectedRoute>
           }
         />

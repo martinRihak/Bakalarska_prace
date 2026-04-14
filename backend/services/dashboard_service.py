@@ -220,6 +220,7 @@ class DashboardService:
             'widget_id': new_widget.widget_id,
             'dashboard_id': dashboard.dashboard_id,
             'widget_type': new_widget.widget_type,
+            'sensor_id' : new_widget.sensor_id,
             'title': new_widget.title,
             'position': {
                 'x': dashboard_widget.position_x,

@@ -53,7 +53,7 @@ const SensorsPage = () => {
           prevSensors.filter((sensor) => sensor.sensor_id !== sensorId),
         );
       } catch (err) {
-        setError("Nepodařilo se smazat senzor");
+        setError(err.message);
       }
     }
   };

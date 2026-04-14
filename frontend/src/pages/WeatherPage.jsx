@@ -189,7 +189,9 @@ const WeatherPage = () => {
 
   const comparisonChartOptions = useMemo(() => {
     const isHumidity = comparisonMetric === "humidity";
-    const base = getLineChartOptions(isHumidity ? "Vlhkost (%)" : "Teplota (°C)");
+    const base = getLineChartOptions(
+      isHumidity ? "Vlhkost (%)" : "Teplota (°C)",
+    );
     return {
       ...base,
       colors: ["#3b82f6", "#f59e0b"],
@@ -207,7 +209,7 @@ const WeatherPage = () => {
 
     if (hourlyForecast.length > 0) {
       series.push({
-        name: isHumidity ? "API vlhkost (%)" : "API teplota (°C)",
+        name: isHumidity ? "Předpověď vlhkost (%)" : "Předpověď  teplota (°C)",
         data: hourlyForecast
           .filter((h) => (isHumidity ? h.humidity : h.temperature) !== null)
           .map((h) => ({
@@ -256,7 +258,8 @@ const WeatherPage = () => {
     event.preventDefault();
 
     // Pokud je vybraná suggestion, použijeme její souřadnice
-    const hasCoords = selectedSuggestion?.latitude && selectedSuggestion?.longitude;
+    const hasCoords =
+      selectedSuggestion?.latitude && selectedSuggestion?.longitude;
     const locationLabel = selectedSuggestion
       ? formatLocationLabel(selectedSuggestion)
       : locationInput.trim();
@@ -269,7 +272,9 @@ const WeatherPage = () => {
 
     if (!selectedCoordinates && locationInput.trim()) {
       try {
-        const fallbackSuggestions = await api.searchWeatherLocations(locationInput.trim());
+        const fallbackSuggestions = await api.searchWeatherLocations(
+          locationInput.trim(),
+        );
         if (fallbackSuggestions.length > 0) {
           selectedCoordinates = fallbackSuggestions[0];
         }
@@ -307,12 +312,12 @@ const WeatherPage = () => {
 
     try {
       const response = await api.getWeatherForecast({
-          latitude: selectedSuggestion.latitude,
-          longitude: selectedSuggestion.longitude,
-          locationName: locationLabel,
-          startDate,
-          endDate,
-        });
+        latitude: selectedSuggestion.latitude,
+        longitude: selectedSuggestion.longitude,
+        locationName: locationLabel,
+        startDate,
+        endDate,
+      });
       setWeatherData(response);
       setSelectedLocation(response?.location?.display_name || locationLabel);
     } catch (err) {
@@ -337,224 +342,231 @@ const WeatherPage = () => {
   };
 
   return (
-    <div className="main-content weather-page">
+    <div className="main">
       <UserBar />
-      <h1>Předpověď počasí</h1>
+      <main className="page-shell">
+        <section className="main-content weather-page">
+          <div className="weather-controls">
+            <h1>Předpověď počasí</h1>
 
-      <form className="weather-search-form" onSubmit={handleSubmit}>
-        <label htmlFor="weather-location">Lokalita</label>
-        <div className="weather-location-field">
-          <input
-            id="weather-location"
-            type="text"
-            placeholder="Např. Prague, Brno, Ostrava"
-            value={locationInput}
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-            onChange={handleLocationChange}
-            autoComplete="off"
-          />
-          {showSuggestions && (
-            <div className="weather-autocomplete">
-              {autocompleteLoading && (
-                <p className="weather-autocomplete-status">Hledám lokality...</p>
-              )}
-
-              {!autocompleteLoading &&
-                locationInput.trim().length >= 2 &&
-                locationSuggestions.length === 0 && (
-                  <p className="weather-autocomplete-status">Žádné návrhy.</p>
-                )}
-
-              {!autocompleteLoading && locationSuggestions.length > 0 && (
-                <ul>
-                  {locationSuggestions.map((locationItem) => (
-                    <li key={locationItem.id}>
-                      <button
-                        type="button"
-                        onMouseDown={() => handleSuggestionSelect(locationItem)}
-                      >
-                        {formatLocationLabel(locationItem)}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? "Načítám..." : "Načíst počasí"}
-        </button>
-      </form>
-      <p className="weather-autocomplete-hint">
-        Návrhy lokalit jsou načítané z Open-Meteo Geocoding API.
-      </p>
-
-      {/* Interval */}
-      <div className="weather-time-range">
-        <label htmlFor="weather-start-date">
-          Od
-          <input
-            id="weather-start-date"
-            type="date"
-            value={startDate}
-            max={endDate || undefined}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-        </label>
-        <label htmlFor="weather-end-date">
-          Do
-          <input
-            id="weather-end-date"
-            type="date"
-            value={endDate}
-            min={startDate || undefined}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </label>
-      </div>
-
-      {error && <p className="weather-error">{error}</p>}
-
-      {!weatherData && !loading && !error && (
-        <p className="weather-hint">
-          Zadejte lokalitu a načtěte předpověď z backendu.
-        </p>
-      )}
-
-      {weatherData && (
-        <section className="weather-results">
-          <h2>Výsledek pro: {selectedLocation}</h2>
-          {weatherData.location && (
-            <p className="weather-meta">
-              {weatherData.location.latitude}, {weatherData.location.longitude}
-              {weatherData.timezone ? ` | ${weatherData.timezone}` : ""}
-            </p>
-          )}
-
-          {currentWeather && (
-            <div className="weather-card-grid">
-              <article className="weather-card">
-                <h3>Aktuální teplota</h3>
-                <p>{formatValue(currentWeather.temperature, " °C")}</p>
-              </article>
-              <article className="weather-card">
-                <h3>Rychlost větru</h3>
-                <p>{formatValue(currentWeather.windspeed, " km/h")}</p>
-              </article>
-              <article className="weather-card">
-                <h3>Směr větru</h3>
-                <p>{formatValue(currentWeather.winddirection, "°")}</p>
-              </article>
-              <article className="weather-card">
-                <h3>Kód počasí</h3>
-                <p>{formatValue(currentWeather.weathercode)}</p>
-              </article>
-            </div>
-          )}
-
-          {/* Hodinová předpověď */}
-          {hourlyForecast.length > 0 && (
-            <div className="weather-forecast">
-              <h2>Hodinová předpověď</h2>
-              <div className="weather-day-grid weather-hourly-grid">
-                {hourlyForecast.slice(0, 24).map((hour, index) => (
-                  <article className="weather-day-card" key={`${hour.time}-${index}`}>
-                    <h3>{hour.time?.split("T")[1] || `${index}:00`}</h3>
-                    <p>Teplota: {formatValue(hour.temperature, " °C")}</p>
-                    <p>Vlhkost: {formatValue(hour.humidity, " %")}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Denní předpověď */}
-          {dailyForecast.length > 0 && (
-            <div className="weather-forecast">
-              <h2>Denní předpověď</h2>
-              {weatherChartSeries.length > 0 && (
-                <div className="weather-chart">
-                  <ReactApexChart
-                    options={weatherChartOptions}
-                    series={weatherChartSeries}
-                    type="line"
-                    height={320}
-                  />
-                </div>
-              )}
-              <div className="weather-day-grid">
-                {dailyForecast.map((day, index) => (
-                  <article className="weather-day-card" key={`${day.date || "day"}-${index}`}>
-                    <h3>{day.date || `Den ${index + 1}`}</h3>
-                    <p>Max: {formatValue(day.temp_max, " °C")}</p>
-                    <p>Min: {formatValue(day.temp_min, " °C")}</p>
-                    <p>Východ slunce: {formatTime(day.sunrise)}</p>
-                    <p>Západ slunce: {formatTime(day.sunset)}</p>
-                    <p>Délka dne: {formatDaylight(day.daylight_duration)}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Porovnání se senzorem */}
-          <div className="weather-comparison">
-            <h2>Porovnání s mým senzorem</h2>
-            <div className="weather-comparison-controls">
-              <label htmlFor="sensor-select">Vyberte senzor</label>
-              <select
-                id="sensor-select"
-                value={selectedSensorId}
-                onChange={(e) => setSelectedSensorId(e.target.value)}
-              >
-                <option value="">— žádný —</option>
-                {userSensors.map((sensor) => (
-                  <option key={sensor.sensor_id} value={sensor.sensor_id}>
-                    {sensor.name} ({sensor.unit})
-                  </option>
-                ))}
-              </select>
-              <label htmlFor="comparison-metric">Veličina</label>
-              <select
-                id="comparison-metric"
-                value={comparisonMetric}
-                onChange={(e) => setComparisonMetric(e.target.value)}
-              >
-                <option value="temperature">Teplota</option>
-                <option value="humidity">Vlhkost</option>
-              </select>
-            </div>
-
-            {sensorLoading && <p>Načítám data senzoru...</p>}
-
-            {comparisonChartSeries.length > 0 && (
-              <div className="weather-comparison-chart">
-                <ReactApexChart
-                  options={comparisonChartOptions}
-                  series={comparisonChartSeries}
-                  type="line"
-                  height={380}
+            <form className="weather-search-form" onSubmit={handleSubmit}>
+              <label htmlFor="weather-location">Lokalita</label>
+              <div className="weather-location-field">
+                <input
+                  id="weather-location"
+                  type="text"
+                  placeholder="Např. Prague, Brno, Ostrava"
+                  value={locationInput}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() =>
+                    setTimeout(() => setShowSuggestions(false), 150)
+                  }
+                  onChange={handleLocationChange}
+                  autoComplete="off"
                 />
-              </div>
-            )}
+                {showSuggestions && (
+                  <div className="weather-autocomplete">
+                    {autocompleteLoading && (
+                      <p className="weather-autocomplete-status">
+                        Hledám lokality...
+                      </p>
+                    )}
 
-            {selectedSensorId && !sensorLoading && !sensorHistory?.data?.length && (
+                    {!autocompleteLoading &&
+                      locationInput.trim().length >= 2 &&
+                      locationSuggestions.length === 0 && (
+                        <p className="weather-autocomplete-status">
+                          Žádné návrhy.
+                        </p>
+                      )}
+
+                    {!autocompleteLoading && locationSuggestions.length > 0 && (
+                      <ul>
+                        {locationSuggestions.map((locationItem) => (
+                          <li key={locationItem.id}>
+                            <button
+                              type="button"
+                              onMouseDown={() =>
+                                handleSuggestionSelect(locationItem)
+                              }
+                            >
+                              {formatLocationLabel(locationItem)}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button type="submit" disabled={loading}>
+                {loading ? "Načítám..." : "Načíst počasí"}
+              </button>
+            </form>
+            <p className="weather-autocomplete-hint">
+              Návrhy lokalit jsou načítané z Open-Meteo Geocoding API.
+            </p>
+
+            {/* Interval */}
+            <div className="weather-time-range">
+              <label htmlFor="weather-start-date">
+                Od
+                <input
+                  id="weather-start-date"
+                  type="date"
+                  value={startDate}
+                  max={endDate || undefined}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </label>
+              <label htmlFor="weather-end-date">
+                Do
+                <input
+                  id="weather-end-date"
+                  type="date"
+                  value={endDate}
+                  min={startDate || undefined}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </label>
+            </div>
+
+            {error && <p className="weather-error">{error}</p>}
+
+            {!weatherData && !loading && !error && (
               <p className="weather-hint">
-                Senzor nemá data pro zvolený časový rozsah.
+                Zadejte lokalitu a načtěte předpověď z backendu.
               </p>
             )}
           </div>
+          {weatherData && (
+            <section className="weather-results">
+              <h2>Výsledek pro: {selectedLocation}</h2>
+              {weatherData.location && (
+                <p className="weather-meta">
+                  {weatherData.location.latitude},{" "}
+                  {weatherData.location.longitude}
+                  {weatherData.timezone ? ` | ${weatherData.timezone}` : ""}
+                </p>
+              )}
 
-          {!currentWeather && dailyForecast.length === 0 && hourlyForecast.length === 0 && (
-            <div className="weather-raw-response">
-              <h2>Odpověď backendu</h2>
-              <pre>{JSON.stringify(weatherData, null, 2)}</pre>
-            </div>
+              {currentWeather && (
+                <div className="weather-card-grid">
+                  <article className="weather-card">
+                    <h3>Aktuální teplota</h3>
+                    <p>{formatValue(currentWeather.temperature, " °C")}</p>
+                  </article>
+                  <article className="weather-card">
+                    <h3>Rychlost větru</h3>
+                    <p>{formatValue(currentWeather.windspeed, " km/h")}</p>
+                  </article>
+                  <article className="weather-card">
+                    <h3>Směr větru</h3>
+                    <p>{formatValue(currentWeather.winddirection, "°")}</p>
+                  </article>
+                  <article className="weather-card">
+                    <h3>Kód počasí</h3>
+                    <p>{formatValue(currentWeather.weathercode)}</p>
+                  </article>
+                </div>
+              )}
+
+              {/* Denní předpověď */}
+              {dailyForecast.length > 0 && (
+                <div className="weather-forecast">
+                  <h2>Denní předpověď</h2>
+                  {weatherChartSeries.length > 0 && (
+                    <div className="weather-chart">
+                      <ReactApexChart
+                        options={weatherChartOptions}
+                        series={weatherChartSeries}
+                        type="line"
+                        height={320}
+                      />
+                    </div>
+                  )}
+                  <div className="weather-day-grid">
+                    {dailyForecast.map((day, index) => (
+                      <article
+                        className="weather-day-card"
+                        key={`${day.date || "day"}-${index}`}
+                      >
+                        <h3>{day.date || `Den ${index + 1}`}</h3>
+                        <p>Max: {formatValue(day.temp_max, " °C")}</p>
+                        <p>Min: {formatValue(day.temp_min, " °C")}</p>
+                        <p>Východ slunce: {formatTime(day.sunrise)}</p>
+                        <p>Západ slunce: {formatTime(day.sunset)}</p>
+                        <p>
+                          Délka dne: {formatDaylight(day.daylight_duration)}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Porovnání se senzorem */}
+              <div className="weather-comparison">
+                <h2>Porovnání s mým senzorem</h2>
+                <div className="weather-comparison-controls">
+                  <label htmlFor="sensor-select">Vyberte senzor</label>
+                  <select
+                    id="sensor-select"
+                    value={selectedSensorId}
+                    onChange={(e) => setSelectedSensorId(e.target.value)}
+                  >
+                    <option value="">— žádný —</option>
+                    {userSensors.map((sensor) => (
+                      <option key={sensor.sensor_id} value={sensor.sensor_id}>
+                        {sensor.name} ({sensor.unit})
+                      </option>
+                    ))}
+                  </select>
+                  <label htmlFor="comparison-metric">Veličina</label>
+                  <select
+                    id="comparison-metric"
+                    value={comparisonMetric}
+                    onChange={(e) => setComparisonMetric(e.target.value)}
+                  >
+                    <option value="temperature">Teplota</option>
+                    <option value="humidity">Vlhkost</option>
+                  </select>
+                </div>
+
+                {sensorLoading && <p>Načítám data senzoru...</p>}
+
+                {comparisonChartSeries.length > 0 && (
+                  <div className="weather-comparison-chart">
+                    <ReactApexChart
+                      options={comparisonChartOptions}
+                      series={comparisonChartSeries}
+                      type="line"
+                      height={380}
+                    />
+                  </div>
+                )}
+
+                {selectedSensorId &&
+                  !sensorLoading &&
+                  !sensorHistory?.data?.length && (
+                    <p className="weather-hint">
+                      Senzor nemá data pro zvolený časový rozsah.
+                    </p>
+                  )}
+              </div>
+
+              {!currentWeather &&
+                dailyForecast.length === 0 &&
+                hourlyForecast.length === 0 && (
+                  <div className="weather-raw-response">
+                    <h2>Odpověď backendu</h2>
+                    <pre>{JSON.stringify(weatherData, null, 2)}</pre>
+                  </div>
+                )}
+            </section>
           )}
         </section>
-      )}
+      </main>
     </div>
   );
 };
