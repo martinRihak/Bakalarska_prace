@@ -11,19 +11,19 @@ def get_weather():
     latitude = request.args.get("latitude", "52.52437").strip()
     longitude = request.args.get("longitude", "13.41053").strip()
     location_name = request.args.get("locationName", "").strip() or None
-    time_range = request.args.get("timeRange", "7d").strip()
+    start_date = request.args.get("startDate", "").strip()
+    end_date = request.args.get("endDate", "").strip()
 
-   # print(f"Test:{latitude} , {longitude} , {location_name} {time_range}")
-    if time_range not in ("24h", "7d", "30d"):
-        time_range = "7d"
+    if not start_date or not end_date:
+        return jsonify({"error": "startDate and endDate are required (YYYY-MM-DD)."}), 400
 
     try:
         weather_data = WeatherService.get_weather(
-            latitude, longitude, location_name, time_range
+            latitude, longitude, location_name, start_date, end_date
         )
         return jsonify(weather_data), 200
     except ValueError as error:
-        return jsonify({"error": f"Invalid coordinates: {error}"}), 400
+        return jsonify({"error": f"Invalid parameters: {error}"}), 400
     except RuntimeError as error:
         return jsonify({"error": str(error)}), 502
     except Exception as error:

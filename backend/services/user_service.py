@@ -119,7 +119,7 @@ class UserService:
             "created_at": sensor.created_at.isoformat() if sensor.created_at else None,
             "updated_at": sensor.updated_at.isoformat() if sensor.updated_at else None,
         }
-
+# ---------------------User sensor ---------------------------------------------------------------------------------------------------------
     @staticmethod
     def get_sensors_for_user(user_id):
         user = User.query.get(user_id)
@@ -164,5 +164,56 @@ class UserService:
                 value = caster(value)
             setattr(sensor, key, value)
 
+        db.session.commit()
+        return UserService.serialize_sensor(sensor)
+
+    @staticmethod
+    def create_sensor_for_user(user_id, data):
+        user = User.query.get(user_id)
+        if not user:
+            return None
+
+        name = (data.get("name") or "").strip()
+        if not name:
+            raise ValueError("Sensor name is required")
+
+        new_sensor = Sensor(
+            name=name,
+            parent_sensor_id=data.get("parent_sensor_id"),
+            sensor_type=(data.get("sensor_type") or "").strip(),
+            address=data.get("address", 0),
+            functioncode=data.get("functioncode", 0),
+            bit=data.get("bit", 16),
+            scaling=data.get("scaling", 1),
+            unit=(data.get("unit") or "").strip(),
+            min_value=data.get("min_value"),
+            max_value=data.get("max_value"),
+            sampling_rate=data.get("sampling_rate", 60),
+            is_active=data.get("is_active", True),
+        )
+        db.session.add(new_sensor)
+        db.session.flush()
+
+        association = UserSensor(user_id=user_id, sensor_id=new_sensor.sensor_id)
+        db.session.add(association)
+        db.session.commit()
+        return UserService.serialize_sensor(new_sensor)
+
+    @staticmethod
+    def add_existing_sensor_to_user(user_id, sensor_id):
+        user = User.query.get(user_id)
+        if not user:
+            return None
+
+        sensor = Sensor.query.get(sensor_id)
+        if not sensor:
+            raise ValueError("Sensor not found")
+
+        existing = UserSensor.query.filter_by(user_id=user_id, sensor_id=sensor_id).first()
+        if existing:
+            raise ValueError("Sensor is already assigned to this user")
+
+        association = UserSensor(user_id=user_id, sensor_id=sensor_id)
+        db.session.add(association)
         db.session.commit()
         return UserService.serialize_sensor(sensor)

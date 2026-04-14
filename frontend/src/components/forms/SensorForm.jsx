@@ -67,7 +67,7 @@ const SensorForm = ({ sensor = null, onSubmit, onClose }) => {
   };
 
   return (
-    <div className="form-container">
+    <div className='form-inputs' >
       <h2 className="form-heading">{sensor?.sensor_id ? 'Upravit senzor' : 'Vytvořit senzor'}</h2>
       <form onSubmit={handleSubmit}>
 

@@ -14,6 +14,17 @@
   position: relative;
 }
 
+.form-inputs {
+  max-width: 500px;
+  width: 90%;
+  margin: 2.5rem auto;
+  padding: 2rem;
+  background: var(--surface-color);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--card-radius);
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -89,6 +100,7 @@
 .form-select {
   width: 100%;
   padding: 0.65rem 1rem;
+  margin: 1rem 0rem;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   font-size: 0.95rem;

@@ -5,13 +5,17 @@ import UserBar from "@/components/layout/UserBar";
 import { getLineChartOptions } from "@/components/widgets/chartUtils";
 import "@css/WeatherPage.css";
 
-const TIME_RANGES = [
-  { value: "24h", label: "24 hodin" },
-  { value: "7d", label: "7 dní" },
-  { value: "30d", label: "30 dní" },
-];
+const toISODate = (date) => date.toISOString().slice(0, 10);
+
+const getDefaultRange = () => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - 6);
+  return { start: toISODate(start), end: toISODate(end) };
+};
 
 const WeatherPage = () => {
+  const defaultRange = getDefaultRange();
   const [locationInput, setLocationInput] = useState("");
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
@@ -21,7 +25,8 @@ const WeatherPage = () => {
   const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [timeRange, setTimeRange] = useState("7d");
+  const [startDate, setStartDate] = useState(defaultRange.start);
+  const [endDate, setEndDate] = useState(defaultRange.end);
 
   // Sensor comparison
   const [userSensors, setUserSensors] = useState([]);
@@ -84,7 +89,7 @@ const WeatherPage = () => {
     };
   }, [locationInput]);
 
-  // Načtení historie senzoru při změně výběru nebo timeRange
+  // Načtení historie senzoru
   useEffect(() => {
     if (!selectedSensorId || !weatherData) {
       setSensorHistory(null);
@@ -94,10 +99,11 @@ const WeatherPage = () => {
     const fetchSensorHistory = async () => {
       setSensorLoading(true);
       try {
+        const spanDays =
+          (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24);
         const sensorTimeRange =
-          timeRange === "24h" ? "24h" : timeRange === "30d" ? "30d" : "7d";
-        const result = await 
-          api.getSensorHistory(selectedSensorId, sensorTimeRange);
+          spanDays <= 1 ? "24h" : spanDays <= 7 ? "7d" : "30d";
+        const result = await api.getSensorHistory(selectedSensorId, sensorTimeRange);
         setSensorHistory(result);
       } catch {
         setSensorHistory(null);
@@ -106,7 +112,7 @@ const WeatherPage = () => {
       }
     };
     fetchSensorHistory();
-  }, [selectedSensorId, weatherData, timeRange]);
+  }, [selectedSensorId, weatherData, startDate, endDate]);
 
   const currentWeather = useMemo(() => {
     if (!weatherData) return null;
@@ -216,7 +222,7 @@ const WeatherPage = () => {
     const series = [];
 
     // API data série
-    if (timeRange === "24h" && hourlyForecast.length > 0) {
+    if (hourlyForecast.length > 0) {
       series.push({
         name: "API teplota (hodinová)",
         data: hourlyForecast
@@ -250,7 +256,7 @@ const WeatherPage = () => {
     }
 
     return series;
-  }, [timeRange, hourlyForecast, dailyForecast, sensorHistory]);
+  }, [hourlyForecast, dailyForecast, sensorHistory]);
 
   const formatValue = (value, unit = "") => {
     if (value === null || value === undefined || value === "") return "N/A";
@@ -295,6 +301,17 @@ const WeatherPage = () => {
       return;
     }
 
+    if (!startDate || !endDate) {
+      setError("Zadejte platný začátek i konec intervalu.");
+      setWeatherData(null);
+      return;
+    }
+    if (new Date(endDate) < new Date(startDate)) {
+      setError("Konec intervalu musí být po začátku.");
+      setWeatherData(null);
+      return;
+    }
+
     setLoading(true);
     setShowSuggestions(false);
     setError("");
@@ -304,35 +321,13 @@ const WeatherPage = () => {
           latitude: selectedSuggestion.latitude,
           longitude: selectedSuggestion.longitude,
           locationName: locationLabel,
-          timeRange,
+          startDate,
+          endDate,
         });
       setWeatherData(response);
       setSelectedLocation(response?.location?.display_name || locationLabel);
     } catch (err) {
       setWeatherData(null);
-      setError(err.message || "Nepodařilo se načíst data počasí.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTimeRangeChange = async (newRange) => {
-    setTimeRange(newRange);
-
-    // Pokud už máme data, automaticky přenačteme s novým rozsahem
-    if (!selectedSuggestion?.latitude || !selectedSuggestion?.longitude) return;
-
-    setLoading(true);
-    setError("");
-    try {
-      const response = await api.getWeatherForecast({
-          latitude: selectedSuggestion.latitude,
-          longitude: selectedSuggestion.longitude,
-          locationName: formatLocationLabel(selectedSuggestion),
-          timeRange: newRange,
-        });
-      setWeatherData(response);
-    } catch (err) {
       setError(err.message || "Nepodařilo se načíst data počasí.");
     } finally {
       setLoading(false);
@@ -407,18 +402,28 @@ const WeatherPage = () => {
         Návrhy lokalit jsou načítané z Open-Meteo Geocoding API.
       </p>
 
-      {/* Časový rozsah */}
+      {/* Interval */}
       <div className="weather-time-range">
-        {TIME_RANGES.map((range) => (
-          <button
-            key={range.value}
-            type="button"
-            className={`weather-time-range-btn${timeRange === range.value ? " active" : ""}`}
-            onClick={() => handleTimeRangeChange(range.value)}
-          >
-            {range.label}
-          </button>
-        ))}
+        <label htmlFor="weather-start-date">
+          Od
+          <input
+            id="weather-start-date"
+            type="date"
+            value={startDate}
+            max={endDate || undefined}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </label>
+        <label htmlFor="weather-end-date">
+          Do
+          <input
+            id="weather-end-date"
+            type="date"
+            value={endDate}
+            min={startDate || undefined}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </label>
       </div>
 
       {error && <p className="weather-error">{error}</p>}
@@ -460,8 +465,8 @@ const WeatherPage = () => {
             </div>
           )}
 
-          {/* Hodinová předpověď pro 24h */}
-          {timeRange === "24h" && hourlyForecast.length > 0 && (
+          {/* Hodinová předpověď */}
+          {hourlyForecast.length > 0 && (
             <div className="weather-forecast">
               <h2>Hodinová předpověď</h2>
               <div className="weather-day-grid weather-hourly-grid">
@@ -476,8 +481,8 @@ const WeatherPage = () => {
             </div>
           )}
 
-          {/* Denní předpověď pro 7d / 30d */}
-          {timeRange !== "24h" && dailyForecast.length > 0 && (
+          {/* Denní předpověď */}
+          {dailyForecast.length > 0 && (
             <div className="weather-forecast">
               <h2>Denní předpověď</h2>
               {weatherChartSeries.length > 0 && (

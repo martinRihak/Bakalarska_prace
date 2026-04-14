@@ -30,6 +30,23 @@ const UserPage = () => {
     is_active: true,
   });
   const [savingSensorKey, setSavingSensorKey] = useState(null);
+  const [addSensorUserId, setAddSensorUserId] = useState(null);
+  const [addSensorMode, setAddSensorMode] = useState(null); // "create" | "existing"
+  const [newSensorForm, setNewSensorForm] = useState({
+    name: "",
+    sensor_type: "",
+    unit: "",
+    address: 0,
+    functioncode: 0,
+    bit: 16,
+    scaling: 1,
+    sampling_rate: 60,
+    min_value: "",
+    max_value: "",
+  });
+  const [existingSensorId, setExistingSensorId] = useState("");
+  const [allSensors, setAllSensors] = useState([]);
+  const [addingSensor, setAddingSensor] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -178,6 +195,86 @@ const UserPage = () => {
       setActionError(err.message || "Nepodařilo se upravit senzor");
     } finally {
       setSavingSensorKey(null);
+    }
+  };
+
+  const openAddSensor = async (userId, mode) => {
+    setAddSensorUserId(userId);
+    setAddSensorMode(mode);
+    setActionError("");
+    if (mode === "existing" && allSensors.length === 0) {
+      try {
+        const sensors = await api.getAvailableSensors();
+        setAllSensors(sensors);
+      } catch (err) {
+        setActionError(err.message || "Nepodařilo se načíst dostupné senzory");
+      }
+    }
+  };
+
+  const closeAddSensor = () => {
+    setAddSensorUserId(null);
+    setAddSensorMode(null);
+    setNewSensorForm({
+      name: "",
+      sensor_type: "",
+      unit: "",
+      address: 0,
+      functioncode: 0,
+      bit: 16,
+      scaling: 1,
+      sampling_rate: 60,
+      min_value: "",
+      max_value: "",
+    });
+    setExistingSensorId("");
+  };
+
+  const handleNewSensorChange = (e) => {
+    const { name, value, type } = e.target;
+    setNewSensorForm((prev) => ({
+      ...prev,
+      [name]: type === "number" ? (value === "" ? "" : Number(value)) : value,
+    }));
+  };
+
+  const submitCreateSensor = async (userId) => {
+    setAddingSensor(true);
+    setActionError("");
+    try {
+      const payload = {
+        ...newSensorForm,
+        min_value: newSensorForm.min_value === "" ? null : Number(newSensorForm.min_value),
+        max_value: newSensorForm.max_value === "" ? null : Number(newSensorForm.max_value),
+      };
+      const response = await api.createSensorForUser(userId, payload);
+      setUserSensors((prev) => ({
+        ...prev,
+        [userId]: [...(prev[userId] || []), response.sensor],
+      }));
+      closeAddSensor();
+    } catch (err) {
+      setActionError(err.message || "Nepodařilo se vytvořit senzor");
+    } finally {
+      setAddingSensor(false);
+    }
+  };
+
+  const submitAddExistingSensor = async (userId) => {
+    if (!existingSensorId) return;
+    setAddingSensor(true);
+    setActionError("");
+    try {
+      const response = await api.addExistingSensorToUser(userId, Number(existingSensorId));
+      setUserSensors((prev) => ({
+        ...prev,
+        [userId]: [...(prev[userId] || []), response.sensor],
+      }));
+      closeAddSensor();
+    } catch (err) {
+      setActionError(err.message || "Nepodařilo se přidat senzor");
+    } finally {
+      setAddingSensor(false);
     }
   };
 
@@ -333,10 +430,108 @@ const UserPage = () => {
                                   Načítání senzorů...
                                 </div>
                               ) : sensorsForUser.length === 0 ? (
-                                <div className="sensor-loading">
-                                  Uživatel nemá žádné senzory.
+                                <div>
+                                  <div className="sensor-loading">
+                                    Uživatel nemá žádné senzory.
+                                  </div>
+                                  <div className="sensor-add-actions" style={{ marginTop: "0.5rem", display: "flex", gap: "0.5rem" }}>
+                                    <button
+                                      className="user-btn edit-btn"
+                                      onClick={() => openAddSensor(user.user_id, "create")}
+                                    >
+                                      Vytvořit nový senzor
+                                    </button>
+                                    <button
+                                      className="user-btn edit-btn"
+                                      onClick={() => openAddSensor(user.user_id, "existing")}
+                                    >
+                                      Přidat existující senzor
+                                    </button>
+                                  </div>
+                                  {addSensorUserId === user.user_id && addSensorMode === "create" && (
+                                    <div className="sensor-add-form" style={{ marginTop: "0.5rem", padding: "0.75rem", border: "1px solid var(--border-color, #ccc)", borderRadius: "6px" }}>
+                                      <h4>Nový senzor</h4>
+                                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                                        <label>
+                                          Název
+                                          <input className="table-input" name="name" value={newSensorForm.name} onChange={handleNewSensorChange} />
+                                        </label>
+                                        <label>
+                                          Typ
+                                          <input className="table-input" name="sensor_type" value={newSensorForm.sensor_type} onChange={handleNewSensorChange} />
+                                        </label>
+                                        <label>
+                                          Jednotka
+                                          <input className="table-input" name="unit" value={newSensorForm.unit} onChange={handleNewSensorChange} />
+                                        </label>
+                                        <label>
+                                          Adresa
+                                          <input className="table-input" name="address" type="number" value={newSensorForm.address} onChange={handleNewSensorChange} />
+                                        </label>
+                                        <label>
+                                          Function code
+                                          <input className="table-input" name="functioncode" type="number" value={newSensorForm.functioncode} onChange={handleNewSensorChange} />
+                                        </label>
+                                        <label>
+                                          Bit
+                                          <input className="table-input" name="bit" type="number" value={newSensorForm.bit} onChange={handleNewSensorChange} />
+                                        </label>
+                                        <label>
+                                          Scaling
+                                          <input className="table-input" name="scaling" type="number" value={newSensorForm.scaling} onChange={handleNewSensorChange} />
+                                        </label>
+                                        <label>
+                                          Sampling rate
+                                          <input className="table-input" name="sampling_rate" type="number" value={newSensorForm.sampling_rate} onChange={handleNewSensorChange} />
+                                        </label>
+                                        <label>
+                                          Min value
+                                          <input className="table-input" name="min_value" type="number" value={newSensorForm.min_value} onChange={handleNewSensorChange} />
+                                        </label>
+                                        <label>
+                                          Max value
+                                          <input className="table-input" name="max_value" type="number" value={newSensorForm.max_value} onChange={handleNewSensorChange} />
+                                        </label>
+                                      </div>
+                                      <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.5rem" }}>
+                                        <button className="user-btn save-btn" onClick={() => submitCreateSensor(user.user_id)} disabled={addingSensor}>
+                                          {addingSensor ? "Ukládání..." : "Vytvořit"}
+                                        </button>
+                                        <button className="user-btn cancel-btn" onClick={closeAddSensor} disabled={addingSensor}>
+                                          Zrušit
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {addSensorUserId === user.user_id && addSensorMode === "existing" && (
+                                    <div className="sensor-add-form" style={{ marginTop: "0.5rem", padding: "0.75rem", border: "1px solid var(--border-color, #ccc)", borderRadius: "6px" }}>
+                                      <h4>Přidat existující senzor</h4>
+                                      <select
+                                        className="table-input"
+                                        value={existingSensorId}
+                                        onChange={(e) => setExistingSensorId(e.target.value)}
+                                        style={{ width: "100%", marginBottom: "0.5rem" }}
+                                      >
+                                        <option value="">-- Vyberte senzor --</option>
+                                        {allSensors.map((s) => (
+                                          <option key={s.sensor_id} value={s.sensor_id}>
+                                            {s.sensor_id} - {s.name} ({s.sensor_type})
+                                          </option>
+                                        ))}
+                                      </select>
+                                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                                        <button className="user-btn save-btn" onClick={() => submitAddExistingSensor(user.user_id)} disabled={addingSensor || !existingSensorId}>
+                                          {addingSensor ? "Přidávání..." : "Přidat"}
+                                        </button>
+                                        <button className="user-btn cancel-btn" onClick={closeAddSensor} disabled={addingSensor}>
+                                          Zrušit
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               ) : (
+                                <>
                                 <table className="sensor-subtable">
                                   <thead>
                                     <tr>
@@ -480,6 +675,102 @@ const UserPage = () => {
                                     })}
                                   </tbody>
                                 </table>
+                                <div className="sensor-add-actions" style={{ marginTop: "0.5rem", display: "flex", gap: "0.5rem" }}>
+                                  <button
+                                    className="user-btn edit-btn"
+                                    onClick={() => openAddSensor(user.user_id, "create")}
+                                  >
+                                    Vytvořit nový senzor
+                                  </button>
+                                  <button
+                                    className="user-btn edit-btn"
+                                    onClick={() => openAddSensor(user.user_id, "existing")}
+                                  >
+                                    Přidat existující senzor
+                                  </button>
+                                </div>
+                                {addSensorUserId === user.user_id && addSensorMode === "create" && (
+                                  <div className="sensor-add-form" style={{ marginTop: "0.5rem", padding: "0.75rem", border: "1px solid var(--border-color, #ccc)", borderRadius: "6px" }}>
+                                    <h4>Nový senzor</h4>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                                      <label>
+                                        Název
+                                        <input className="table-input" name="name" value={newSensorForm.name} onChange={handleNewSensorChange} />
+                                      </label>
+                                      <label>
+                                        Typ
+                                        <input className="table-input" name="sensor_type" value={newSensorForm.sensor_type} onChange={handleNewSensorChange} />
+                                      </label>
+                                      <label>
+                                        Jednotka
+                                        <input className="table-input" name="unit" value={newSensorForm.unit} onChange={handleNewSensorChange} />
+                                      </label>
+                                      <label>
+                                        Adresa
+                                        <input className="table-input" name="address" type="number" value={newSensorForm.address} onChange={handleNewSensorChange} />
+                                      </label>
+                                      <label>
+                                        Function code
+                                        <input className="table-input" name="functioncode" type="number" value={newSensorForm.functioncode} onChange={handleNewSensorChange} />
+                                      </label>
+                                      <label>
+                                        Bit
+                                        <input className="table-input" name="bit" type="number" value={newSensorForm.bit} onChange={handleNewSensorChange} />
+                                      </label>
+                                      <label>
+                                        Scaling
+                                        <input className="table-input" name="scaling" type="number" value={newSensorForm.scaling} onChange={handleNewSensorChange} />
+                                      </label>
+                                      <label>
+                                        Sampling rate
+                                        <input className="table-input" name="sampling_rate" type="number" value={newSensorForm.sampling_rate} onChange={handleNewSensorChange} />
+                                      </label>
+                                      <label>
+                                        Min value
+                                        <input className="table-input" name="min_value" type="number" value={newSensorForm.min_value} onChange={handleNewSensorChange} />
+                                      </label>
+                                      <label>
+                                        Max value
+                                        <input className="table-input" name="max_value" type="number" value={newSensorForm.max_value} onChange={handleNewSensorChange} />
+                                      </label>
+                                    </div>
+                                    <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.5rem" }}>
+                                      <button className="user-btn save-btn" onClick={() => submitCreateSensor(user.user_id)} disabled={addingSensor}>
+                                        {addingSensor ? "Ukládání..." : "Vytvořit"}
+                                      </button>
+                                      <button className="user-btn cancel-btn" onClick={closeAddSensor} disabled={addingSensor}>
+                                        Zrušit
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                                {addSensorUserId === user.user_id && addSensorMode === "existing" && (
+                                  <div className="sensor-add-form" style={{ marginTop: "0.5rem", padding: "0.75rem", border: "1px solid var(--border-color, #ccc)", borderRadius: "6px" }}>
+                                    <h4>Přidat existující senzor</h4>
+                                    <select
+                                      className="table-input"
+                                      value={existingSensorId}
+                                      onChange={(e) => setExistingSensorId(e.target.value)}
+                                      style={{ width: "100%", marginBottom: "0.5rem" }}
+                                    >
+                                      <option value="">-- Vyberte senzor --</option>
+                                      {allSensors.map((s) => (
+                                        <option key={s.sensor_id} value={s.sensor_id}>
+                                          {s.sensor_id} - {s.name} ({s.sensor_type})
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                                      <button className="user-btn save-btn" onClick={() => submitAddExistingSensor(user.user_id)} disabled={addingSensor || !existingSensorId}>
+                                        {addingSensor ? "Přidávání..." : "Přidat"}
+                                      </button>
+                                      <button className="user-btn cancel-btn" onClick={closeAddSensor} disabled={addingSensor}>
+                                        Zrušit
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                                </>
                               )}
                             </td>
                           </tr>

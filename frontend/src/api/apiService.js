@@ -233,9 +233,9 @@ const api = {
     const data = await response.json();
     return data.results || [];
   },
-  getWeatherForecast: ({ latitude, longitude, locationName = "", timeRange = "7d" }) =>
+  getWeatherForecast: ({ latitude, longitude, locationName = "", startDate, endDate }) =>
     apiRequest(
-      `/weather?latitude=${encodeURIComponent(latitude)}&longitude=${encodeURIComponent(longitude)}&locationName=${encodeURIComponent(locationName)}&timeRange=${encodeURIComponent(timeRange)}`,
+      `/weather?latitude=${encodeURIComponent(latitude)}&longitude=${encodeURIComponent(longitude)}&locationName=${encodeURIComponent(locationName)}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`,
       "GET",
     ),
   getAvailableSensors: () => apiRequest("/sensors/available"),
@@ -290,6 +290,10 @@ const api = {
   getSensorsForUser: (userId) => apiRequest(`/users/${userId}/sensors`, "GET"),
   updateSensorForUser: (userId, sensorId, sensorData) =>
     apiRequest(`/users/${userId}/sensors/${sensorId}`, "PATCH", sensorData),
+  createSensorForUser: (userId, sensorData) =>
+    apiRequest(`/users/${userId}/sensors`, "POST", sensorData),
+  addExistingSensorToUser: (userId, sensorId) =>
+    apiRequest(`/users/${userId}/sensors/${sensorId}`, "POST"),
 };
 
 export default api;

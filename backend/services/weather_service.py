@@ -1,5 +1,5 @@
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import openmeteo_requests
 import pandas as pd
@@ -13,6 +13,7 @@ class WeatherService:
     _openmeteo = openmeteo_requests.Client(session=_retry_session)
 
     _forecast_url = "https://api.open-meteo.com/v1/forecast"
+    _archive_url = "https://archive-api.open-meteo.com/v1/archive"
 
     @staticmethod
     def _to_float(value, decimals=1):
@@ -40,19 +41,34 @@ class WeatherService:
                 result.append(round(float(item), decimals))
         return result
 
+    @staticmethod
+    def _parse_date(value, field):
+        try:
+            return datetime.strptime(value, "%Y-%m-%d").date()
+        except (TypeError, ValueError) as error:
+            raise ValueError(f"{field} must be in YYYY-MM-DD format.") from error
+
     @classmethod
-    def get_weather(cls, latitude, longitude, location_name, time_range="7d"):
+    def get_weather(cls, latitude, longitude, location_name, start_date, end_date):
         latitude = float(latitude)
         longitude = float(longitude)
+
+        start = cls._parse_date(start_date, "startDate")
+        end = cls._parse_date(end_date, "endDate")
+        if end < start:
+            raise ValueError("endDate must be on or after startDate.")
+
+        span_days = (end - start).days + 1
+        use_hourly = span_days <= 3
+
+        today = date.today()
+        use_archive = end < today
+
         params = {
             "latitude": latitude,
             "longitude": longitude,
-            "current": [
-                "temperature_2m",
-                "wind_speed_10m",
-                "wind_direction_10m",
-                "weather_code",
-            ],
+            "start_date": start.isoformat(),
+            "end_date": end.isoformat(),
             "daily": [
                 "weather_code",
                 "temperature_2m_max",
@@ -62,17 +78,21 @@ class WeatherService:
             "timezone": "auto",
         }
 
-        if time_range == "24h":
+        if use_hourly:
             params["hourly"] = ["temperature_2m", "precipitation", "weather_code"]
-            params["forecast_days"] = 2
-        elif time_range == "30d":
-            params["past_days"] = 14
-            params["forecast_days"] = 16
-        else:
-            params["forecast_days"] = 7
+
+        if not use_archive:
+            params["current"] = [
+                "temperature_2m",
+                "wind_speed_10m",
+                "wind_direction_10m",
+                "weather_code",
+            ]
+
+        url = cls._archive_url if use_archive else cls._forecast_url
 
         try:
-            responses = cls._openmeteo.weather_api(cls._forecast_url, params=params)
+            responses = cls._openmeteo.weather_api(url, params=params)
         except Exception as error:
             raise RuntimeError("Open-Meteo forecast service is unavailable.") from error
 
@@ -80,7 +100,6 @@ class WeatherService:
             raise RuntimeError("Open-Meteo nevrátil žádná data.")
 
         response = responses[0]
-        current = response.Current()
         daily = response.Daily()
 
         daily_dates = pd.date_range(
@@ -90,10 +109,21 @@ class WeatherService:
             inclusive="left",
         ).strftime("%Y-%m-%d").tolist()
 
-        current_time_iso = datetime.fromtimestamp(
-            current.Time(),
-            tz=timezone.utc,
-        ).isoformat()
+        current = None
+        current_weather = None
+        if not use_archive:
+            current = response.Current()
+            current_time_iso = datetime.fromtimestamp(
+                current.Time(),
+                tz=timezone.utc,
+            ).isoformat()
+            current_weather = {
+                "time": current_time_iso,
+                "temperature": cls._to_float(current.Variables(0).Value()),
+                "windspeed": cls._to_float(current.Variables(1).Value()),
+                "winddirection": cls._to_float(current.Variables(2).Value()),
+                "weathercode": cls._to_int(current.Variables(3).Value()),
+            }
 
         result = {
             "location": {
@@ -108,14 +138,9 @@ class WeatherService:
             "timezone": cls._to_text(response.Timezone()),
             "timezone_abbreviation": cls._to_text(response.TimezoneAbbreviation()),
             "utc_offset_seconds": response.UtcOffsetSeconds(),
-            "time_range": time_range,
-            "current_weather": {
-                "time": current_time_iso,
-                "temperature": cls._to_float(current.Variables(0).Value()),
-                "windspeed": cls._to_float(current.Variables(1).Value()),
-                "winddirection": cls._to_float(current.Variables(2).Value()),
-                "weathercode": cls._to_int(current.Variables(3).Value()),
-            },
+            "start_date": start.isoformat(),
+            "end_date": end.isoformat(),
+            "current_weather": current_weather,
             "daily": {
                 "time": daily_dates,
                 "weathercode": cls._numpy_to_number_list(
@@ -134,7 +159,7 @@ class WeatherService:
             },
         }
 
-        if time_range == "24h":
+        if use_hourly:
             hourly = response.Hourly()
             hourly_dates = pd.date_range(
                 start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
