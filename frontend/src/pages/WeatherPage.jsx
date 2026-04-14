@@ -10,7 +10,7 @@ const toISODate = (date) => date.toISOString().slice(0, 10);
 const getDefaultRange = () => {
   const end = new Date();
   const start = new Date();
-  start.setDate(end.getDate() - 6);
+  start.setDate(end.getDate());
   return { start: toISODate(start), end: toISODate(end) };
 };
 
@@ -410,7 +410,8 @@ const WeatherPage = () => {
             <h1>Předpověď počasí</h1>
 
             <form className="weather-search-form" onSubmit={handleSubmit}>
-              <label htmlFor="weather-location">Lokalita</label>
+              <label htmlFor="weather-location">
+                Lokalita
               <div className="weather-location-field">
                 <input
                   id="weather-location"
@@ -459,6 +460,7 @@ const WeatherPage = () => {
                   </div>
                 )}
               </div>
+              </label>
               <button type="submit" disabled={loading}>
                 {loading ? "Načítám..." : "Načíst počasí"}
               </button>
@@ -591,28 +593,32 @@ const WeatherPage = () => {
               <div className="weather-comparison">
                 <h2>Porovnání s mým senzorem</h2>
                 <div className="weather-comparison-controls">
-                  <label htmlFor="sensor-select">Vyberte senzor</label>
-                  <select
-                    id="sensor-select"
-                    value={selectedSensorId}
-                    onChange={(e) => setSelectedSensorId(e.target.value)}
-                  >
-                    <option value="">— žádný —</option>
-                    {userSensors.map((sensor) => (
-                      <option key={sensor.sensor_id} value={sensor.sensor_id}>
-                        {sensor.name} ({sensor.unit})
-                      </option>
-                    ))}
-                  </select>
-                  <label htmlFor="comparison-metric">Veličina</label>
-                  <select
-                    id="comparison-metric"
-                    value={comparisonMetric}
-                    onChange={(e) => setComparisonMetric(e.target.value)}
-                  >
-                    <option value="temperature">Teplota</option>
-                    <option value="humidity">Vlhkost</option>
-                  </select>
+                  <label htmlFor="sensor-select">
+                    Vyberte senzor
+                    <select
+                      id="sensor-select"
+                      value={selectedSensorId}
+                      onChange={(e) => setSelectedSensorId(e.target.value)}
+                    >
+                      <option value="">— žádný —</option>
+                      {userSensors.map((sensor) => (
+                        <option key={sensor.sensor_id} value={sensor.sensor_id}>
+                          {sensor.name} ({sensor.unit})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label htmlFor="comparison-metric">
+                    Veličina
+                    <select
+                      id="comparison-metric"
+                      value={comparisonMetric}
+                      onChange={(e) => setComparisonMetric(e.target.value)}
+                    >
+                      <option value="temperature">Teplota</option>
+                      <option value="humidity">Vlhkost</option>
+                    </select>
+                  </label>
                 </div>
 
                 {sensorLoading && <p>Načítám data senzoru...</p>}
