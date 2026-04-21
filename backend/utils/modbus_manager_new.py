@@ -201,9 +201,11 @@ class ModbusManager:
             })
             self.stats["total_cached"] += 1
 
-    def get_latest_data(self, sensor_id, max_age_minutes=0.2):
-        cutoff = datetime.now() - timedelta(minutes=max_age_minutes)
-        print(f"CutOff: {cutoff}")
+    def get_latest_data(self, sensor_id):
+        sensor = self.sensor_map.get(sensor_id)
+        if not sensor:
+            return None
+        cutoff = datetime.now() - timedelta(seconds=sensor["sampling_rate"])
         with self.cache_lock:
             for dp in reversed(self.memory_cache):
                 if dp["sensor_id"] == sensor_id and dp["timestamp"] >= cutoff:

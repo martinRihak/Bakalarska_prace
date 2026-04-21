@@ -32,7 +32,7 @@
   flex-wrap: wrap;
 }
 
-.weather-search-form > label {
+.weather-search-form>label {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -219,7 +219,7 @@
   gap: 1.25rem;
 }
 
-.weather-results > h2 {
+.weather-results>h2 {
   font-size: 1.2rem;
   font-weight: 700;
   margin: 0;
@@ -243,8 +243,8 @@
   gap: 1rem;
 }
 
-.weather-forecast > h2,
-.weather-comparison > h2 {
+.weather-forecast>h2,
+.weather-comparison>h2 {
   font-size: 1rem;
   font-weight: 700;
   margin: 0;
@@ -263,9 +263,10 @@
 
 /* ─── Daily card grid ────────────────────── */
 .weather-day-grid {
-  display: grid;
+  display: flex;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 0.75rem;
+  justify-content: center;
 }
 
 .weather-day-card {
@@ -386,8 +387,8 @@
   border-color: #3a3a3a;
 }
 
-:root.dark-mode .weather-forecast > h2,
-:root.dark-mode .weather-comparison > h2 {
+:root.dark-mode .weather-forecast>h2,
+:root.dark-mode .weather-comparison>h2 {
   border-bottom-color: #3a3a3a;
 }
 

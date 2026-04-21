@@ -82,9 +82,8 @@ input[type="email"]:focus {
 
 .error-message {
   color: #ef4444;
-  margin-top: 1rem;
   text-align: center;
-  font-size: 0.875rem;
+  font-size: 1.275rem;
 }
 
 .success-message {
