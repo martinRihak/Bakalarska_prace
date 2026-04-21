@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "@/api/apiService";
-import { Activity, TrendingUp, BarChart3, Loader } from "lucide-react";
+import { Activity, TrendingUp, Gauge, Loader } from "lucide-react";
 import "@css/forms.css";
 import "@css/buttons.css";
 
@@ -8,7 +8,7 @@ import "@css/buttons.css";
 const CHART_TYPES = [
   { type: "line", icon: Activity, label: "Line Chart" },
   { type: "area", icon: TrendingUp, label: "Area Chart" },
-  { type: "bar", icon: BarChart3, label: "Bar Chart" },
+  { type: "bar", icon: Gauge, label: "Gauge" },
   { type: "value", icon: Loader, label: "Value" },
 ];
 

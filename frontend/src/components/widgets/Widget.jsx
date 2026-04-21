@@ -5,10 +5,10 @@ import api from "@/api/apiService";
 import {
   getAreaChartOptions,
   getLineChartOptions,
-  getBarChartOptions,
+  getRadialBarChartOptions,
   getAreaChartSeries,
   getLineChartSeries,
-  getBarChartSeries,
+  getRadialBarChartSeries,
 } from "./chartUtils";
 import ValueWidget from "./ValueWidget";
 import "./Widget.css";
@@ -40,8 +40,10 @@ const Widget = ({
   const [localActive, setLocalActive] = useState(active); // lokální stav pro switch
   const [themeMode, setThemeMode] = useState(getThemeMode);
 
+  const isGaugeType = widgetType === "bar" || widgetType === "radialBar";
+
   const processedData = useMemo(() => {
-    if (widgetType === "value") {
+    if (widgetType === "value" || isGaugeType) {
       return null;
     }
     if (!sensorData || !sensorData.length) return [];
@@ -49,7 +51,7 @@ const Widget = ({
       timeRange === "24h" ? 144 : timeRange === "7d" ? 168 : 720;
     const step = Math.max(1, Math.floor(sensorData.length / maxPoints));
     return sensorData.filter((_, index) => index % step === 0);
-  }, [sensorData, timeRange, widgetType]);
+  }, [sensorData, timeRange, widgetType, isGaugeType]);
 
   useEffect(() => {
     if (!localActive) {
@@ -81,14 +83,14 @@ const Widget = ({
   const fetchData = async () => {
     try {
       let response;
-      if (widgetType === "value") {
+      if (widgetType === "value" || isGaugeType) {
         response = await api.getLatestSensorData(id);
         if (!response || !response.data) {
           setError("Žádná data k zobrazení");
           return;
         }
         setSensorData(response);
-      } 
+      }
       else {
         response = await api.getSensorHistory(id, timeRange,widget_id);
         if (!response || !response.data || response.data.length === 0) {
@@ -122,12 +124,19 @@ const Widget = ({
     };
 
     let themedOptions;
+    if (isGaugeType) {
+      themedOptions = getRadialBarChartOptions(
+        sensorName,
+        themeMode,
+        sensorData?.sensor?.min_value,
+        sensorData?.sensor?.max_value,
+        sensorData?.sensor?.unit
+      );
+      return themedOptions;
+    }
     switch (widgetType) {
       case "area":
         themedOptions = getAreaChartOptions(sensorName, themeMode);
-        break;
-      case "bar":
-        themedOptions = getBarChartOptions(sensorName, themeMode);
         break;
       default:
         themedOptions = getLineChartOptions(sensorName, themeMode);
@@ -141,23 +150,27 @@ const Widget = ({
         ...runtimeChartOptions.chart,
       },
     };
-  }, [widgetType, sensorName, sensorData, themeMode]);
+  }, [widgetType, sensorName, sensorData, themeMode, isGaugeType]);
 
   const chartSeries = useMemo(() => {
     if (widgetType === "value") {
       return [];
-    } else {
-      if (!processedData || processedData.length === 0) return [];
-      switch (widgetType) {
-        case "area":
-          return getAreaChartSeries(processedData, sensorName);
-        case "bar":
-          return getBarChartSeries(processedData, sensorName);
-        default:
-          return getLineChartSeries(processedData, sensorName);
-      }
     }
-  }, [widgetType, sensorData, processedData, sensorName]);
+    if (isGaugeType) {
+      return getRadialBarChartSeries(
+        sensorData?.data?.value,
+        sensorData?.sensor?.min_value,
+        sensorData?.sensor?.max_value
+      );
+    }
+    if (!processedData || processedData.length === 0) return [];
+    switch (widgetType) {
+      case "area":
+        return getAreaChartSeries(processedData, sensorName);
+      default:
+        return getLineChartSeries(processedData, sensorName);
+    }
+  }, [widgetType, sensorData, processedData, sensorName, isGaugeType]);
 
   const handleRefresh = () => {
     fetchData();
@@ -202,7 +215,7 @@ const Widget = ({
         <h3>{title}</h3>
         <div className="widget-controls">
           <div>
-            {widgetType !== "radialBar" && widgetType !== "value" && (
+            {!isGaugeType && widgetType !== "value" && (
               <select
                 value={timeRange}
                 onChange={(e) => setTimeRange(e.target.value)}
@@ -253,7 +266,7 @@ const Widget = ({
                 key={`${widget_id}-${widgetType}-${themeMode}`}
                 options={chartOptions}
                 series={chartSeries}
-                type={widgetType}
+                type={isGaugeType ? "radialBar" : widgetType}
                 height="100%"
                 width="100%"
               />
