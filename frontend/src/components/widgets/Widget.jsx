@@ -32,6 +32,7 @@ const Widget = ({
   widgetType,
   dashboard_id,
   onDelete,
+  onToggleActive,
 }) => {
   const [sensorData, setSensorData] = useState(null);
   const [error, setError] = useState(null);
@@ -180,7 +181,8 @@ const Widget = ({
     try {
       await api.toggleSensorActive(sensorId, newStatus);
       setLocalActive(newStatus);
-      
+      if (onToggleActive) onToggleActive(sensorId, newStatus);
+
       if (newStatus) {
         // Pokud je senzor aktivován, okamžitě načteme nová data
         setError(null); // Reset error message
