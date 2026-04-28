@@ -214,7 +214,7 @@ export const getRadialBarChartOptions = (sensorName, themeMode, min, max, unit) 
         endAngle: 135,
         hollow: {
           margin: 0,
-          size: "62%",
+          size: "60%",
           background: "transparent",
         },
         track: {
@@ -227,14 +227,14 @@ export const getRadialBarChartOptions = (sensorName, themeMode, min, max, unit) 
             show: true,
             offsetY: -12,
             color: dark ? "rgba(241,245,249,0.8)" : "rgba(15,23,42,0.7)",
-            fontSize: "13px",
-            fontWeight: 500,
+            fontSize: "18px",
+            fontWeight: 600,
           },
           value: {
             show: true,
             offsetY: 6,
             color: dark ? "rgba(255,255,255,1)" : "rgba(15,23,42,1)",
-            fontSize: "28px",
+            fontSize: "34px",
             fontWeight: 600,
             formatter: (val) => {
               if (range <= 0) return `${minValue.toFixed(1)}${suffix}`;

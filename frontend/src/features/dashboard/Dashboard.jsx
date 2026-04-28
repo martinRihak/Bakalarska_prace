@@ -24,7 +24,7 @@ const GRAPH_WIDGET_MIN_SIZE = {
 };
 
 const getMinWidgetSizeByType = (widgetType) =>
-  widgetType === "value" ? VALUE_WIDGET_MIN_SIZE : GRAPH_WIDGET_MIN_SIZE;
+  widgetType === "value" || widgetType === "radialBar"? VALUE_WIDGET_MIN_SIZE : GRAPH_WIDGET_MIN_SIZE;
 
 const Dashboard = () => {
   const [dashboards, setDashboards] = useState([]);

@@ -17,8 +17,8 @@ class ModbusManager:
         self,
         app=None,
         baudrate: int = 9600,
-        cache_size: int = 1000,
-        flush_interval: int = 60 * 60,       # seconds
+        cache_size: int = 200,
+        flush_interval: int = 60 * 30,       # seconds
         check_interval: int = 60 * 10    # seconds
     ):
         self.port = os.environ.get("USB_PORT")

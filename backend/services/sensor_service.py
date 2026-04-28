@@ -84,7 +84,7 @@ class SensorService:
         if start_date is not None:
             query = query.filter(SensorData.timestamp >= start_date)
         if end_date is not None:
-            query = query.filter(SensorData.timestamp <= end_date)
+            query = query.filter(SensorData.timestamp < end_date + timedelta(days=1))
         sensor_data = query.order_by(SensorData.timestamp).all()
 
         seen_hours = set()

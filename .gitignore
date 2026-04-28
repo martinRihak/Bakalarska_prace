@@ -28,3 +28,4 @@ docker-compose.yml
 imageBuilds/
 .cache.sqlite
 backend/.cache.sqlite
+data/

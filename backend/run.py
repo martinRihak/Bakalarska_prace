@@ -11,7 +11,7 @@ from flask_cors import CORS
 from models.models import init_db
 from routes import init_routes
 from utils.auth_utils import login_required
-from utils.modbus_manager_new import ModbusManager
+from backend.utils.modbus_manager import ModbusManager
 
 
 def _normalize_app_env(value):
@@ -26,11 +26,7 @@ def _bootstrap_environment():
 
     requested_env = (
         os.environ.get("APP_ENV")
-        or os.environ.get("FLASK_ENV")
-        or os.environ.get("ENV")
         or base_values.get("APP_ENV")
-        or base_values.get("FLASK_ENV")
-        or base_values.get("ENV")
         or "development"
     )
     app_env = _normalize_app_env(requested_env)
@@ -104,8 +100,7 @@ app = Flask(__name__)
 is_production = APP_ENV == "production"
 cors_origins = _get_env_list("CORS_ORIGINS", ["http://localhost:5173"])
 
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or secrets.token_hex(16)
-app.config["JWT_SECRET"] = os.environ.get("JWT_SECRET") or app.config["SECRET_KEY"]
+app.config["JWT_SECRET"] = os.environ.get("JWT_SECRET") or secrets.token_hex(32)
 app.config["COOKIE_SECURE"] = _get_env_bool("COOKIE_SECURE", default=is_production)
 app.config["COOKIE_SAMESITE"] = os.environ.get("COOKIE_SAMESITE") or "Strict"
 app.config["COOKIE_DOMAIN"] = os.environ.get("COOKIE_DOMAIN")
@@ -138,7 +133,7 @@ if LOADED_ENV_FILES:
 else:
     logger.warning("No .env files found; relying on shell environment variables only")
 if not os.environ.get("JWT_SECRET"):
-    logger.warning("JWT_SECRET is not set; falling back to SECRET_KEY")
+    logger.warning("JWT_SECRET is not set.")
 if os.environ.get("COOKIE_DOMAIN") and app.config["COOKIE_DOMAIN"] is None:
     logger.warning(
         "COOKIE_DOMAIN resolved to host-only cookie (likely localhost or invalid URL input)"

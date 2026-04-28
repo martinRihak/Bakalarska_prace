@@ -8,7 +8,7 @@ import "@css/buttons.css";
 const CHART_TYPES = [
   { type: "line", icon: Activity, label: "Line Chart" },
   { type: "area", icon: TrendingUp, label: "Area Chart" },
-  { type: "bar", icon: Gauge, label: "Gauge" },
+  { type: "radialBar", icon: Gauge, label: "Gauge" },
   { type: "value", icon: Loader, label: "Value" },
 ];
 
@@ -135,7 +135,7 @@ const WidgetForm = ({ onClose, onSuccess ,dashboardId}) => {
                     }`}
                     onClick={() => setSelectedChartType(type)}
                   >
-                    <Icon size={24} color="black" />
+                    <Icon size={28} color="black" />
                     <span>{label}</span>
                   </button>
                 ))}
