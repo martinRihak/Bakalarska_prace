@@ -117,7 +117,7 @@ Backend načítá proměnné v pořadí: `.env` → `.env.<APP_ENV>` → `.env.l
 | Proměnná | Výchozí | Popis |
 |----------|---------|-------|
 | `APP_ENV` | `development` | Profil prostředí (`development` / `production`) |
-| `JWT_SECRET` | — | Klíč pro podepisování JWT |
+| `SECRET_KEY` | — | Klíč pro podepisování JWT |
 | `JWT_ACCESS_TOKEN_EXPIRES` | `60*60` (s) | Životnost access tokenu |
 | `JWT_REFRESH_TOKEN_EXPIRES` | `7*24*60*60` (s) | Životnost refresh tokenu |
 | `COOKIE_SECURE=false` | `false`  | |
