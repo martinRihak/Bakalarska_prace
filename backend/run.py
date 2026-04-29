@@ -85,8 +85,7 @@ CORS(
 )
 logger = setup_logger()
 
-if not os.environ.get("JWT_SECRET"):
-    logger.warning("JWT_SECRET is not set.")
+
 if os.environ.get("COOKIE_DOMAIN") and app.config["COOKIE_DOMAIN"] is None:
     logger.warning(
         "COOKIE_DOMAIN resolved to host-only cookie (likely localhost or invalid URL input)"

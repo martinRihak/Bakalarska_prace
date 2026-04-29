@@ -3,6 +3,34 @@ from datetime import datetime
 
 class ModbusService:
     @staticmethod
+    def get_status():
+        modbus_manager = current_app.config.get('MODBUS_MANAGER')
+        if not modbus_manager:
+            return {
+                'connected': False,
+                'port': None,
+                'message': 'Modbus manager není inicializován',
+                'last_error': 'Modbus manager není inicializován',
+                'last_error_at': None,
+            }
+
+        return modbus_manager.get_status()
+
+    @staticmethod
+    def reconnect():
+        modbus_manager = current_app.config.get('MODBUS_MANAGER')
+        if not modbus_manager:
+            return {
+                'connected': False,
+                'port': None,
+                'message': 'Modbus manager není inicializován',
+                'last_error': 'Modbus manager není inicializován',
+                'last_error_at': None,
+            }
+
+        return modbus_manager.reconnect()
+
+    @staticmethod
     def get_sensor_data(sensor_id):
         modbus_manager = current_app.config.get('MODBUS_MANAGER')
         if not modbus_manager:

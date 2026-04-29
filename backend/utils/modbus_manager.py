@@ -21,13 +21,15 @@ class ModbusManager:
         flush_interval: int = 60 * 30,       # seconds
         check_interval: int = 60 * 10    # seconds
     ):
-        self.port = os.environ.get("USB_PORT")
+        self.port = os.environ.get("USB_PORT") or os.environ.get("MODBUS_PORT", "/dev/ttyUSB0")
         self.device_address = 1
         self.baudrate = baudrate
         self.app = app
 
         self.instrument = None
         self.modbus_connected = False
+        self.last_error = None
+        self.last_error_at = None
 
         # Cache
         self.memory_cache = deque(maxlen=cache_size)
@@ -39,8 +41,12 @@ class ModbusManager:
         self.last_read = {}
 
         # Thread safety
+        self.connection_lock = threading.Lock()
+        self.reconnect_lock = threading.Lock()
         self.serial_lock = threading.Lock()
         self.stats_lock = threading.Lock()
+        self.thread_start_lock = threading.Lock()
+        self.threads_started = False
 
         # Stats
         self.stats = {
@@ -87,16 +93,73 @@ class ModbusManager:
         else:
             print(msg)
 
+    def _format_connection_error(self, error):
+        return f"Nelze komunikovat se sběrnicí Modbus na portu {self.port}: {error}"
+
+    def _close_serial_port(self):
+        try:
+            if self.instrument and getattr(self.instrument.serial, "is_open", False):
+                self.instrument.serial.close()
+        except Exception as e:
+            self._log_error(f"Chyba při zavírání Modbus portu: {e}")
+
+    def _set_connected(self, instrument):
+        with self.connection_lock:
+            self.instrument = instrument
+            self.modbus_connected = True
+            self.last_error = None
+            self.last_error_at = None
+
+    def _mark_disconnected(self, message):
+        with self.connection_lock:
+            self.modbus_connected = False
+            self.last_error = message
+            self.last_error_at = datetime.now()
+        self._close_serial_port()
+
+    def _is_connection_error(self, error):
+        connection_error_types = (
+            serial.SerialException,
+            OSError,
+            IOError,
+            minimalmodbus.NoResponseError,
+        )
+        if isinstance(error, connection_error_types):
+            return True
+
+        message = str(error).lower()
+        return any(
+            text in message
+            for text in (
+                "could not open port",
+                "no such file or directory",
+                "no such device",
+                "input/output error",
+                "port is not open",
+                "device reports readiness",
+            )
+        )
+
+    def _sync_port_presence(self):
+        with self.connection_lock:
+            connected = self.modbus_connected
+
+        if connected and self.port and not os.path.exists(self.port):
+            self._mark_disconnected(
+                f"Nelze komunikovat se sběrnicí Modbus na portu {self.port}: port není dostupný"
+            )
+
     # Modbus init
     # =========================
 
     def _init_modbus(self):
+        instrument = None
         try:
-            self.instrument = minimalmodbus.Instrument(
+            instrument = minimalmodbus.Instrument(
                 self.port, self.device_address
             )
 
-            ser = self.instrument.serial
+            ser = instrument.serial
             ser.baudrate = self.baudrate
             ser.bytesize = 8
             ser.parity = serial.PARITY_NONE
@@ -106,12 +169,47 @@ class ModbusManager:
             if not getattr(ser, "is_open", False):
                 ser.open()
 
-            self.modbus_connected = True
+            self._set_connected(instrument)
             self._log_info("Modbus inicializován")
+            return True
 
         except Exception as e:
-            self.modbus_connected = False
+            try:
+                if instrument and getattr(instrument.serial, "is_open", False):
+                    instrument.serial.close()
+            except Exception:
+                pass
+            self._mark_disconnected(self._format_connection_error(e))
             self._log_error(f"Selhala inicializace Modbus: {e}")
+            return False
+
+    def get_status(self):
+        self._sync_port_presence()
+
+        with self.connection_lock:
+            connected = self.modbus_connected
+            last_error = self.last_error
+            last_error_at = self.last_error_at
+
+        return {
+            "connected": connected,
+            "port": self.port,
+            "message": None if connected else last_error or f"Modbus na portu {self.port} není připojen",
+            "last_error": last_error,
+            "last_error_at": last_error_at.isoformat() if last_error_at else None,
+        }
+
+    def reconnect(self):
+        with self.reconnect_lock:
+            self._log_info(f"Zkouším znovu inicializovat Modbus na portu {self.port}")
+            self._close_serial_port()
+            success = self._init_modbus()
+
+            if success:
+                self.load_all_sensors()
+                self._start_background_threads()
+
+            return self.get_status()
 
     # Sensor loading
     # =========================
@@ -164,6 +262,8 @@ class ModbusManager:
         with self.sensor_locks[sensor_id]:
             try:
                 with self.serial_lock:
+                    if not self.instrument:
+                        raise serial.SerialException("Modbus instrument is not initialized")
                     # 1. Dynamické nastavení baudrate před čtením
                     target_baudrate = sensor["baudrate"]
                     if self.instrument.serial.baudrate != target_baudrate:
@@ -187,6 +287,8 @@ class ModbusManager:
             except Exception as e:
                 with self.stats_lock:
                     self.stats["failed_reads"] += 1
+                if self._is_connection_error(e):
+                    self._mark_disconnected(self._format_connection_error(e))
                 self._log_error(f"Chyba čtení senzoru {sensor_id}: {e}")
                 return None
     # Cache
@@ -219,15 +321,20 @@ class ModbusManager:
     # =========================
 
     def _start_background_threads(self):
-        threading.Thread(
-            target=self._auto_read_loop,
-            daemon=True
-        ).start()
+        with self.thread_start_lock:
+            if self.threads_started:
+                return
+            self.threads_started = True
 
-        threading.Thread(
-            target=self._flush_loop,
-            daemon=True
-        ).start()
+            threading.Thread(
+                target=self._auto_read_loop,
+                daemon=True
+            ).start()
+
+            threading.Thread(
+                target=self._flush_loop,
+                daemon=True
+            ).start()
 
     def _auto_read_loop(self):
         while not self._shutdown_event.is_set():

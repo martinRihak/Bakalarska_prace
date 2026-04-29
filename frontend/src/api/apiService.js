@@ -257,6 +257,9 @@ const api = {
   toggleSensorActive: (sensorId, isActive) =>
     apiRequest(`/sensors/${sensorId}/toggle-active`, "PATCH", { isActive }),
 
+  getModbusStatus: () => apiRequest("/modbus/status", "GET"),
+  reconnectModbus: () => apiRequest("/modbus/reconnect", "POST"),
+
   importSensorData: (importData) =>
     apiRequest("/sensors/import_data", "PATCH", importData),
 
