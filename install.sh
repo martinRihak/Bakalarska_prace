@@ -84,9 +84,8 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./data:/app/instance
-${DEVICE_BLOCK:+$DEVICE_BLOCK
-}    environment:
+      - ./data:/app/instance${DEVICE_BLOCK:+$DEVICE_BLOCK}    
+    environment:
       APP_ENV: "production"
       SECRET_KEY: "${SECRET_KEY_VALUE}"
       USB_PORT: "${MODBUS_PORT}"
@@ -95,10 +94,12 @@ ${DEVICE_BLOCK:+$DEVICE_BLOCK
       FLASK_HOST: "0.0.0.0"
       FLASK_PORT: "5000"
       FLASK_DEBUG: "false"
-      CORS_ORIGINS: "http://192.168.68.113:5173,http://localhost:5173"
+      CORS_ORIGINS: "http://raspberrypi.local:5173,http://localhost:5173"
       COOKIE_SECURE: "false"
       COOKIE_SAMESITE: "Lax"
       COOKIE_DOMAIN: ""
+    devices:
+      - ${MODBUS_PORT}:${MODBUS_PORT}
     restart: unless-stopped
 
   frontend:
