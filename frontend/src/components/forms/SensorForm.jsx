@@ -38,6 +38,8 @@ const SensorForm = ({ sensor = null, onSubmit, onClose }) => {
       });
     } else {
       setFormData({
+        sensor_id: null,
+        parent_sensor_id: null,
         name: '',
         sensor_type: '',
         address: '',
