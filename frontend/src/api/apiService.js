@@ -1,5 +1,5 @@
 // apiService.js
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL =  `http://${window.location.hostname}:5000`
 
 // Timeout pro fetch požadavky (důležité pro Raspberry Pi)
 const REQUEST_TIMEOUT = 15000; // 15 sekund

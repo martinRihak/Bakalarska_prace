@@ -92,13 +92,13 @@ ${DEVICE_BLOCK:+$DEVICE_BLOCK
       USB_PORT: "${MODBUS_PORT}"
       MODBUS_PORT: "${MODBUS_PORT}"
       DB: "sqlite:////app/instance/app.db"
-      CORS_ORIGINS: "http://localhost:5173"
       FLASK_HOST: "0.0.0.0"
       FLASK_PORT: "5000"
       FLASK_DEBUG: "false"
-      COOKIE_DOMAIN: "http://localhost:5173"
+      CORS_ORIGINS: "http://192.168.68.113:5173,http://localhost:5173"
       COOKIE_SECURE: "false"
-      COOKIE_SAMESITE: "Strict"
+      COOKIE_SAMESITE: "Lax"
+      COOKIE_DOMAIN: ""
     restart: unless-stopped
 
   frontend:
