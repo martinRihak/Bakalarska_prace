@@ -11,11 +11,9 @@ class BackupService:
             with open(filepath, 'r') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
-                    # IGNORUJ všechny LIGHT záznamy
                     if row.get('sensor_type', '').lower() == 'light' or row.get('info', '').upper() == 'LIGHT':
                         continue
 
-                    # rozdělení location na latitude/longitude (pokud je)
                     if 'location' in row and row['location']:
                         latitude, longitude = row['location'].split(',')
                         row['latitude']  = float(latitude)
@@ -34,7 +32,6 @@ class BackupService:
             temp_data     = []
             humidity_data = []
             for item in data:
-                # Timestamp z nanosekund → datetime
                 timestamp = datetime.fromtimestamp(item['time'] / 1e9)
 
                 # Teplota

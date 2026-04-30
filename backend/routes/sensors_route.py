@@ -21,6 +21,8 @@ def get_sensor_history(sensor_id):
 
     except PermissionError:
         return jsonify({'message': 'Přístup odepřen'}), 403
+    except ValueError as e:
+        return jsonify({'message': str(e)}), 400
     except Exception as e:
         return jsonify({'message': str(e)}), 500
 

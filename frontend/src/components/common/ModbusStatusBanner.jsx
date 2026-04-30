@@ -1,9 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import api from "@/api/apiService";
 import "./ModbusStatusBanner.css";
-
-const POLL_INTERVAL_MS = 10000;
 
 const ModbusStatusBanner = ({ onVisibilityChange }) => {
   const [status, setStatus] = useState(null);
@@ -12,37 +10,30 @@ const ModbusStatusBanner = ({ onVisibilityChange }) => {
 
   const isVisible = Boolean(status && status.connected === false);
 
-  const loadStatus = useCallback(async ({ silent = false } = {}) => {
-    if (!localStorage.getItem("token")) {
-      setStatus(null);
-      return;
-    }
+  useEffect(() => {
+    const handleModbusStatusChange = (event) => {
+      if (!localStorage.getItem("token")) {
+        setStatus(null);
+        return;
+      }
 
-    try {
-      const response = await api.getModbusStatus();
-      setStatus(response);
-      if (response.connected) {
+      const nextStatus = event.detail;
+      setStatus(nextStatus);
+      if (nextStatus?.connected) {
         setActionError("");
       }
-    } catch (error) {
-      if (!silent) {
-        setActionError(error.message || "Nepodařilo se ověřit stav Modbusu");
-      }
-    }
-  }, []);
+    };
 
-  useEffect(() => {
-    loadStatus({ silent: true });
-    const intervalId = window.setInterval(
-      () => loadStatus({ silent: true }),
-      POLL_INTERVAL_MS,
-    );
+    window.addEventListener("modbus-status-change", handleModbusStatusChange);
 
     return () => {
-      window.clearInterval(intervalId);
+      window.removeEventListener(
+        "modbus-status-change",
+        handleModbusStatusChange,
+      );
       onVisibilityChange?.(false);
     };
-  }, [loadStatus, onVisibilityChange]);
+  }, [onVisibilityChange]);
 
   useEffect(() => {
     onVisibilityChange?.(isVisible);

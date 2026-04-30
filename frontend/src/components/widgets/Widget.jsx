@@ -37,7 +37,7 @@ const Widget = ({
   const [sensorData, setSensorData] = useState(null);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [timeRange, setTimeRange] = useState(time);
+  const [timeRange, setTimeRange] = useState(time || "24h");
   const [localActive, setLocalActive] = useState(active); // lokální stav pro switch
   const [themeMode, setThemeMode] = useState(getThemeMode);
 
@@ -65,6 +65,10 @@ const Widget = ({
   useEffect(() => {
     setLocalActive(active); // Synchronizace s prop při změně z nadřazené komponenty
   }, [active]);
+
+  useEffect(() => {
+    setTimeRange(time || "24h");
+  }, [time]);
 
   useEffect(() => {
     if (typeof document === "undefined") {

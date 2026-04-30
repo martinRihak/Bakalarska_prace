@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from sqlalchemy import func
 
 class DashboardService:
+    DEFAULT_WIDGET_TIME = '24h'
+
     @staticmethod
     def aggregate_sensor_data(sensor_id, widget_type, start_time=None):
         query = SensorData.query.filter(SensorData.sensor_id == sensor_id)
@@ -83,7 +85,7 @@ class DashboardService:
                 'widget_id': dw.widget_id,
                 'widget_type': widget.widget_type,
                 'title': widget.title,
-                'time': widget.time,
+                'time': widget.time or DashboardService.DEFAULT_WIDGET_TIME,
                 'position_x': dw.position_x,
                 'position_y': dw.position_y,
                 'width': dw.width,
@@ -196,7 +198,8 @@ class DashboardService:
         new_widget = Widget(
             widget_type=widget_data['widget_type'],
             title=widget_data['title'],
-            sensor_id=widget_data['sensor_id']
+            sensor_id=widget_data['sensor_id'],
+            time=widget_data.get('time') or DashboardService.DEFAULT_WIDGET_TIME
         )
         db.session.add(new_widget)
         db.session.flush()
@@ -222,6 +225,7 @@ class DashboardService:
             'widget_type': new_widget.widget_type,
             'sensor_id' : new_widget.sensor_id,
             'title': new_widget.title,
+            'time': new_widget.time,
             'position': {
                 'x': dashboard_widget.position_x,
                 'y': dashboard_widget.position_y,
@@ -252,6 +256,8 @@ class DashboardService:
             widget.title = data['title']
         if 'widget_type' in data:
             widget.widget_type = data['widget_type']
+        if 'time' in data:
+            widget.time = data['time'] or DashboardService.DEFAULT_WIDGET_TIME
             
         if 'sensor_id' in data:
             widget.sensor_id = data['sensor_id']
@@ -262,6 +268,7 @@ class DashboardService:
             'widget_id': widget.widget_id,
             'widget_type': widget.widget_type,
             'title': widget.title,
+            'time': widget.time or DashboardService.DEFAULT_WIDGET_TIME,
             'position': {
                 'x': dashboard_widget.position_x,
                 'y': dashboard_widget.position_y,

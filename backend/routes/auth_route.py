@@ -46,9 +46,7 @@ def login():
         max_age=AuthService.REFRESH_TOKEN_EXPIRATION
     )
     
-    # Načtení senzorů
-    with current_app.app_context():
-        AuthService.load_user_sensors(user.user_id)
+
             
     return response
 

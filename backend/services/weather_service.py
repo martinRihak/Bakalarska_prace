@@ -79,7 +79,6 @@ class WeatherService:
 
         response = responses[0]
 
-        # Hourly data. The order of variables needs to be the same as requested.
         hourly = response.Hourly()
         hourly_relative_humidity_2m = hourly.Variables(0).ValuesAsNumpy()
         hourly_temperature_2m = hourly.Variables(1).ValuesAsNumpy()
@@ -91,7 +90,6 @@ class WeatherService:
             inclusive="left",
         ).strftime("%Y-%m-%dT%H:%M").tolist()
 
-        # Daily data. The order of variables needs to be the same as requested.
         daily = response.Daily()
         daily_sunrise = daily.Variables(0).ValuesInt64AsNumpy()
         daily_sunset = daily.Variables(1).ValuesInt64AsNumpy()

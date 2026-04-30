@@ -39,6 +39,7 @@ class ModbusManager:
         self.sensor_map = {}
         self.sensor_locks = {}
         self.last_read = {}
+        self.sensor_map_lock = threading.Lock()
 
         # Thread safety
         self.connection_lock = threading.Lock()
@@ -184,8 +185,6 @@ class ModbusManager:
             return False
 
     def get_status(self):
-        self._sync_port_presence()
-
         with self.connection_lock:
             connected = self.modbus_connected
             last_error = self.last_error
@@ -213,12 +212,41 @@ class ModbusManager:
 
     # Sensor loading
     # =========================
-    def add_new_sensor(self,sensor: Sensor):
-        if not self.app:
+    def _build_sensor_config(self, sensor: Sensor):
+        return {
+            "address": sensor.address,
+            "functioncode": sensor.functioncode,
+            "baudrate": sensor.bit,
+            "scaling": sensor.scaling,
+            "sampling_rate": sensor.sampling_rate * 60,
+            "is_active": sensor.is_active,
+        }
+
+    def add_new_sensor(self, sensor: Sensor):
+        if not sensor:
             return False
-    def delete_sensor(self,sensor_id: int):
-        if not self.app:
-            return False
+
+        with self.sensor_map_lock:
+            self.sensor_map[sensor.sensor_id] = self._build_sensor_config(sensor)
+            self.sensor_locks.setdefault(sensor.sensor_id, threading.Lock())
+            self.last_read.setdefault(sensor.sensor_id, 0.0)
+
+        self._log_info(f"Senzor {sensor.sensor_id} načten do Modbus mapy")
+        return True
+
+    def delete_sensor(self, sensor_id: int):
+        with self.sensor_map_lock:
+            self.sensor_map.pop(sensor_id, None)
+            self.sensor_locks.pop(sensor_id, None)
+            self.last_read.pop(sensor_id, None)
+        with self.cache_lock:
+            self.memory_cache = deque(
+                (dp for dp in self.memory_cache if dp["sensor_id"] != sensor_id),
+                maxlen=self.memory_cache.maxlen
+            )
+
+        self._log_info(f"Senzor {sensor_id} odebrán z Modbus mapy")
+        return True
          
     def load_all_sensors(self):
         if not self.app:
@@ -231,20 +259,18 @@ class ModbusManager:
                 return False
 
             new_sensor_map = {}
+            new_sensor_locks = {}
+            new_last_read = {}
             for s in sensors:
                 # Mapujeme atributy z models.py do slovníku v paměti
-                new_sensor_map[s.sensor_id] = {
-                    "address": s.address,          # Opraveno z register_address
-                    "functioncode": s.functioncode,
-                    "baudrate": s.bit,             # Sloupec 'bit' používáme jako baudrate
-                    "scaling": s.scaling,
-                    "sampling_rate": s.sampling_rate * 60,
-                    "is_active": s.is_active,
-                }
-                self.sensor_locks[s.sensor_id] = threading.Lock()
-                self.last_read[s.sensor_id] = 0.0
+                new_sensor_map[s.sensor_id] = self._build_sensor_config(s)
+                new_sensor_locks[s.sensor_id] = self.sensor_locks.get(s.sensor_id, threading.Lock())
+                new_last_read[s.sensor_id] = self.last_read.get(s.sensor_id, 0.0)
             
-            self.sensor_map = new_sensor_map
+            with self.sensor_map_lock:
+                self.sensor_map = new_sensor_map
+                self.sensor_locks = new_sensor_locks
+                self.last_read = new_last_read
 
         self._log_info("Senzory úspěšně načteny z DB ")
         return True
@@ -255,11 +281,16 @@ class ModbusManager:
     def read_sensor(self, sensor_id: int):
         if not self.modbus_connected:
             return None
-        sensor = self.sensor_map.get(sensor_id)
+        with self.sensor_map_lock:
+            sensor = self.sensor_map.get(sensor_id)
+            sensor_lock = self.sensor_locks.get(sensor_id)
         if not sensor or not sensor["is_active"]:
             return None
 
-        with self.sensor_locks[sensor_id]:
+        if not sensor_lock:
+            return None
+
+        with sensor_lock:
             try:
                 with self.serial_lock:
                     if not self.instrument:
@@ -280,8 +311,9 @@ class ModbusManager:
                 with self.stats_lock:
                     self.stats["successful_reads"] += 1
 
+                read_at = datetime.now()
                 self.last_read[sensor_id] = time.time()
-                self._add_to_cache(sensor_id, value)
+                self._add_to_cache(sensor_id, value, read_at)
                 return value
 
             except Exception as e:
@@ -294,17 +326,19 @@ class ModbusManager:
     # Cache
     # =========================
 
-    def _add_to_cache(self, sensor_id, value):
+    def _add_to_cache(self, sensor_id, value, timestamp=None):
+        timestamp = timestamp or datetime.now()
         with self.cache_lock:
             self.memory_cache.append({
                 "sensor_id": sensor_id,
                 "value": value,
-                "timestamp": datetime.now()
+                "timestamp": timestamp
             })
             self.stats["total_cached"] += 1
 
-    def get_latest_data(self, sensor_id):
-        sensor = self.sensor_map.get(sensor_id)
+    def get_latest_data_point(self, sensor_id):
+        with self.sensor_map_lock:
+            sensor = self.sensor_map.get(sensor_id)
         if not sensor:
             return None
         cutoff = datetime.now() - timedelta(seconds=sensor["sampling_rate"])
@@ -313,9 +347,32 @@ class ModbusManager:
                 if dp["sensor_id"] == sensor_id and dp["timestamp"] >= cutoff:
                     with self.stats_lock:
                         self.stats["cache_hits"] += 1
-                    return dp["value"]
+                    return {
+                        "value": dp["value"],
+                        "timestamp": dp["timestamp"],
+                    }
 
-        return self.read_sensor(sensor_id)
+        value = self.read_sensor(sensor_id)
+        if value is None:
+            return None
+
+        read_at = datetime.now()
+        with self.cache_lock:
+            for dp in reversed(self.memory_cache):
+                if dp["sensor_id"] == sensor_id:
+                    read_at = dp["timestamp"]
+                    break
+
+        return {
+            "value": value,
+            "timestamp": read_at,
+        }
+
+    def get_latest_data(self, sensor_id):
+        data_point = self.get_latest_data_point(sensor_id)
+        if not data_point:
+            return None
+        return data_point["value"]
 
     # Background reading
     # =========================
@@ -340,7 +397,10 @@ class ModbusManager:
         while not self._shutdown_event.is_set():
             now = time.time()
 
-            for sensor_id, sensor in self.sensor_map.items():
+            with self.sensor_map_lock:
+                sensors = list(self.sensor_map.items())
+
+            for sensor_id, sensor in sensors:
                 if not sensor["is_active"]:
                     continue
 

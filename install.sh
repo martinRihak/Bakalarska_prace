@@ -84,12 +84,15 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./data:/app/instance${DEVICE_BLOCK:+$DEVICE_BLOCK}    
+      - ./data:/app/instance
+    devices:
+      - "${MODBUS_PORT}:${MODBUS_PORT}"
     environment:
       APP_ENV: "production"
       SECRET_KEY: "${SECRET_KEY_VALUE}"
       USB_PORT: "${MODBUS_PORT}"
       MODBUS_PORT: "${MODBUS_PORT}"
+      WEB_CONCURRENCY: "1"
       DB: "sqlite:////app/instance/app.db"
       FLASK_HOST: "0.0.0.0"
       FLASK_PORT: "5000"
@@ -98,8 +101,6 @@ services:
       COOKIE_SECURE: "false"
       COOKIE_SAMESITE: "Lax"
       COOKIE_DOMAIN: ""
-    devices:
-      - ${MODBUS_PORT}:${MODBUS_PORT}
     restart: unless-stopped
 
   frontend:

@@ -1,7 +1,8 @@
 
-# 🌡️ Bakalářská práce
+# 🌡️IoT Sensor Dashboard - Bakalářská  práce 2026
 
-**— Webová aplikace pro správu a vizualizaci dat z připojených senzorů na platformě Raspberry Pi**
+Webová aplikace pro sběr, ukládání a vizualizaci dat ze senzorů 
+připojených k Raspberry Pi přes sběrnici RS-485 (Modbus RTU).
  
 [![Python](https://img.shields.io/badge/Python-3.13-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.1-black.svg?logo=flask)](https://flask.palletsprojects.com/)
@@ -11,9 +12,10 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](#-licence)
  
-
 ---
- 
+
+**— V repozitáři se nachází i PDF verze mé bakalářské práce v souboru `Bakalarska_prace.pdf`**
+
 ## 📖 Popis projektu
  
 Aplikace umožňuje **sběr, ukládání a vizualizaci dat** z libovolného počtu senzorů připojených k jednodeskovému počítači **Raspberry Pi** přes sběrnici **RS-485** (protokol **Modbus RTU**). Cílem je nahradit cloudová úložiště výrobců domácí automatizace plně **lokálním řešením**, které:
@@ -22,7 +24,6 @@ Aplikace umožňuje **sběr, ukládání a vizualizaci dat** z libovolného poč
 - 💾 ukládá naměřené hodnoty do **SQLite** databáze (s mezipamětí pro snížení zátěže SD karty),
 - 📊 zobrazuje data v **konfigurovatelném dashboardu** s přesouvatelnými widgety (drag & drop),
 - 👥 podporuje **víceuživatelský provoz** s rolemi `user` / `admin` a JWT autentizací,
-- 🌤️ integruje **předpověď počasí** (Open-Meteo) a porovnání s naměřenými hodnotami,
 - 📤 umožňuje **export** dat do CSV / JSON a jejich zpětný **import**.
 > 🎓 Tato aplikace je výstupem bakalářské práce na FEI VŠB-TUO. Vedoucí práce: Ing. Martin Radvanský.
  
@@ -92,10 +93,6 @@ Frontend běží na **http://localhost:5173** a očekává backend na `http://lo
  
 ## 👤 Vytvoření admin uživatele
  
-Aplikace **při prvním spuštění nevytváří žádné uživatele automaticky** — endpoint `/auth/register` je sice veřejný, ale registruje pouze běžné uživatele s rolí `user`. Admin účet je nutné vytvořit ručně jedním z následujících způsobů.
- 
-### Pomocný skript `create_admin.py`
- 
 V adresáři `backend/utils` spusť:
  
 ```bash
@@ -109,30 +106,18 @@ uv run python create_admin.py
 ```bash
 docker compose exec backend/utils uv run python create_admin.py
 ```
+## Konfigurace (.env)
 
-## ⚙️ Konfigurace (.env)
- 
-Backend načítá proměnné v pořadí: `.env` → `.env.<APP_ENV>` → `.env.local` → `.env.<APP_ENV>.local` (pozdější přepisují dřívější). Skutečné systémové proměnné mají nejvyšší prioritu.
- 
 | Proměnná | Výchozí | Popis |
 |----------|---------|-------|
-| `APP_ENV` | `development` | Profil prostředí (`development` / `production`) |
-| `SECRET_KEY` | — | Klíč pro podepisování JWT |
-| `JWT_ACCESS_TOKEN_EXPIRES` | `60*60` (s) | Životnost access tokenu |
-| `JWT_REFRESH_TOKEN_EXPIRES` | `7*24*60*60` (s) | Životnost refresh tokenu |
-| `COOKIE_SECURE=false` | `false`  | |
-| `COOKIE_SAMESITE=Strict` | `Strict`  | |
-| `DB` | `sqlite:///app.db` | Cesta k databázi |
-| `USB_PORT` | `/dev/ttyUSB0` | Sériový port pro RS-485 |
-| `CORS_ORIGINS` | `http://localhost:5173` | Povolené origins pro frontend |
-| `CORS_DOMAIN` | `http://localhost:5173` | Povolené domeny pro frontend |
-| `COOKIE_SECURE`| ``
-| `FLASK_PORT` | `5000` | Port backendu |
-| `FLASK_HOST` | `0.0.0.0` | adresa backendu |
- 
-Vygeneruj silný klíč například takto:
- 
+| `SECRET_KEY` | — | JWT signing key |
+| `DB` | `sqlite:///app.db` | Databáze URI |
+| `USB_PORT` | `/dev/ttyUSB0` | RS-485 sériový port |
+| `CORS_ORIGINS` | `http://localhost:5173` | Povolené origins |
+| `APP_ENV` | `development` | Profil prostředí |
+
 ```bash
+# Generování SECRET_KEY
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
  

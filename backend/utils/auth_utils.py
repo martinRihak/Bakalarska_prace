@@ -45,15 +45,12 @@ def login_required(f):
                 refresh_token = request.cookies.get('refresh_token')
                 if refresh_token:
                     try:
-                        # Ověření refresh tokenu
                         refresh_data = AuthService.verify_token(refresh_token)
                         if refresh_data and refresh_data.get('type') == 'refresh':
                             # Načtení uživatele
                             user = User.query.get(refresh_data['user_id'])
                             if user:
-                                # Vytvoření nového access tokenu
                                 new_token = AuthService.create_access_token(user.user_id, user.username, user.role)
-                                # Znovu ověříme nový token
                                 token_data = AuthService.verify_token(new_token)
                                 # Nastavíme nový token do hlavičky odpovědi
                                 response = make_response(f(*args, **kwargs))
@@ -68,7 +65,6 @@ def login_required(f):
                 if not user:
                     return _unauthorized_response()
 
-                # Token je platný, přidáme data do session pro kompatibilitu
                 session['user_id'] = token_data['user_id']
                 session['username'] = token_data['username']
                 session['role'] = token_data['role']

@@ -88,7 +88,7 @@ class Widget(db.Model):
     widget_type = db.Column(db.String(50), nullable=False)
     sensor_id = db.Column(db.Integer,db.ForeignKey('sensors.sensor_id',ondelete='CASCADE'),nullable=False)
     title = db.Column(db.String(100))
-    time = db.Column(db.String(4), nullable=True)
+    time = db.Column(db.String(4), nullable=True, default='24h')
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
     
