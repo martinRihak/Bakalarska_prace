@@ -1,0 +1,112 @@
+.modbus-status-banner {
+  position: fixed;
+  top: 0;
+  left: 250px;
+  right: 0;
+  z-index: 950;
+  min-height: 56px;
+  padding: 0.7rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background-color: #b91c1c;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(127, 29, 29, 0.28);
+}
+
+.modbus-status-banner__content {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modbus-status-banner__icon {
+  flex: 0 0 auto;
+}
+
+.modbus-status-banner__text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.modbus-status-banner__text strong {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.modbus-status-banner__text span,
+.modbus-status-banner__text small {
+  overflow-wrap: anywhere;
+  font-size: 0.86rem;
+}
+
+.modbus-status-banner__text small {
+  opacity: 0.9;
+}
+
+.modbus-status-banner__button {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 36px;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.modbus-status-banner__button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.24);
+  transform: none;
+}
+
+.modbus-status-banner__button:disabled {
+  cursor: wait;
+  opacity: 0.78;
+}
+
+.modbus-status-banner__spinner {
+  animation: modbus-status-spin 0.9s linear infinite;
+}
+
+.app-container.modbus-alert-visible .main-content {
+  padding-top: 4.5rem;
+}
+
+@keyframes modbus-status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media screen and (max-width: 968px) {
+  .modbus-status-banner {
+    left: 0;
+    min-height: 64px;
+    padding: 0.65rem 0.8rem 0.65rem 4rem;
+  }
+}
+
+@media screen and (max-width: 560px) {
+  .modbus-status-banner {
+    align-items: stretch;
+    flex-direction: column;
+    padding-left: 3.75rem;
+  }
+
+  .modbus-status-banner__button {
+    width: 100%;
+  }
+
+  .app-container.modbus-alert-visible .main-content {
+    padding-top: 8rem;
+  }
+}

@@ -5,10 +5,10 @@ import api from "@/api/apiService";
 import {
   getAreaChartOptions,
   getLineChartOptions,
-  getBarChartOptions,
+  getRadialBarChartOptions,
   getAreaChartSeries,
   getLineChartSeries,
-  getBarChartSeries,
+  getRadialBarChartSeries,
 } from "./chartUtils";
 import ValueWidget from "./ValueWidget";
 import "./Widget.css";
@@ -32,6 +32,7 @@ const Widget = ({
   widgetType,
   dashboard_id,
   onDelete,
+  onToggleActive,
 }) => {
   const [sensorData, setSensorData] = useState(null);
   const [error, setError] = useState(null);
@@ -40,8 +41,9 @@ const Widget = ({
   const [localActive, setLocalActive] = useState(active); // lokální stav pro switch
   const [themeMode, setThemeMode] = useState(getThemeMode);
 
+
   const processedData = useMemo(() => {
-    if (widgetType === "value") {
+    if (widgetType === "value" || widgetType === "radialBar") {
       return null;
     }
     if (!sensorData || !sensorData.length) return [];
@@ -81,16 +83,15 @@ const Widget = ({
   const fetchData = async () => {
     try {
       let response;
-      if (widgetType === "value") {
+      if (widgetType === "value" || widgetType === "radialBar") {
         response = await api.getLatestSensorData(id);
         if (!response || !response.data) {
           setError("Žádná data k zobrazení");
           return;
         }
         setSensorData(response);
-      } 
-      else {
-        response = await api.getSensorHistory(id, timeRange,widget_id);
+      } else {
+        response = await api.getSensorHistory(id, timeRange, widget_id);
         if (!response || !response.data || response.data.length === 0) {
           setError("Žádná data k zobrazení");
           return;
@@ -123,11 +124,17 @@ const Widget = ({
 
     let themedOptions;
     switch (widgetType) {
+      case "radialBar":
+        themedOptions = getRadialBarChartOptions(
+          sensorName,
+          themeMode,
+          sensorData?.sensor?.min_value,
+          sensorData?.sensor?.max_value,
+          sensorData?.sensor?.unit,
+        );
+        break;
       case "area":
         themedOptions = getAreaChartOptions(sensorName, themeMode);
-        break;
-      case "bar":
-        themedOptions = getBarChartOptions(sensorName, themeMode);
         break;
       default:
         themedOptions = getLineChartOptions(sensorName, themeMode);
@@ -146,16 +153,20 @@ const Widget = ({
   const chartSeries = useMemo(() => {
     if (widgetType === "value") {
       return [];
-    } else {
-      if (!processedData || processedData.length === 0) return [];
-      switch (widgetType) {
-        case "area":
-          return getAreaChartSeries(processedData, sensorName);
-        case "bar":
-          return getBarChartSeries(processedData, sensorName);
-        default:
-          return getLineChartSeries(processedData, sensorName);
-      }
+    }
+    if (widgetType === "radialBar") {
+      return getRadialBarChartSeries(
+        sensorData?.data?.value,
+        sensorData?.sensor?.min_value,
+        sensorData?.sensor?.max_value,
+      );
+    }
+    if (!processedData || processedData.length === 0) return [];
+    switch (widgetType) {
+      case "area":
+        return getAreaChartSeries(processedData, sensorName);
+      default:
+        return getLineChartSeries(processedData, sensorName);
     }
   }, [widgetType, sensorData, processedData, sensorName]);
 
@@ -167,7 +178,8 @@ const Widget = ({
     try {
       await api.toggleSensorActive(sensorId, newStatus);
       setLocalActive(newStatus);
-      
+      if (onToggleActive) onToggleActive(sensorId, newStatus);
+
       if (newStatus) {
         // Pokud je senzor aktivován, okamžitě načteme nová data
         setError(null); // Reset error message
@@ -183,7 +195,7 @@ const Widget = ({
     }
   };
 
-  const deleteWidget =  () => {
+  const deleteWidget = () => {
     api
       .deleteWidget(dashboard_id, widget_id)
       .then(() => {
@@ -225,15 +237,17 @@ const Widget = ({
               }}
             />
             <span className="slider"></span>
-          </label>                  
+          </label>
           <button onClick={deleteWidget}>
             <CircleX />
           </button>
-          <button onClick={() => {
+          <button
+            onClick={() => {
               handleRefresh();
-            }}>
-  <RefreshCw />
-</button>
+            }}
+          >
+            <RefreshCw />
+          </button>
         </div>
       </div>
       <div className="widget-content">

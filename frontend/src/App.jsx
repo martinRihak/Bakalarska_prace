@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -10,6 +10,7 @@ import {
 import NavBar from "@/components/layout/NavBar";
 import ProtectedRoute from "@/features/auth/ProtectedRoute";
 import ServerConnectionError from "@/components/common/ServerConnectionError";
+import ModbusStatusBanner from "@/components/common/ModbusStatusBanner";
 
 // Stránky
 import Home from "@/pages/Home";
@@ -36,13 +37,19 @@ function App() {
 // Vytvoření nové komponenty pro obsah, abychom mohli použít useLocation
 function AppContent() {
   const location = useLocation();
+  const [isModbusAlertVisible, setIsModbusAlertVisible] = useState(false);
   const hideNavBarPaths = ["/login", "/server-error"]; // Přidáno server-error do cest bez NavBaru
 
   const shouldShowNavBar = !hideNavBarPaths.includes(location.pathname);
 
   return (
-    <div className="app-container">
+    <div
+      className={`app-container ${isModbusAlertVisible ? "modbus-alert-visible" : ""}`}
+    >
       {shouldShowNavBar && <NavBar /> }
+      {shouldShowNavBar && (
+        <ModbusStatusBanner onVisibilityChange={setIsModbusAlertVisible} />
+      )}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/server-error" element={<ServerConnectionError />} />

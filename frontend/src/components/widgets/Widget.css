@@ -116,6 +116,7 @@
 .value-container {
   display: flex;
   align-items: flex-end;
+  text-align: center;
   justify-content: center;
   margin-bottom: 0.75rem;
   flex-wrap: wrap;
@@ -151,11 +152,12 @@
 }
 
 .value {
-    font-size: 4.0rem;
-    color: var(--text-primary);
-    /* letter-spacing: -0.03em; */
-    line-height: 1;
+  font-size: 4.0rem;
+  color: var(--text-primary);
+  /* letter-spacing: -0.03em; */
+  line-height: 1;
 }
+
 .timestamp {
   font-size: 0.75rem;
   color: var(--muted-text);
@@ -219,8 +221,13 @@
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .refresh-button .spinning {

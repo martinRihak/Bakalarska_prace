@@ -24,7 +24,7 @@ const GRAPH_WIDGET_MIN_SIZE = {
 };
 
 const getMinWidgetSizeByType = (widgetType) =>
-  widgetType === "value" ? VALUE_WIDGET_MIN_SIZE : GRAPH_WIDGET_MIN_SIZE;
+  widgetType === "value" || widgetType === "radialBar"? VALUE_WIDGET_MIN_SIZE : GRAPH_WIDGET_MIN_SIZE;
 
 const Dashboard = () => {
   const [dashboards, setDashboards] = useState([]);
@@ -36,6 +36,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [isDashboardFormOpen, setIsDashboardFormOpen] = useState(false);
   const [isWidgetFormOpen, setIsWidgetFormOpen] = useState(false);
+  const [sensorActiveStates, setSensorActiveStates] = useState({});
 
   const loadDashboards = async () => {
     try {
@@ -69,6 +70,13 @@ const Dashboard = () => {
           h: widget.height,
         })),
       };
+      const activeMap = {};
+      dashboardWidgets.forEach((w) => {
+        if (w.sensors?.[0]) {
+          activeMap[w.sensors[0].sensor_id] = w.sensors[0].is_active;
+        }
+      });
+      setSensorActiveStates(activeMap);
       setWidgets(dashboardWidgets);
       setLayouts(newLayouts);
       setError(null);
@@ -183,6 +191,10 @@ const Dashboard = () => {
       </div>
     </>
   );
+  const handleSensorToggle = (sensorId, newStatus) => {
+    setSensorActiveStates((prev) => ({ ...prev, [sensorId]: newStatus }));
+  };
+
   const handleWidgetDelete = () => {
     loadWidgets(selectedDashboard);
   };
@@ -225,11 +237,12 @@ const Dashboard = () => {
                     widget_id={widget.widget_id}
                     sensorName={`Sensor ${widget.sensors[0].name}`}
                     id={widget.sensors[0].sensor_id}
-                    active={widget.sensors[0].is_active}
+                    active={sensorActiveStates[widget.sensors[0].sensor_id] ?? widget.sensors[0].is_active}
                     time={widget.time}
                     widgetType={widget.widget_type}
                     dashboard_id={selectedDashboard}
-                    onDelete={handleWidgetDelete} // Předání callbacku
+                    onDelete={handleWidgetDelete}
+                    onToggleActive={handleSensorToggle}
                   />
                 </div>
               ))}

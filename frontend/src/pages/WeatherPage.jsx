@@ -591,7 +591,7 @@ const WeatherPage = () => {
 
               {/* Porovnání se senzorem */}
               <div className="weather-comparison">
-                <h2>Porovnání s mým senzorem</h2>
+                <h2>Porovnání se senzory v systému</h2>
                 <div className="weather-comparison-controls">
                   <label htmlFor="sensor-select">
                     Vyberte senzor

@@ -6,12 +6,13 @@ from models.models import User, db
 import os
 
 class AuthService:
-    ACCESS_TOKEN_EXPIRATION = 60 * 60  # 60 minutes
-    REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60  # 7 days
+    ACCESS_TOKEN_EXPIRATION = 60 * 60 # 60 minits 
+    REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60 # 7days
 
     @staticmethod
     def _get_jwt_secret():
-        return current_app.config.get('JWT_SECRET') or current_app.config.get('SECRET_KEY')
+        return current_app.config.get('SECRET_KEY') 
+
 
     @staticmethod
     def create_access_token(user_id, username, role):

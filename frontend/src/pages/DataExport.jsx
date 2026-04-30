@@ -69,7 +69,6 @@ const DataExport = () => {
       // Zobrazení chybové hlášky z backendu
       const errorMessage = err.message || 'Nastala neočekávaná chyba při exportu dat';
       setError(errorMessage);
-      alert(`Chyba: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
