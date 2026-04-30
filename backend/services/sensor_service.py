@@ -5,6 +5,30 @@ import io
 from flask import current_app
 
 class SensorService:
+    VALID_TIME_RANGES = {'24h', '7d', '30d'}
+
+    @staticmethod
+    def _sync_modbus_sensor(sensor):
+        modbus = current_app.config.get('MODBUS_MANAGER')
+        if not modbus:
+            return
+
+        try:
+            modbus.add_new_sensor(sensor)
+        except Exception as e:
+            current_app.logger.error(f"Error syncing sensor {sensor.sensor_id} to modbus map: {e}")
+
+    @staticmethod
+    def _remove_modbus_sensor(sensor_id):
+        modbus = current_app.config.get('MODBUS_MANAGER')
+        if not modbus:
+            return
+
+        try:
+            modbus.delete_sensor(sensor_id)
+        except Exception as e:
+            current_app.logger.error(f"Error removing sensor {sensor_id} from modbus map: {e}")
+
     @staticmethod
     def _user_owns_sensor(user_id, sensor_id):
         return UserSensor.query.filter_by(user_id=user_id, sensor_id=sensor_id).first() is not None
@@ -27,6 +51,7 @@ class SensorService:
 
     @staticmethod
     def get_sensor_history(sensor_id, time_range, user_id, widget_id=None):
+        time_range = time_range if time_range in SensorService.VALID_TIME_RANGES else '24h'
         now = datetime.utcnow()
         if time_range == '24h':
             delta = timedelta(days=1)
@@ -47,6 +72,7 @@ class SensorService:
 
         # Side effect on widget
         if widget_id:
+            widget_id = int(widget_id)
             SensorService._ensure_user_owns_widget(user_id, widget_id)
             Widget.query.filter_by(widget_id=widget_id).update({'time': time_range})
             db.session.commit()
@@ -135,6 +161,7 @@ class SensorService:
         
         db.session.add(new_sensor)
         db.session.commit()
+        SensorService._sync_modbus_sensor(new_sensor)
         return new_sensor
 #-------- Deleting sensors ------------------------------------------------------------
     @staticmethod
@@ -163,6 +190,7 @@ class SensorService:
             UserSensor.query.filter_by(sensor_id=sensor_id).delete()
             db.session.delete(sensor)
             db.session.commit()
+            SensorService._remove_modbus_sensor(sensor_id)
         except Exception as e:
             db.session.rollback()
             raise e
@@ -196,20 +224,26 @@ class SensorService:
 
         modbus = current_app.config.get('MODBUS_MANAGER')
         result_data = None # Přejmenujeme pro jasnost
+        modbus_status = None
 
         # 1. Pokus o čtení z Modbusu
         if modbus:
             try:
                # raw_value = modbus.read_sensor(sensor_id=sensor_id)
-                raw_value = modbus.get_latest_data(sensor_id=sensor_id)
-                if raw_value is not None:
+                data_point = modbus.get_latest_data_point(sensor_id=sensor_id)
+                if data_point is not None:
                     # Vytvoříme strukturu, která imituje DB model
                     result_data = {
-                        'timestamp': datetime.utcnow(),
-                        'value': raw_value
+                        'timestamp': data_point['timestamp'],
+                        'value': data_point['value']
                     }
+                else:
+                    status = modbus.get_status()
+                    if status.get('connected') is False and status.get('last_error'):
+                        modbus_status = status
             except Exception as e:
                 current_app.logger.error(f"Error reading from modbus: {e}")
+                modbus_status = modbus.get_status()
             
         # 2. Pokud Modbus selhal, zkusíme DB
         if result_data is None:
@@ -224,7 +258,7 @@ class SensorService:
         if not result_data:
             return None
         
-        return {
+        response = {
             'sensor': {
                 'id': sensor.sensor_id,
                 'name': sensor.name,
@@ -233,10 +267,16 @@ class SensorService:
                 'max_value': sensor.max_value, 
             },
             'data': {
-                'timestamp': result_data['timestamp'], # Nyní přistupujeme jako ke slovníku
+                'timestamp': result_data['timestamp'].isoformat(), # Nyní přistupujeme jako ke slovníku
+                'read_at': result_data['timestamp'].isoformat(),
                 'value': result_data['value']
             }
         }
+
+        if modbus_status:
+            response['modbus_status'] = modbus_status
+
+        return response
         
     @staticmethod
     def import_data(sensor_id, records, user_id):
@@ -297,12 +337,6 @@ class SensorService:
 
     @staticmethod
     def get_available_sensors(user_id):
-        #user_sensors = [us.sensor_id for us in UserSensor.query.filter_by(user_id=user_id).all()]
-        # Logic from original: filter sensors that are in user_sensors list?
-        #available_sensors = Sensor.query.filter(Sensor.sensor_id.in_(user_sensors)).all()"
-        # This returns sensors that the user ALREADY HAS.
-        # The route name "available" usually implies "available to add", but the code gets "user_sensors".
-        # I will stick to the code.
         return Sensor.query.all()
 
     @staticmethod
@@ -332,6 +366,7 @@ class SensorService:
         )
         db.session.add(new_sensor)
         db.session.commit()
+        SensorService._sync_modbus_sensor(new_sensor)
         return new_sensor
 
     @staticmethod
@@ -345,6 +380,7 @@ class SensorService:
             if hasattr(sensor, key):
                 setattr(sensor, key, value)
         db.session.commit()
+        SensorService._sync_modbus_sensor(sensor)
         return True
 
     @staticmethod
@@ -355,4 +391,5 @@ class SensorService:
         SensorService._ensure_user_owns_sensor(user_id, sensor_id)
         sensor.is_active = is_active
         db.session.commit()
+        SensorService._sync_modbus_sensor(sensor)
         return True

@@ -13,6 +13,16 @@ const fetchWithTimeout = (url, options, timeout = REQUEST_TIMEOUT) => {
   );
 };
 
+const notifyModbusStatus = (status) => {
+  if (typeof window === "undefined" || !status) {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent("modbus-status-change", { detail: status }),
+  );
+};
+
 const apiRequest = async (
   endpoint,
   method = "GET",
@@ -71,7 +81,9 @@ const apiRequest = async (
           { ...fetchOptions, headers: retryHeaders }
         );
         if (retryResponse.ok) {
-          return await retryResponse.json();
+          const retryData = await retryResponse.json();
+          notifyModbusStatus(retryData.modbus_status);
+          return retryData;
         }
       }
 
@@ -114,6 +126,7 @@ const apiRequest = async (
       throw new Error(responseData.message || responseData.error || 'Neznámá chyba');
     }
 
+    notifyModbusStatus(responseData.modbus_status);
     return responseData;
   } catch (error) {
     // Timeout
@@ -189,8 +202,15 @@ const api = {
 
   // Senzory
   getSensorHistory: (sensorId, timeRange, widget_id) => {
+    const params = new URLSearchParams({
+      timeRange: timeRange || "24h",
+    });
+    if (widget_id) {
+      params.set("widget_id", widget_id);
+    }
+
     return apiRequest(
-      `/sensors/getSensorHistory/${sensorId}?timeRange=${timeRange}`,
+      `/sensors/getSensorHistory/${sensorId}?${params.toString()}`,
     );
   },
   getSensorHistoryHourly: (sensorId, startDate, endDate) =>

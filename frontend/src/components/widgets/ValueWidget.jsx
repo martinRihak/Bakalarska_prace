@@ -22,7 +22,10 @@ const ValueWidget = ({ sensorData }) => {
 
   const icon = getIcon(sensor.unit);
   const formattedValue = `${data.value} ${sensor.unit}`;
-  const formattedTimestamp = new Date(data.timestamp).toLocaleString('cs-CZ'); // Czech locale for date and time
+  const readAt = data.read_at || data.timestamp;
+  const formattedReadAt = readAt
+    ? new Date(readAt).toLocaleString('cs-CZ')
+    : 'Neznámý čas';
 
   return (
     <div className="value-widget">
@@ -30,7 +33,7 @@ const ValueWidget = ({ sensorData }) => {
         {icon && <div className="icon">{icon}</div>}
         <div className="value">{formattedValue}</div>
       </div>
-      <div className="timestamp">{formattedTimestamp}</div>
+      <div className="timestamp">Čteno: {formattedReadAt}</div>
     </div>
   );
 };

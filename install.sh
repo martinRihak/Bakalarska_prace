@@ -92,6 +92,7 @@ services:
       SECRET_KEY: "${SECRET_KEY_VALUE}"
       USB_PORT: "${MODBUS_PORT}"
       MODBUS_PORT: "${MODBUS_PORT}"
+      WEB_CONCURRENCY: "1"
       DB: "sqlite:////app/instance/app.db"
       FLASK_HOST: "0.0.0.0"
       FLASK_PORT: "5000"

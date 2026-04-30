@@ -1,10 +1,10 @@
-import multiprocessing
 import os
 
 # Základní konfigurace
 bind = os.environ.get("GUNICORN_BIND", "0.0.0.0:" + str(os.environ.get("PORT", "5000")))
-default_workers = multiprocessing.cpu_count() * 2 + 1
-workers = int(os.environ.get("WEB_CONCURRENCY", default_workers))
+# Keep one worker by default. The app owns a single Modbus serial port, and
+# multiple worker processes would each create a ModbusManager for /dev/ttyUSB0.
+workers = int(os.environ.get("WEB_CONCURRENCY", "1"))
 worker_class = os.environ.get("GUNICORN_WORKER_CLASS", "sync")
 threads = int(os.environ.get("GUNICORN_THREADS", "2"))
 
